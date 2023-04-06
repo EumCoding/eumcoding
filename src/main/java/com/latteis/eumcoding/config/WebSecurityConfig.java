@@ -1,6 +1,8 @@
+/*
 package com.latteis.eumcoding.config;
 
-import com.coffeemantang.ZMT_BACK.security.JwtAuthenticationFilter;
+
+import com.latteis.eumcoding.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,3 +45,4 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+*/

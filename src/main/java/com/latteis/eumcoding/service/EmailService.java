@@ -1,8 +1,7 @@
+/*
 package com.latteis.eumcoding.service;
 
-import com.coffeemantang.ZMT_BACK.model.EmailTokenEntity;
-import com.coffeemantang.ZMT_BACK.model.MemberEntity;
-import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,3 +36,4 @@ public class EmailService {
         }
     }
 }
+*/

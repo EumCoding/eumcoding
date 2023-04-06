@@ -1,3 +1,4 @@
+/*
 package com.latteis.eumcoding.service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,3 +18,4 @@ public class EmailSenderService {
         javaMailSender.send(email);
     }
 }
+*/

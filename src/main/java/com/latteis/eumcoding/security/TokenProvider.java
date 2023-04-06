@@ -1,6 +1,7 @@
+/*
 package com.latteis.eumcoding.security;
 
-import com.coffeemantang.ZMT_BACK.model.MemberEntity;
+
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,3 +59,4 @@ public class TokenProvider {
         }
     }
 }
+*/
