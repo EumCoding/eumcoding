@@ -1,7 +1,7 @@
+/*
 package com.latteis.eumcoding.service;
 
-import com.coffeemantang.ZMT_BACK.model.EmailTokenEntity;
-import com.coffeemantang.ZMT_BACK.persistence.EmailTokenRepository;
+
 import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,3 +57,4 @@ public class EmailTokenService {
         return emailToken.orElseThrow(() -> new Exception("no token"));
     }
 }
+*/
