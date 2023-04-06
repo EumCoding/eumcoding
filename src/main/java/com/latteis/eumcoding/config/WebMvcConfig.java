@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-// Web Config
+// Web Config ff
 @Configuration // 스프링 빈으로 등록
 public class WebMvcConfig implements WebMvcConfigurer {
     // 유지시간
