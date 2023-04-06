@@ -1,7 +1,10 @@
-/*
+
 package com.latteis.eumcoding.service;
 
 
+import com.latteis.eumcoding.model.EmailToken;
+import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +25,12 @@ public class EmailService {
 
     @Transactional
     public boolean verifyEmail(String token) throws Exception{
-        EmailTokenEntity findEmailToken = emailTokenService.findByIdAndExpirationDateAfterAndExpired(token);
+        EmailToken findEmailToken = emailTokenService.findByIdAndExpirationDateAfterAndExpired(token);
         // 성공 시 유저의 인증내용 변경
-        Optional<MemberEntity> findMember = memberRepository.findById(findEmailToken.getMemberId());
+        Optional<Member> findMember = memberRepository.findById(findEmailToken.getMemberId());
         findEmailToken.setTokenToUsed(); // 사용 완료
         if(findMember.isPresent()){
-            MemberEntity memberEntity = findMember.get();
+            Member memberEntity = findMember.get();
             memberEntity.setState(1); // 이메일 인증됐어요
             memberRepository.save(memberEntity); // 엔티티 수정
             return true;
@@ -36,4 +39,4 @@ public class EmailService {
         }
     }
 }
-*/
+

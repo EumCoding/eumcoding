@@ -1,13 +1,15 @@
-/*
+
 package com.latteis.eumcoding.service;
 
 
-import io.jsonwebtoken.lang.Assert;
+import com.latteis.eumcoding.model.EmailToken;
+import com.latteis.eumcoding.persistence.EmailTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,7 +31,7 @@ public class EmailTokenService {
             Assert.hasText(receiverEmail, "receiverEmail은 필수입니다.");
 
             // 이메일 토큰 저장
-            EmailTokenEntity emailToken = EmailTokenEntity.createEmailToken(memberId);
+            EmailToken emailToken = EmailToken.createEmailToken(memberId);
             emailTokenRepository.save(emailToken);
 
             // 이메일 전송
@@ -49,12 +51,12 @@ public class EmailTokenService {
     }
 
     // 유효한 토큰 가져오기
-    public EmailTokenEntity findByIdAndExpirationDateAfterAndExpired(String emailTokenId) throws Exception {
-        Optional<EmailTokenEntity> emailToken = emailTokenRepository
+    public EmailToken findByIdAndExpirationDateAfterAndExpired(String emailTokenId) throws Exception {
+        Optional<EmailToken> emailToken = emailTokenRepository
                 .findByEmailtokenIdAndExpirationdateAfterAndExpired(emailTokenId, LocalDateTime.now(), false);
 
         // 토큰이 없다면 예외 발생
         return emailToken.orElseThrow(() -> new Exception("no token"));
     }
 }
-*/
+
