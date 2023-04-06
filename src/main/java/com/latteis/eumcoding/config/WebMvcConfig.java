@@ -1,3 +1,4 @@
+/*
 package com.latteis.eumcoding.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -24,3 +25,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .maxAge(MAX_AGE_SECS);
     }
 }
+*/
