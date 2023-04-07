@@ -1,4 +1,4 @@
-/*
+
 package com.latteis.eumcoding.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +12,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final long MAX_AGE_SECS = 3600;
 
     // Cors 방지
+    // 응애
     @Override
     public void addCorsMappings(CorsRegistry registry){
         //모든 경로에 대해
@@ -25,4 +26,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .maxAge(MAX_AGE_SECS);
     }
 }
-*/
+

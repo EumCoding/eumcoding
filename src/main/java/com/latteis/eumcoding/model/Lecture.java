@@ -20,6 +20,14 @@ public class Lecture {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
+    @ManyToOne(optional = false)
+    @JoinTable(
+            name = "member_lecture",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "id")
+    )
+    private Member member;
+
     @Column(name = "name")
     private String name;
 
