@@ -1,7 +1,8 @@
-/*
+
 package com.latteis.eumcoding.security;
 
 
+import com.latteis.eumcoding.model.Member;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class TokenProvider {
     private static final String SECRET_KEY = "meteo123"; // secret key
 
     // JWT 라이브러리를 이용해 JWT 토큰을 생성
-    public String create(MemberEntity memberEntity){
+    public String create(Member memberEntity){
         // 기한은 지금부터 1일로 설정
         Date expiryDate = Date.from(
                 Instant.now().plus(1, ChronoUnit.DAYS)
@@ -27,7 +28,7 @@ public class TokenProvider {
                 // header에 들어갈 내용 및 서명을 하기 위한 SECRET_KEY
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 // payload에 들어갈 내용
-                .setSubject(String.valueOf(memberEntity.getMemberId())) //sub
+                .setSubject(String.valueOf(memberEntity.getId())) //sub
                 .setIssuer("demo app") //iss
                 .setIssuedAt(new Date()) //iat
                 .setExpiration(expiryDate) //exp
@@ -59,4 +60,4 @@ public class TokenProvider {
         }
     }
 }
-*/
+
