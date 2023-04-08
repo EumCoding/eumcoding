@@ -37,6 +37,8 @@ public class MemberDTO {
 
     private int role; // 0:학생, 1:선생, 2:관리자
 
+    private int state;
+
     private List<MultipartFile> profileImgRequest;
 
     private String profileImg;
