@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.Id;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,10 +21,10 @@ public class EmailToken {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(name = "emailtoken_id")
-    private String emailtokenId;
-    @Column(name = "expirationdate")
-    private LocalDateTime expirationdate; // 만료시간
+    @Column(name = "email_token_id")
+    private String emailTokenId;
+    @Column(name = "expiration_date")
+    private LocalDateTime expirationDate; // 만료시간
     @Column(name = "expired")
     private boolean expired; // 만료여부
     @Column(name = "member_id")
@@ -35,7 +34,7 @@ public class EmailToken {
     // 이메일 인증 토큰 생성
     public static EmailToken createEmailToken(int memberId) {
         EmailToken emailTokenEntity = new EmailToken();
-        emailTokenEntity.expirationdate = LocalDateTime.now().plusMinutes(EMAIL_TOKEN_EXPIRATION_TIME_VALUE); // 5분 후 만료
+        emailTokenEntity.expirationDate = LocalDateTime.now().plusMinutes(EMAIL_TOKEN_EXPIRATION_TIME_VALUE); // 5분 후 만료
         emailTokenEntity.expired = false;
         emailTokenEntity.memberId = memberId;
 
