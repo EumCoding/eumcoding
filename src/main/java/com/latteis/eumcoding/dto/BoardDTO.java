@@ -1,13 +1,13 @@
 package com.latteis.eumcoding.dto;
 
 import com.latteis.eumcoding.model.Member;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,22 +17,61 @@ import java.util.List;
 @AllArgsConstructor
 public class BoardDTO {
 
-    private int boardId; // 사용자에게 고유하게 부여되는 값
+    // 글 작성 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    public static class CreateRequestDTO {
 
-    private int memberId;
+        @NotBlank(message = "필수 입력 값입니다.")
+        private String title;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        private String content;
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        private int type;
+
+    }
+
+    // 글 수정 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    public static class UpdateRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        private int boardId;
+
+        @Positive(message = "양수만 가능합니다.")
+        private int memberId;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        private String title;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        private String content;
+
+    }
+
+    // 글 삭제 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    public static class DeleteRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        private int boardId;
+
+        @Positive(message = "양수만 가능합니다.")
+        private int memberId;
+
+    }
 
     private String nickname;
-
-    private String title;
-
-    private String content;
 
     private LocalDateTime updated_day;
 
     private LocalDateTime created_day;
 
-    private int type;
-
+    @PositiveOrZero(message = "0과 양수만 가능합니다.")
     private int views; // 조회수
 
     private List<MultipartFile> imageRequest;

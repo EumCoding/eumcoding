@@ -19,7 +19,7 @@ public class SwaggerConfiguration {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.coffemantang.With_Me_BACK"))
+                .apis(RequestHandlerSelectors.basePackage("com.latteis.eumcoding"))
                 .paths(PathSelectors.any())
                 .build();
     }
