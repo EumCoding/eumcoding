@@ -1,4 +1,3 @@
-
 package com.latteis.eumcoding.config;
 
 
@@ -20,6 +19,10 @@ public class WebSecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private static final String[] SWAGGER_URI = {
+            "/swagger-ui.html", "/v2/api-docs", "/swagger-resources/**", "/webjars/**", "/swagger/**"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http 시큐리티 빌더
@@ -28,6 +31,7 @@ public class WebSecurityConfig {
                 .disable().httpBasic() // basic 사용하지 않음
                 .disable().sessionManagement() // session 기반 아님
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests() // 인증안해도 되는 경로 설정
+                .antMatchers(SWAGGER_URI).permitAll()
                 .antMatchers("/", "/partners/member/**", "/nonmember/**",
                         "/images/menu/**" ,"/images/**", "/error", "/confirm/**").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
                 // "/error" 추가해야 403오류와 json 함께 반환
