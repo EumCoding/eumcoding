@@ -15,7 +15,7 @@ import java.util.Date;
 @Slf4j
 @Service
 public class TokenProvider {
-    private static final String SECRET_KEY = "meteo123"; // secret key
+    private static final String SECRET_KEY = "eum_coding"; // secret key
 
     // JWT 라이브러리를 이용해 JWT 토큰을 생성
     public String create(Member memberEntity){
