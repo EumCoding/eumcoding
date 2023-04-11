@@ -34,9 +34,10 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests() // 인증안해도 되는 경로 설정
                 .antMatchers(SWAGGER_URI).permitAll()
                 .antMatchers("/",
+                        "/unauth/**",
                         "/partners/member/**",
                         "/nonmember/**",
-                        "/board/unauth",
+                        "/board/unauth/**",
                         "/images/menu/**",
                         "/images/**",
                         "/error",
