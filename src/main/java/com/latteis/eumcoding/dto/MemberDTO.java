@@ -21,17 +21,13 @@ public class MemberDTO {
 
     private int id; // 사용자에게 고유하게 부여되는 값
 
-
     private String password;
 
-
     private String name;
-
 
     private String nickname;
 
     private String email;
-
 
     private String tel;
 

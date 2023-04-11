@@ -54,7 +54,7 @@ public class UnauthMember {
     // 로그인
   @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody MemberDTO memberDTO) {
-      System.out.println("진입");
+
         // 로그인 성공 시에만 MemberEntity 가져옴
         MemberDTO successMemberDTO = memberService.getByCredentials(
                 memberDTO.getEmail(),
@@ -85,42 +85,5 @@ public class UnauthMember {
         }
 
     }
-
-    @PostMapping("/sign")
-    public ResponseEntity<?> sign(@Param("email")String email, @Param("password") String password) {
-        System.out.println("진입22");
-        // 로그인 성공 시에만 MemberEntity 가져옴
-        MemberDTO successMemberDTO = memberService.getByCredentials(
-                email,
-                password,
-                passwordEncoder
-        );
-        System.out.println("진입중");
-        // MemberEntity 가져오기 성공 시
-        if (successMemberDTO != null) {
-            // TokenProvider 클래스를 이용해 토큰을 생성한 후 MemberDTO에 넣어서 반환
-            final String token = tokenProvider.create(successMemberDTO);
-            MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .email(successMemberDTO.getEmail())
-                    .id(successMemberDTO.getId())
-                    .token(token)
-                    .role(successMemberDTO.getRole())//멤버 타입
-                    .nickname(successMemberDTO.getNickname())
-                    .build();
-            return ResponseEntity.ok().body(responseMemberDTO);
-        } else {
-            // MemberEntity 가져오기 실패 시 -> 로그인 실패
-            ResponseDTO responseDTO = ResponseDTO.builder()
-                    .error("로그인 실패").build();
-            System.out.println(responseDTO + "실패햇어요");
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-
-    }
-
-
-
-
-
 
 }

@@ -249,29 +249,15 @@ public class MemberService {
 
     // 로그인 - 자격증명
     public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
-
         final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
-        System.out.println(originalMember + "멤버");
         log.warn(email);
         log.warn(password);
         System.out.println(originalMember);
-        if(encoder == null){
-            System.out.println("인코더 널값");
-        }
         // 패스워드가 같은지 확인
         if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
-            
-            System.out.println("여기 들어오나?");
             MemberDTO memberDTO = new MemberDTO(originalMember);
             return memberDTO;
-
-        }
-        else{
-            System.out.println("불통과");
         }
         return null;
-
     }
-
-
 }
