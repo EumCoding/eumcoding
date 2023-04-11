@@ -33,8 +33,14 @@ public class WebSecurityConfig {
                 .disable().sessionManagement() // session 기반 아님
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests() // 인증안해도 되는 경로 설정
                 .antMatchers(SWAGGER_URI).permitAll()
-                .antMatchers("/", "/partners/member/**", "/unauth/**",
-                        "/images/menu/**" ,"/images/**", "/error", "/confirm/**").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
+                .antMatchers("/",
+                        "/partners/member/**",
+                        "/nonmember/**",
+                        "/board/unauth",
+                        "/images/menu/**",
+                        "/images/**",
+                        "/error",
+                        "/confirm/**").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
                 // "/error" 추가해야 403오류와 json 함께 반환
                 .authenticated();
         //filter 등록
