@@ -37,7 +37,7 @@ public class MemberController {
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(registeredMember.getEmail())
                     .nickname(registeredMember.getNickname())
-                    .build();
+                    .build(); 
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
