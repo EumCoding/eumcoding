@@ -250,9 +250,6 @@ public class MemberService {
     // 로그인 - 자격증명
     public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
         final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
-        log.warn(email);
-        log.warn(password);
-        System.out.println(originalMember);
         // 패스워드가 같은지 확인
         if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
             MemberDTO memberDTO = new MemberDTO(originalMember);
