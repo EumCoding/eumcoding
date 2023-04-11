@@ -24,14 +24,14 @@ public class EmailTokenService {
     private String from; //프로퍼티에서 mail.username 가져옴
 
     // 이메일 인증 토큰 생성
-    public String createEmailToken(int memberId, String receiverEmail) throws Exception{
+    public String createEmailToken(int id, String receiverEmail) throws Exception{
 
         try{
-            Assert.notNull(memberId, "memberId는 필수입니다");
+            Assert.notNull(id, "memberId는 필수입니다");
             Assert.hasText(receiverEmail, "receiverEmail은 필수입니다.");
 
             // 이메일 토큰 저장
-            EmailToken emailToken = EmailToken.createEmailToken(memberId);
+            EmailToken emailToken = EmailToken.createEmailToken(id);
             emailTokenRepository.save(emailToken);
 
             // 이메일 전송

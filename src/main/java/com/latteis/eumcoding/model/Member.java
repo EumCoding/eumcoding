@@ -9,10 +9,13 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "member")
 public class Member {
+
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
@@ -20,6 +23,9 @@ public class Member {
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "name")
     private String name;
@@ -50,5 +56,6 @@ public class Member {
 
     @Column(name = "state")
     private int state;
+
 
 }
