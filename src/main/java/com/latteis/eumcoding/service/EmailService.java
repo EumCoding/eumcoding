@@ -19,7 +19,6 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class EmailService {
     private final EmailTokenService emailTokenService;
-    @Autowired
     private final MemberRepository memberRepository;
     
 
