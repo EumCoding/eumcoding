@@ -84,19 +84,46 @@ public class BoardCommentController {
 
     }
 
-    // 게시판 댓글 가져오기
-//    @GetMapping(value = "/list")
-//    @ApiOperation(value = "게시판 댓글 리스트 가져오기")
-//    public ResponseEntity<List<BoardCommentDTO.ListResponseDTO>> getCommentList(@Valid BoardDTO.IdRequestDTO idRequestDTO, @PageableDefault(size = 10) Pageable pageable) {
-//
-//        try {
-//            log.info("controller");
-//            List<BoardCommentDTO.ListResponseDTO> listResponseDTOS = boardCommentService.getCommentList(idRequestDTO, pageable);
-//            return ResponseEntity.ok().body(listResponseDTOS);
-//        } catch (Exception e) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-//        }
-//
-//    }
+    // 게시판 댓글 목록 가져오기
+    @GetMapping(value = "/unauth/list")
+    @ApiOperation(value = "게시판 댓글 리스트 가져오기")
+    public ResponseEntity<List<BoardCommentDTO.ListResponseDTO>> getCommentList(@Valid BoardDTO.IdRequestDTO idRequestDTO, @PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            List<BoardCommentDTO.ListResponseDTO> listResponseDTOS = boardCommentService.getCommentList(idRequestDTO, pageable);
+            return ResponseEntity.ok().body(listResponseDTOS);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+    // 게시판 대댓글 목록 가져오기
+    @GetMapping(value = "/unauth/reply_list")
+    @ApiOperation(value = "게시판 대댓글 리스트 가져오기")
+    public ResponseEntity<List<BoardCommentDTO.ListResponseDTO>> getReplyList(@Valid BoardCommentDTO.IdRequestDTO idRequestDTO, @PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            List<BoardCommentDTO.ListResponseDTO> listResponseDTOS = boardCommentService.getReplyList(idRequestDTO, pageable);
+            return ResponseEntity.ok().body(listResponseDTOS);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+    // 내가 작성한 게시판 댓글 목록
+    @PostMapping(value = "/my_list")
+    @ApiOperation(value = "내가 쓴 게시판 댓글 리스트 가져오기")
+    public ResponseEntity<List<BoardCommentDTO.MyListResponseDTO>> getMyCommentList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            List<BoardCommentDTO.MyListResponseDTO> myListResponseDTOS = boardCommentService.getMyCommentList(Integer.parseInt(authentication.getPrincipal().toString()), pageable);
+            return ResponseEntity.ok().body(myListResponseDTOS);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
 
 }
