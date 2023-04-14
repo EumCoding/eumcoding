@@ -159,8 +159,7 @@ public class BoardDTO {
 
         // Timestamp -> LocalDateTime 변환
         public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
-            LocalDateTime localDateTime = timestamp.toLocalDateTime();
-            return localDateTime;
+            return timestamp.toLocalDateTime();
         }
 
     }
@@ -216,8 +215,7 @@ public class BoardDTO {
 
         // Timestamp -> LocalDateTime 변환
         public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
-            LocalDateTime localDateTime = timestamp.toLocalDateTime();
-            return localDateTime;
+            return timestamp.toLocalDateTime();
         }
 
     }

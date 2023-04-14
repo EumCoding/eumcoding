@@ -74,7 +74,6 @@ public class BoardController {
     @ApiOperation(value = "내가 작성한 글 목록 가져오기")
     public ResponseEntity<List<BoardDTO.MyListResponseDTO>> getMyBoardList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
 //    public ResponseEntity<List<BoardDTO.ListResponseDTO>> getMyBoardList(@ApiIgnore Authentication authentication, @Valid BoardDTO.ListRequestDTO listRequestDTO) {
-        System.out.println(pageable + "aaaaaaaaaaaaa");
         try {
             List<BoardDTO.MyListResponseDTO> myListResponseDTOS = boardService.getMyBoardList(Integer.parseInt(authentication.getPrincipal().toString()), pageable);
             return ResponseEntity.ok().body(myListResponseDTOS);
@@ -109,7 +108,6 @@ public class BoardController {
             return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-//            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
     }
