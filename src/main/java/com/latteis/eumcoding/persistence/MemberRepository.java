@@ -54,4 +54,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     // 비밀번호 질문답변 가져오기
     @Query(value = "SELECT question, answer FROM member WHERE id = :id", nativeQuery = true)
     Member findQuestionAnswerByMemberId(@Param("id") int id);
+
+    @Query(value = "SELECT * FROM member WHERE id = :id", nativeQuery = true)
+    Member findByMemberId(@Param("id") int id);
 }

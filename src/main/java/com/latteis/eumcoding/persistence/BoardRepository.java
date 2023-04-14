@@ -1,11 +1,23 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.dto.BoardDTO;
 import com.latteis.eumcoding.model.Board;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-public interface BoardRepository extends JpaRepository<Board, String> {
+import java.util.List;
 
-    // 아이디로 Board 엔티티 가져오기
-    Board findById(int id);
+@Repository
+public interface BoardRepository extends JpaRepository<Board, Integer> {
+
+    // Board 아이디와 작성자로 Board 엔티티 가져오기
+    Board findByIdAndMemberId(int boardId, int memberId);
+
+    // 해당 유저가 쓴 글 목록 최신순으로 가져오기
+    Page<Board> findAllByMemberIdOrderByCreatedDayDesc(int memberId, Pageable pageable);
+
 
 }
