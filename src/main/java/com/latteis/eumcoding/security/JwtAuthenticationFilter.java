@@ -32,7 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // 요청에서 토큰 가져오기
             String token = request.getHeader("Authorization"); // Http 요청의 헤더를 파싱해 토큰을 리턴하는 함수
-            log.info("Filter is running...");
             // 토큰 검사하기. JWT이므로 인가 서버에 요청하지 않고도 검증 가능
             if (token != null && !token.equalsIgnoreCase("null")){
                 // userId 가져오기. 위조된 경우 예외 처리된다.

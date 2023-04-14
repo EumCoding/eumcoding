@@ -1,11 +1,10 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Member;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -19,22 +18,33 @@ import java.util.List;
 @AllArgsConstructor
 public class BoardDTO {
 
+    // 글 아이디만 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    public static class IdRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "게시물 ID", example = "1")
+        private int id;
+
+    }
+
     // 글 작성 요청 DTO
     @Getter
     @NoArgsConstructor
     public static class CreateRequestDTO {
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "제목")
+        @ApiModelProperty(value = "제목", example = "제목입니다")
         private String title;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "내용")
+        @ApiModelProperty(value = "내용", example = "내용입니다")
         private String content;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "0:자유게시판, 1:공지사항, 2:건의사항")
-        private int type; // 0:자유게시판, 1:공지사항, 2:건의사항
+        @ApiModelProperty(value = ":자유게시판, 1:건의사항, 2:공지사항", example = "0")
+        private int type; //
 
     }
 
@@ -44,31 +54,39 @@ public class BoardDTO {
     public static class UpdateRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
+        @ApiParam(value = "수정할 게시물 ID", example = "1")
         private int boardId;
 
-        @Positive(message = "양수만 가능합니다.")
-        private int memberId;
-
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "제목")
+        @ApiModelProperty(value = "제목", example = "제목입니다")
         private String title;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "내용")
+        @ApiModelProperty(value = "내용", example = "내용입니다")
         private String content;
 
     }
 
-    // 글 삭제 요청 DTO
+    // 내가 쓴 글 목록 응답 DTO
     @Getter
+    @Setter
     @NoArgsConstructor
-    public static class DeleteRequestDTO {
+    public static class MyListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
-        private int boardId;
+        @ApiModelProperty(value = "게시글 ID", example = "1")
+        private int id;
 
-        @Positive(message = "양수만 가능합니다.")
-        private int memberId;
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "제목", example = "제목입니다")
+        private String title;
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "조회수", example = "0")
+        private int views; // 조회수
+
+        @ApiModelProperty(value = "작성일", example = "2023-04-13 01:47:52.000")
+        private LocalDateTime createdDay;
 
     }
 
@@ -79,19 +97,19 @@ public class BoardDTO {
     public static class ListRequestDTO {
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "정렬 기준 0 : 날짜, 1 : 좋아요, 2 : 조회수")
+        @ApiParam(value = "정렬 기준 0 : 날짜, 1 : 좋아요, 2 : 조회수", example = "0")
         private int sort; // 정렬 기준 0 : 날짜, 1 : 좋아요, 2 : 조회수
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "0:자유게시판, 1:공지사항, 2:건의사항")
-        private int type; // 0:자유게시판, 1:공지사항, 2:건의사항
+        @ApiParam(value = "0:자유게시판, 1:건의사항, 2:공지사항", example = "0")
+        private int type;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "0부터 1페이지")
+        @ApiParam(value = "0부터 1페이지", example = "0")
         private int page;
 
         @Positive(message = "양수만 가능합니다.")
-        @ApiModelProperty(example = "페이지 번호")
+        @ApiParam(value = "페이지 번호", example = "5")
         private int pageSize;
 
     }
@@ -102,29 +120,31 @@ public class BoardDTO {
     public static class ListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "게시글 ID", example = "1")
         private int id;
 
         @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "유저 ID", example = "1")
         private int memberId;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "제목")
+        @ApiModelProperty(value = "제목", example = "제목입니다")
         private String title;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "닉네임")
+        @ApiModelProperty(value = "닉네임", example = "닉네임입니다")
         private String nickname;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "조회수")
-        private int views; // 조회수
+        @ApiModelProperty(value = "조회수", example = "0")
+        private int views;
 
-        @ApiModelProperty(example = "작성일")
-        private LocalDateTime created_day;
+        @ApiModelProperty(value = "작성일", example = "2023-04-13 01:47:52.000")
+        private LocalDateTime createdDay;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "좋아요")
-        private int heart; // 좋아요
+        @ApiModelProperty(value = "좋아요", example = "0")
+        private int heart;
 
         public ListResponseDTO(Object[] objects){
             this.id = (int) objects[0];
@@ -132,7 +152,7 @@ public class BoardDTO {
             this.title = (String) objects[2];
             this.views = (int) objects[3];
             this.nickname = (String) objects[4];
-            this.created_day = timestampToLocalDateTime((Timestamp) objects[5]);
+            this.createdDay = timestampToLocalDateTime((Timestamp) objects[5]);
             this.heart = Integer.parseInt(String.valueOf(objects[6]));
         }
 
@@ -151,33 +171,36 @@ public class BoardDTO {
     public static class ViewResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "게시글 ID", example = "1")
         private int id;
 
         @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "유저 ID", example = "1")
         private int memberId;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "제목")
+        @ApiModelProperty(value = "제목", example = "제목입니다")
         private String title;
 
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "내용")
+        @ApiModelProperty(value = "내용", example = "내용입니다")
         private String content;
 
+
         @NotBlank(message = "필수 입력 값입니다.")
-        @ApiModelProperty(example = "닉네임")
+        @ApiModelProperty(value = "닉네임", example = "닉네임입니다")
         private String nickname;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "조회수")
-        private int views; // 조회수
+        @ApiModelProperty(value = "조회수", example = "0")
+        private int views;
 
-        @ApiModelProperty(example = "작성일")
-        private LocalDateTime created_day;
+        @ApiModelProperty(value = "작성일", example = "2023-04-13 01:47:52.000")
+        private LocalDateTime createdDay;
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
-        @ApiModelProperty(example = "좋아요")
-        private int heart; // 좋아요
+        @ApiModelProperty(value = "좋아요", example = "0")
+        private int heart;
 
         public ViewResponseDTO(Object[] objects){
             this.id = (int) objects[0];
@@ -185,7 +208,7 @@ public class BoardDTO {
             this.title = (String) objects[2];
             this.content = (String) objects[3];
             this.views = (int) objects[4];
-            this.created_day = timestampToLocalDateTime((Timestamp) objects[5]);
+            this.createdDay = timestampToLocalDateTime((Timestamp) objects[5]);
             this.nickname = (String) objects[6];
             this.heart = Integer.parseInt(String.valueOf(objects[7]));
         }
@@ -199,15 +222,10 @@ public class BoardDTO {
     }
 
 
-    private LocalDateTime updated_day;
-
-
+    private LocalDateTime updatedDay;
 
     private List<MultipartFile> imageRequest;
 
     private String imageResponse;
 
-    private int heart; // 좋아요 수
-
-    private int commentCount; // 댓글 수
 }

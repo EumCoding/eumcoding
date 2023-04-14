@@ -19,19 +19,27 @@ public class InterestBoard {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_interest_board",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;
+//    @ManyToOne(optional = false)
+//    @JoinTable(
+//            name = "member_interest_board",
+//            joinColumns = @JoinColumn(name = "member_id"),
+//            inverseJoinColumns = @JoinColumn(name = "id")
+//    )
+//    private Member member;
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "board_interest_board",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Board board;
+    @Column(name = "member_id")
+    @JoinColumn(name = "id")
+    private int memberId;
+
+    @Column(name = "board_id")
+    @JoinColumn(name = "id")
+    private int boardId;
+//
+//    @ManyToOne(optional = false)
+//    @JoinTable(
+//            name = "board_interest_board",
+//            joinColumns = @JoinColumn(name = "member_id"),
+//            inverseJoinColumns = @JoinColumn(name = "id")
+//    )
+//    private Board board;
 }
