@@ -57,5 +57,10 @@ public class Member {
     @Column(name = "state")
     private int state;
 
+    public void changePassword(String password){
+        this.password = password;
+    }
+
+
 
 }

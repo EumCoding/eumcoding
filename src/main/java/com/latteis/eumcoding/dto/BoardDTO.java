@@ -20,6 +20,7 @@ public class BoardDTO {
 
     // 글 아이디만 요청 DTO
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class IdRequestDTO {
 
@@ -146,7 +147,7 @@ public class BoardDTO {
         @ApiModelProperty(value = "좋아요", example = "0")
         private int heart;
 
-        public ListResponseDTO(Object[] objects){
+        public ListResponseDTO(Object[] objects) {
             this.id = (int) objects[0];
             this.memberId = (int) objects[1];
             this.title = (String) objects[2];
@@ -202,7 +203,7 @@ public class BoardDTO {
         @ApiModelProperty(value = "좋아요", example = "0")
         private int heart;
 
-        public ViewResponseDTO(Object[] objects){
+        public ViewResponseDTO(Object[] objects) {
             this.id = (int) objects[0];
             this.memberId = (int) objects[1];
             this.title = (String) objects[2];

@@ -17,6 +17,50 @@ import java.util.List;
 @AllArgsConstructor
 public class MemberDTO {
 
+    @Getter
+    @NoArgsConstructor
+    public static class loginDTO{
+        private String email;
+        private String password;
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class UpdateTel{
+        private String tel;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class UpdatePw{
+        private String curPw;
+        private String chgPw;
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class UpdateAddress{
+        private String address;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class CheckEmail{
+        private String email;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class ViewConfirmEmail{
+        private int id;
+        private String email;
+
+    }
+
+
+
     private String token;
 
     private int id; // 사용자에게 고유하게 부여되는 값
@@ -56,6 +100,8 @@ public class MemberDTO {
     private List<BadgeDTO> badgeDTOList;
 
 
+
+
     public MemberDTO(final Member member) {
 
         this.id = member.getId();
@@ -72,10 +118,12 @@ public class MemberDTO {
         this.role = member.getRole();
         this.state = member.getState();
 
+
     }
 
     // 파일 null 체크
     public boolean checkProfileImgRequestNull() {
         return this.profileImgRequest != null;
     }
+
 }

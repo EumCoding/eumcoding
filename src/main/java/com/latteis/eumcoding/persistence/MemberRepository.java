@@ -23,6 +23,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     // 아이디로 찾기
     Optional<Member> findById(int id);
 
+    @Query(value = "SELECT * FROM member where id = :id", nativeQuery = true)
+    Member findByMemberId(@Param("id") int id);
 
 
     // 아이디로 비밀번호 가져오기
@@ -33,11 +35,21 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query(value = "SELECT nickname FROM member WHERE id = :id", nativeQuery = true)
     String findNicknameByMemberId(@Param("id") int id);
 
-
+    // 같은 전화번호가 있는지 확인
+    @Query(value = "SELECT COUNT(id) FROM member WHERE tel = :tel", nativeQuery = true)
+    int findByTel(@Param("tel") String tel);
 
     // 아이디로 전화번호 가져오기
     @Query(value = "SELECT tel FROM member WHERE id = :id", nativeQuery = true)
     String findTelByMemberId(@Param("id") int id);
+
+    // 같은 주소 있는지 확인
+    @Query(value = "SELECT COUNT(id) FROM member WHERE address = :address", nativeQuery = true)
+    int findByAdd(@Param("address") String address);
+
+    // 아이디로 주소 가져오기
+    @Query(value = "SELECT address FROM member WHERE id = :id", nativeQuery = true)
+    String findAddByMemberId(@Param("id") int id);
 
     // 같은 닉네임이 있는지 확인
     @Query(value = "SELECT COUNT(id) FROM member WHERE nickname = :nickname", nativeQuery = true)
@@ -52,9 +64,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     String findAnswerByMemberId(@Param("id") int id);
 
     // 비밀번호 질문답변 가져오기
-    @Query(value = "SELECT question, answer FROM member WHERE id = :id", nativeQuery = true)
-    Member findQuestionAnswerByMemberId(@Param("id") int id);
 
-    @Query(value = "SELECT * FROM member WHERE id = :id", nativeQuery = true)
-    Member findByMemberId(@Param("id") int id);
+
+
 }

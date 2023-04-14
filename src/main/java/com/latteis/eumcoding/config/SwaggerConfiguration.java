@@ -19,6 +19,7 @@ import java.util.List;
 
 @Configuration
 @EnableSwagger2
+
 public class SwaggerConfiguration {
 
     @Bean
@@ -58,5 +59,7 @@ public class SwaggerConfiguration {
         authorizationScopes[0] = authorizationScope;
         return Arrays.asList(new SecurityReference("JWT", authorizationScopes));
     }
+
+
 
 }

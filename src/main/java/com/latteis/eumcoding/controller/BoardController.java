@@ -99,12 +99,13 @@ public class BoardController {
     }
 
     // 글 보기
-    @GetMapping(value = "/view")
+    @GetMapping(value = "/unauth/view")
     @ApiOperation(value = "게시판 글 보기")
     public ResponseEntity<BoardDTO.ViewResponseDTO> viewBoard(@Valid BoardDTO.IdRequestDTO idRequestDTO) {
 
         try {
             BoardDTO.ViewResponseDTO viewResponseDTO= boardService.viewBoard(idRequestDTO);
+            System.out.println(viewResponseDTO + "성공");
             return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

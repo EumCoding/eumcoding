@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.beans.Transient;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -77,7 +80,7 @@ public class MemberService {
                     current_date = now.format(dateTimeFormatter);
 
 
-                    String absolutePath = filePath + "/member";
+                    String absolutePath = filePath + "member";
 
 
                     String path = absolutePath;
@@ -147,18 +150,204 @@ public class MemberService {
     }
 
 
-    // 회원정보수정
-    public MemberDTO editInfo(MemberDTO memberDTO, final int id){
+
+    //닉네임 중복 체크
+    private boolean checkNickname(final String nickname) {
+        if(nickname == null || nickname.equals("")){
+            log.warn("MemberService.checkNickname() : nickname 값이 이상해요");
+            throw new RuntimeException("MemberService.checkNickname() : nickname 값이 이상해요");
+        }
+
+        int count = memberRepository.findByNickname(nickname);
+        if(count > 0){
+            return false;
+        }
+        return true;
+    }
+
+    // 같은 이메일이 있는지 확인
+    public Boolean checkEmail(final String email){
+        if(email == null || email.equals("")){
+            log.warn("MemberService.checkEmail() : 값을 입력하세요");
+            throw new RuntimeException("MemberService.checkEmail() : email 값이 이상해요");
+        }
+        if(memberRepository.existsByEmail(email)){ //이메일이 이미 있으면 false리턴
+            return false;
+        }
+        return true;
+    }
+
+
+    // 로그인 - 자격증명
+    public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
+        final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
+        // 패스워드가 같은지 확인
+        if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
+            MemberDTO memberDTO = new MemberDTO(originalMember);
+            return memberDTO;
+        }
+        return null;
+    }
+
+
+
+    //프로필 확인
+    public MemberDTO viewProfile(MemberDTO memberDTO){
+        try{
+            //Optional<Member> member = memberRepository.findById(memberDTO.getId());
+            Member member = memberRepository.findByMemberId(memberDTO.getId());
+
+
+            MemberDTO responseMemberDTO = MemberDTO.builder()
+                    .email(member.getEmail())
+                    .password(passwordEncoder.encode(member.getPassword()))
+                    .name(member.getName())
+                    .tel(member.getTel())
+                    .nickname(member.getNickname())
+                    .birthDay(member.getBirthDay())
+                    .joinDay(LocalDateTime.now())
+                    .gender(member.getGender())
+                    .address(member.getAddress())
+                    .role(member.getRole())
+                    .build();
+
+            // 프로필사진 있다면 추가
+            if (member.getProfile() != null) {
+                responseMemberDTO.setProfileImg("http://localhost:8089/eumCoding/member/" + member.getProfile());
+            }
+
+
+
+            return responseMemberDTO;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("MemberService.viewProfile() : 에러 발생.");
+        }
+
+    }
+
+
+
+
+
+    //전화번호 업데이트
+    @Transactional
+    public String updateTel(final int id, final String chgTel){
+        if(id < 1){
+            log.warn("MemberService.updateTel() : Id 값이 이상해요");
+            throw new RuntimeException("MemberService.updateTel() : Id 값이 이상해요");
+        }
+        if(chgTel == null || chgTel.equals("")){
+            log.warn("MemberService.updateTel() : 전화번호 값을 집어넣으세요");
+            throw new RuntimeException("MemberService.updateTel() : 전화번호 값을 집어넣으세요");
+        }
+        int count = memberRepository.findByTel(chgTel); // 바꾸려는 전화번호가 이미 있는지 확인
+        if(count > 0){
+            // 이미 같은 전화번호가 있으면
+            log.warn("MemberService.updateTel() : 이미 같은 전화번호가 있어요");
+            throw new RuntimeException("MemberService.updateTel() : 이미 같은 전화번호가 있어요");
+        }
+
+        // 같은 전화번호가 없으면 전화번호 수정
+        try{
+            final Member member = memberRepository.findByMemberId(id);
+            member.setTel(chgTel);
+            memberRepository.save(member); // 수정
+            // 현재 저장되어 있는 값 가져오기
+            final String tel = memberRepository.findTelByMemberId(id);
+            return tel;
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("MemberService.updateContact() : 올바른 양식으로 입력해 주세요.");
+        }
+
+    }
+
+
+    @Transactional
+    public String updateAddress(final int id, final String chgAdd){
+        if(id < 1){
+            log.warn("MemberService.updateAdd() : Id 값이 이상해요");
+            throw new RuntimeException("MemberService.updateAdd() : Id 값이 이상해요");
+        }
+        if(chgAdd == null || chgAdd.equals("")){
+            log.warn("MemberService.updateAdd() : 주소 값을 집어넣으세요");
+            throw new RuntimeException("MemberService.updateAdd() : 주소 값을 집어넣으세요");
+        }
+        int count = memberRepository.findByAdd(chgAdd); //
+        if(count > 0){
+            // 이미 같은 주소가 있으면
+            log.warn("MemberService.updateAdd() : 이미 같은 주소가 있어요");
+            throw new RuntimeException("MemberService.updateAdd() : 이미 같은 주소가 있어요");
+        }
+
+
+        try{
+            final Member member = memberRepository.findByMemberId(id);
+            member.setAddress(chgAdd);
+            memberRepository.save(member); // 수정
+            // 현재 저장되어 있는 값 가져오기
+            final String address = memberRepository.findAddByMemberId(id);
+            return address;
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("MemberService.updateAddress() : 올바른 양식으로 입력해 주세요.");
+        }
+
+    }
+
+
+    // 현재 비밀번호와 변경할 비밀번호 받아서 비밀번호 변경
+    @Transactional
+    public boolean updatePw(final int id, final String curPw, final String chgPw, PasswordEncoder passwordEncoder){
+        if(curPw == null || curPw.equals("") || chgPw == null | chgPw.equals("")){
+            log.warn("MemberService.changePw() : 들어온 값이 이상해요");
+            throw new RuntimeException("MemberService.changePw() : 들어온 값이 이상해요");
+        }
+        if(id < 1){
+            log.warn("MemberService.changePw() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.changePw() : memberId 값이 이상해요");
+        }
+        // 현재 비밀번호가 맞는지 검사
+        String originPassword = memberRepository.findPasswordByMemberId(id); //DB에 들어가있는 PW
+        if(!passwordEncoder.matches(curPw, originPassword)){
+            //비밀번호가 다르면
+            log.warn("MemberService.changePw() : 비밀번호가 달라요");
+            throw new RuntimeException("MemberService.changePw() : 비밀번호가 달라요");
+        }
+        //비밀번호가 맞으면 비밀번호 변경
+        final Member member = memberRepository.findByMemberId(id);
+        member.changePassword(passwordEncoder.encode(chgPw));
+        memberRepository.save(member);
+        return true;
+    }
+
+
+
+    // 프로필 이미지 변경
+    public MemberDTO updateProfileImg(int id, MemberDTO memberDTO) {
+
 
         try {
-            Member member = memberRepository.findById(id).get();
-
-
-            member.setAddress(memberDTO.getAddress());
-            member.setName(memberDTO.getName());
 
             // 이미지가 있는 경우
             if (memberDTO.checkProfileImgRequestNull()) {
+
+                Member member = memberRepository.findByMemberId(id);
+
+                // 기존 이미지 삭제
+                if (member.getProfile() != null) {
+                    //String tempPath = "C:" + File.separator + "withMeImgs" + File.separator + "member" + File.separator + member.getProfile();
+                    String tempPath = filePath + "/member";
+                    File delFile = new File(tempPath);
+                    // 해당 파일이 존재하는지 한번 더 체크 후 삭제
+                    if(delFile.isFile()){
+                        delFile.delete();
+                    }
+                }
 
                 MultipartFile multipartFile = memberDTO.getProfileImgRequest().get(0);
                 String current_date = null;
@@ -168,10 +357,10 @@ public class MemberService {
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
                     current_date = now.format(dateTimeFormatter);
 
-
+                    //            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
                     String absolutePath = filePath + "/member";
 
-                    //String path = "images" + File.separator + current_date;
+                    //            String path = "images" + File.separator + current_date;
                     String path = absolutePath;
                     File file = new File(path);
 
@@ -179,7 +368,7 @@ public class MemberService {
                         boolean wasSuccessful = file.mkdirs();
 
                         if (!wasSuccessful) {
-                            log.warn("file : was not successful");
+                            log.warn("file : 이미지 교체 실패");
                         }
                     }
                     while (true) {
@@ -198,16 +387,6 @@ public class MemberService {
                             }
                         }
 
-                        // 기존에 파일이 있는 경우 기존 파일을 제거하고 진행
-                        if(member.getProfile() != null && member.getProfile() != ""){
-                            String tempPath = absolutePath + File.separator + member.getProfile();
-                            File delFile = new File(tempPath);
-                            // 해당 파일이 존재하는지 한번 더 체크 후 삭제
-                            if(delFile.isFile()){
-                                delFile.delete();
-                            }
-                        }
-
                         String new_file_name = String.valueOf(id);
 
                         member.setProfile(new_file_name + originalFileExtension);
@@ -220,41 +399,17 @@ public class MemberService {
                         break;
                     }
                 }
+                memberRepository.save(member);
+                return MemberDTO.builder().profileImg(member.getProfile()).build();
+            } else {
+                log.warn("MemberService.updateProfileImg() : 사진이 없습니다.");
+                throw new RuntimeException("MemberService.updateProfileImg() : 사진이 없습니다.");
             }
-            memberRepository.save(member);
-
-            MemberDTO responseMemberDTO = new MemberDTO(member);
-            return responseMemberDTO;
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("MemberService.add() : 에러 발생.");
+            throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
         }
 
-    }
-
-
-    private boolean checkNickname(final String nickname) {
-        if(nickname == null || nickname.equals("")){
-            log.warn("MemberService.checkNickname() : nickname 값이 이상해요");
-            throw new RuntimeException("MemberService.checkNickname() : nickname 값이 이상해요");
-        }
-
-        int count = memberRepository.findByNickname(nickname);
-        if(count > 0){
-            return false;
-        }
-        return true;
-    }
-
-    // 로그인 - 자격증명
-    public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
-        final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
-        // 패스워드가 같은지 확인
-        if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
-            MemberDTO memberDTO = new MemberDTO(originalMember);
-            return memberDTO;
-        }
-        return null;
     }
 }
