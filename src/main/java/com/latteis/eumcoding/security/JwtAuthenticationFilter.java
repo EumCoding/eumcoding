@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
         try {
             // 요청에서 토큰 가져오기
-            String token = request.getHeader("Authorization"); // Http 요청의 헤더를 파싱해 토큰을 리턴하는 함수
+            String token = parseBearerToken(request); // Http 요청의 헤더를 파싱해 토큰을 리턴하는 함수
             // 토큰 검사하기. JWT이므로 인가 서버에 요청하지 않고도 검증 가능
             if (token != null && !token.equalsIgnoreCase("null")){
                 // userId 가져오기. 위조된 경우 예외 처리된다.
@@ -62,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request,response);
     }
 
-   /* private String parseBearerToken(HttpServletRequest request){
+   private String parseBearerToken(HttpServletRequest request){
         // Http 요청의 헤더를 파싱해 Bearer 토큰을 리턴한다.
         String bearerToken = request.getHeader("Authorization");
         System.out.println(bearerToken + "0000000000000000000000");
@@ -70,6 +71,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
-    }*/
+    }
+
+
+
 }
 

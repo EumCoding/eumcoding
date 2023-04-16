@@ -11,6 +11,9 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Integer> {
 
+
+
+
     // 이메일로 찾기
     Member findByEmail(String email);
 
@@ -59,11 +62,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query(value = "SELECT name FROM member WHERE id = :id", nativeQuery = true)
     String findNameByMemberId(@Param("id") int id);
 
-    // 비밀번호 답변 가져오기
-    @Query(value = "SELECT answer FROM member WHERE id = :id", nativeQuery = true)
-    String findAnswerByMemberId(@Param("id") int id);
 
-    // 비밀번호 질문답변 가져오기
 
 
 

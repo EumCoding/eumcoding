@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -30,6 +31,13 @@ public class MemberService {
 
     @Value("${file.path}")
     private String filePath;
+
+
+
+
+
+
+
 
 
     // 새 계정 생성 - 이메일 중복 검사
@@ -148,6 +156,8 @@ public class MemberService {
         }
 
     }
+
+
 
 
 

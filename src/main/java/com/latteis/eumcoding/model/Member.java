@@ -1,10 +1,12 @@
 package com.latteis.eumcoding.model;
 
 import lombok.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(name = "member")
 public class Member {
+
 
 
 
@@ -57,9 +60,12 @@ public class Member {
     @Column(name = "state")
     private int state;
 
+
+
     public void changePassword(String password){
         this.password = password;
     }
+
 
 
 

@@ -5,22 +5,26 @@ import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
 import com.latteis.eumcoding.service.MemberService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+
+
+
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/unauth/member")
 public class UnauthMember {
+
 
     private final EmailTokenService emailTokenService;
 
@@ -31,12 +35,7 @@ public class UnauthMember {
     private final PasswordEncoder passwordEncoder;
 
 
-    @GetMapping("/test/login")
-    public @ResponseBody String testLogin(@ApiIgnore Authentication authentication){
-        System.out.println("test/login");
-        System.out.println("authentication.getPrincipal() : " +authentication.getPrincipal().toString());
-        return "세션 정보 확인";
-    }
+
 
     // 회원가입
     @PostMapping("/signup")
@@ -60,6 +59,7 @@ public class UnauthMember {
         }
 
     }
+
 
 
     // 로그인
@@ -132,6 +132,9 @@ public class UnauthMember {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+
+
 
 
 
