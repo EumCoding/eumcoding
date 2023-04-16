@@ -84,8 +84,8 @@ public class KakaoMemberService {
         //HTTP Body 생성
         MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
         params.add("grant_type","authorization_code");
-        params.add("client_id","b2922d14efb0c57c0757b5c912b5b005");
-        params.add("redirect_uri","http://localhost:8089/auth/kakao/callback");
+        params.add("client_id","");
+        params.add("redirect_uri","");
         params.add("code",code);
 
         //HTTP 요청 보내기
