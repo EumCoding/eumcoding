@@ -61,7 +61,7 @@ public class MemberDTO {
 
     @Getter
     @Setter
-    @NoArgsConstructor
+    @NoArgsConstructor //커밋하려고 작성했습니다.
     public static class Sign{
 
 
