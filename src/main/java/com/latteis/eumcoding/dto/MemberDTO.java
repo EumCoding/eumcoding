@@ -59,6 +59,43 @@ public class MemberDTO {
 
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Sign{
+
+
+        private String password;
+
+        private String name;
+
+        private String nickname;
+
+        private String email;
+
+        private String tel;
+
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate birthDay;
+
+
+        private int gender;
+
+        private String address;
+
+        private int role; // 0:학생, 1:선생, 2:관리자
+
+
+        private List<MultipartFile> profileImgRequest;
+
+        public boolean checkProfileImgRequestNull() {
+            return this.profileImgRequest != null;
+        }
+
+
+    }
+
 
 
     private String token;
@@ -125,5 +162,6 @@ public class MemberDTO {
     public boolean checkProfileImgRequestNull() {
         return this.profileImgRequest != null;
     }
+
 
 }

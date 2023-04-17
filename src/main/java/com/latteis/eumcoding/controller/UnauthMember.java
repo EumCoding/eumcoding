@@ -40,9 +40,10 @@ public class UnauthMember {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> registerMember(MemberDTO memberDTO) {
+    public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO) {
 
         try {
+            System.out.println(memberDTO + "컨트롤러DTO");
             MemberDTO registeredMember = memberService.add(memberDTO);
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(registeredMember.getEmail())
