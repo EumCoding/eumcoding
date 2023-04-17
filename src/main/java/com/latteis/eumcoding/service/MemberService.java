@@ -33,11 +33,10 @@ public class MemberService {
 
 
     // 새 계정 생성 - 이메일 중복 검사
-    public MemberDTO add(MemberDTO memberDTO){
-
+    public MemberDTO add(MemberDTO.Sign memberDTO){
         if(memberDTO == null || memberDTO.getEmail() == null){
             log.warn("MemberService.add() : memberEntity에 email이 없습니다.");
-            throw new RuntimeException("MemberService.add() : memberEntity에 email이 없습니다.");
+            throw new RuntimeException("MemberService.add() : member에 email이 없습니다.");
         }
 
         final String email = memberDTO.getEmail();
