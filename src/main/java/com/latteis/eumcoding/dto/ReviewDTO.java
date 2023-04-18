@@ -1,15 +1,9 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Lecture;
-import com.latteis.eumcoding.model.Member;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.sql.Timestamp;

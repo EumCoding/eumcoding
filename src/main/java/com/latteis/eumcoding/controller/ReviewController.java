@@ -72,7 +72,7 @@ public class ReviewController {
     }
 
     // 리뷰 목록
-    @GetMapping(value = "/list")
+    @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "리뷰 목록")
     public ResponseEntity<List<ReviewDTO.ListResponseDTO>> getReviewList(@PageableDefault(size = 10) Pageable pageable) {
 
@@ -87,7 +87,7 @@ public class ReviewController {
 
     // 내가 쓴 리뷰 목록
     @PostMapping(value = "/my_list")
-    @ApiOperation(value = "리뷰 목록")
+    @ApiOperation(value = "내가 쓴 리뷰 목록")
     public ResponseEntity<List<ReviewDTO.MyListResponseDTO>> getMyReviewList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
 
         try {
