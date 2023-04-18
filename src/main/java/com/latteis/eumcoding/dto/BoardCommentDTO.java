@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class BoardCommentDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "댓글 ID 요청 DTO")
     public static class IdRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -29,6 +31,7 @@ public class BoardCommentDTO {
     // 댓글 작성 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시물 댓글 작성 요청 DTO")
     public static class WriteRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -44,6 +47,7 @@ public class BoardCommentDTO {
     // 대댓글 작성 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시물 대댓글 작성 요청 DTO")
     public static class WriteReplyRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -67,6 +71,7 @@ public class BoardCommentDTO {
     // 댓글 수정 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시물 댓글 수정 요청 DTO")
     public static class UpdateRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -83,6 +88,7 @@ public class BoardCommentDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "게시물 대댓글 목록 요청 DTO")
     public static class ListRequestDTO {
 
         @ApiModelProperty(value = "최상단 댓글 요청이면 0. 아니라면 댓글의 step", example = "0")
@@ -97,6 +103,7 @@ public class BoardCommentDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "게시물 댓글 목록 응답 DTO")
     public static class ListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -139,6 +146,7 @@ public class BoardCommentDTO {
     // 내가 작성한 댓글 목록 응답 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "내가 작성한 게시판 댓글 목록 응답 DTO")
     public static class MyListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")

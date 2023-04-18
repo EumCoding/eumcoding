@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.*;
@@ -12,16 +13,16 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class BoardDTO {
 
     // 글 아이디만 요청 DTO
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 ID 요청 DTO")
     public static class IdRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -33,6 +34,7 @@ public class BoardDTO {
     // 글 작성 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 글 작성 요청 DTO")
     public static class CreateRequestDTO {
 
         @NotBlank(message = "필수 입력 값입니다.")
@@ -52,6 +54,7 @@ public class BoardDTO {
     // 글 수정 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 수정 DTO")
     public static class UpdateRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -72,6 +75,7 @@ public class BoardDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "내가 작성한 게시판 목록 응답 DTO")
     public static class MyListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -95,6 +99,7 @@ public class BoardDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 글 목록 요청 DTO")
     public static class ListRequestDTO {
 
         @PositiveOrZero(message = "0과 양수만 가능합니다.")
@@ -118,6 +123,7 @@ public class BoardDTO {
     // 글 목록 응답 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 글 목록 응답 DTO")
     public static class ListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -168,6 +174,7 @@ public class BoardDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "게시판 글 삭제 응답 DTO")
     public static class ViewResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")

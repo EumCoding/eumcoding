@@ -2,6 +2,7 @@ package com.latteis.eumcoding.dto;
 
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
@@ -14,14 +15,14 @@ import javax.validation.constraints.Positive;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ReviewDTO {
 
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "리뷰 ID 요청 DTO")
     public static class IdRequestDTO {
 
         @Positive(message = "양수만 가능합니다")
@@ -33,6 +34,7 @@ public class ReviewDTO {
     // 리뷰 작성 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "리뷰 작성 요청 DTO")
     public static class WriteRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -52,6 +54,7 @@ public class ReviewDTO {
     // 리뷰 수정 요청 DTO
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "리뷰 수정 요청 DTO")
     public static class UpdateRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -70,7 +73,9 @@ public class ReviewDTO {
 
     // 리뷰 목록 응답 DTO
     @Getter
+    @Setter
     @NoArgsConstructor
+    @ApiModel(value = "리뷰 목록 응답 DTO")
     public static class ListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -94,13 +99,29 @@ public class ReviewDTO {
         private int rating;
 
         @ApiModelProperty(value = "작성일", example = "2023-04-13 01:47:52.000")
-        private LocalDateTime 작성일;
+        private LocalDateTime createdDay;
 
         @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "좋아요", example = "1")
         private int heart;
 
-//        @NotBlank("필수 입력 값입니다.")
+        ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO;
+
+        public ListResponseDTO(Object[] objects) {
+            this.id = (int) objects[0];
+            this.memberId = (int) objects[1];
+            this.nickname = (String) objects[2];
+            this.content = (String) objects[3];
+            this.rating = (int) objects[4];
+            this.createdDay = timestampToLocalDateTime((Timestamp) objects[5]);
+            this.heart = Integer.parseInt(String.valueOf(objects[6]));
+        }
+
+        // Timestamp -> LocalDateTime 변환
+        public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
+            return timestamp.toLocalDateTime();
+        }
+
 
     }
 
@@ -108,6 +129,7 @@ public class ReviewDTO {
     @Getter
     @Setter
     @NoArgsConstructor
+    @ApiModel(value = "내가 작성한 리뷰 목록 요청 DTO")
     public static class MyListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -143,21 +165,5 @@ public class ReviewDTO {
         }
 
     }
-    private int reviewId;
 
-    private int memberId;
-
-    private int lectureId;
-
-    private String nickname;
-
-    private String lectureName;
-
-    private int rating;
-
-    private String content;
-
-    private int heart;
-
-    private LocalDateTime createdDay;
 }
