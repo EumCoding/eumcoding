@@ -37,9 +37,11 @@ dependencies {
 //	testImplementation 'org.springframework.security:spring-security-test'
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
 	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+
 	implementation 'io.springfox:springfox-swagger-ui:2.9.2'
 	implementation 'io.springfox:springfox-swagger2:2.9.2'
 	implementation group: 'org.qlrm', name: 'qlrm', version: '2.1.1'
+
 }
 
 tasks.named('test') {

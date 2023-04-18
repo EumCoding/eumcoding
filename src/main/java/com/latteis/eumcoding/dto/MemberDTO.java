@@ -47,6 +47,27 @@ public class MemberDTO {
 
     @Getter
     @NoArgsConstructor
+    public static class UpdateNickName{
+        private String nickname;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class UpdateProfile{
+        private String profile; // 프로필 이미지가 들어있는 경로
+
+
+        private List<MultipartFile> profileImgRequest;
+
+        public boolean checkProfileImgRequestNull() {
+            return this.profileImgRequest != null;
+        }
+    }
+
+
+
+    @Getter
+    @NoArgsConstructor
     public static class CheckEmail{
         private String email;
     }
@@ -61,7 +82,7 @@ public class MemberDTO {
 
     @Getter
     @Setter
-    @NoArgsConstructor //커밋하려고 작성했습니다.
+    @NoArgsConstructor
     public static class Sign{
 
 
@@ -85,6 +106,8 @@ public class MemberDTO {
         private String address;
 
         private int role; // 0:학생, 1:선생, 2:관리자
+
+        private String profile; // 프로필 이미지가 들어있는 경로
 
 
         private List<MultipartFile> profileImgRequest;
@@ -151,7 +174,7 @@ public class MemberDTO {
         this.joinDay = member.getJoinDay();
         this.gender = member.getGender();
         this.address = member.getAddress();
-        this.profileImg = member.getProfile();
+        this.profile = member.getProfile();
         this.role = member.getRole();
         this.state = member.getState();
 
@@ -162,6 +185,5 @@ public class MemberDTO {
     public boolean checkProfileImgRequestNull() {
         return this.profileImgRequest != null;
     }
-
 
 }

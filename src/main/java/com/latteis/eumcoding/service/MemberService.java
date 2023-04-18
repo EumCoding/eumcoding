@@ -11,12 +11,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+
+
 
 import java.beans.Transient;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -33,6 +42,8 @@ public class MemberService {
 
 
     // 새 계정 생성 - 이메일 중복 검사
+    //@RequestParam("profileImgRequest") MultipartFile profileImgRequest 
+    //swagger에서 테스트 하려면 add매개변수에 집어넣어야함 위에 값을
     public MemberDTO add(MemberDTO.Sign memberDTO){
         if(memberDTO == null || memberDTO.getEmail() == null){
             log.warn("MemberService.add() : memberEntity에 email이 없습니다.");
@@ -68,7 +79,7 @@ public class MemberService {
             int memberId = memberRepository.save(member).getId();
 
             // 이미지가 있는 경우
-            if (memberDTO.checkProfileImgRequestNull()) {
+         if (memberDTO.checkProfileImgRequestNull()) {
 
                 MultipartFile multipartFile = memberDTO.getProfileImgRequest().get(0);
                 String current_date = null;
@@ -79,7 +90,9 @@ public class MemberService {
                     current_date = now.format(dateTimeFormatter);
 
 
-                    String absolutePath = filePath + "member";
+                    //String absolutePath = filePath +File.separator + "member";
+                    String absolutePath = "C:" +File.separator + "eum" + File.separator + "member";
+
 
 
                     String path = absolutePath;
@@ -101,17 +114,16 @@ public class MemberService {
                         } else {
                             if (contentType.contains("image/jpeg")) {
                                 originalFileExtension = ".jpg";
-                            } else if (contentType.contains("images/png")) {
+                            } else if (contentType.contains("image/png")) {
                                 originalFileExtension = ".png";
                             } else {
+                                log.warn("MemberService.add() : 지원하지 않는 이미지 형식입니다.");
                                 break;
                             }
                         }
 
                         String new_file_name = String.valueOf(memberId);
-
                         member.setProfile(new_file_name + originalFileExtension);
-
                         memberRepository.save(member);
 
                         file = new File(absolutePath + File.separator + new_file_name + originalFileExtension);
@@ -123,6 +135,8 @@ public class MemberService {
                     }
                 }
             }
+
+
 
             //entity -> DTO
             //MemberDTO responseMemberDTO = new MemberDTO(member);
@@ -149,20 +163,18 @@ public class MemberService {
     }
 
 
-
-    //닉네임 중복 체크
-    private boolean checkNickname(final String nickname) {
-        if(nickname == null || nickname.equals("")){
-            log.warn("MemberService.checkNickname() : nickname 값이 이상해요");
-            throw new RuntimeException("MemberService.checkNickname() : nickname 값이 이상해요");
+    // 로그인 - 자격증명
+    public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
+        final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
+        // 패스워드가 같은지 확인
+        if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
+            MemberDTO memberDTO = new MemberDTO(originalMember);
+            return memberDTO;
         }
-
-        int count = memberRepository.findByNickname(nickname);
-        if(count > 0){
-            return false;
-        }
-        return true;
+        return null;
     }
+
+
 
     // 같은 이메일이 있는지 확인
     public Boolean checkEmail(final String email){
@@ -175,19 +187,6 @@ public class MemberService {
         }
         return true;
     }
-
-
-    // 로그인 - 자격증명
-    public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){
-        final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
-        // 패스워드가 같은지 확인
-        if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
-            MemberDTO memberDTO = new MemberDTO(originalMember);
-            return memberDTO;
-        }
-        return null;
-    }
-
 
 
     //프로필 확인
@@ -228,8 +227,6 @@ public class MemberService {
 
 
 
-
-
     //전화번호 업데이트
     @Transactional
     public String updateTel(final int id, final String chgTel){
@@ -260,6 +257,39 @@ public class MemberService {
         }catch(Exception e){
             e.printStackTrace();
             throw new RuntimeException("MemberService.updateContact() : 올바른 양식으로 입력해 주세요.");
+        }
+
+    }
+    //닉네임 변경
+    @Transactional
+    public String updateNickName(final int id, final String chgNickName){
+        if(id < 1){
+            log.warn("MemberService.updateNickName() : Id 값이 이상해요");
+            throw new RuntimeException("MemberService.updateNickName() : Id 값이 이상해요");
+        }
+        if(chgNickName == null || chgNickName.equals("")){
+            log.warn("MemberService.updateNickName() : 닉네임 값을 집어넣으세요");
+            throw new RuntimeException("MemberService.updateNickName() : 닉네임값을 집어넣으세요");
+        }
+        int count = memberRepository.findByNickname(chgNickName);
+        if(count > 0){
+            // 이미 같은 주소가 있으면
+            log.warn("MemberService.updateNickName() : 이미 같은 닉네임이 있어요");
+            throw new RuntimeException("MemberService.updateNickName() : 이미 같은 닉네임이 있어요");
+        }
+
+
+        try{
+            final Member member = memberRepository.findByMemberId(id);
+            member.setNickname(chgNickName);
+            memberRepository.save(member); // 수정
+            // 현재 저장되어 있는 값 가져오기
+            final String NickName = memberRepository.findNickNameByMemberId(id);
+            return NickName;
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("MemberService.updateNickName() : 올바른 양식으로 입력해 주세요.");
         }
 
     }
@@ -326,15 +356,31 @@ public class MemberService {
 
 
 
+
+    //닉네임 중복 체크
+    private boolean checkNickname(final String nickname) {
+        if(nickname == null || nickname.equals("")){
+            log.warn("MemberService.checkNickname() : nickname 값이 이상해요");
+            throw new RuntimeException("MemberService.checkNickname() : nickname 값이 이상해요");
+        }
+
+        int count = memberRepository.findByNickname(nickname);
+        if(count > 0){
+            return false;
+        }
+        return true;
+    }
+
+
+
     // 프로필 이미지 변경
-    public MemberDTO updateProfileImg(int id, MemberDTO memberDTO) {
+    public MemberDTO updateProfileImg(@RequestParam("id") int id,MemberDTO.UpdateProfile updateProfile) {
 
 
         try {
 
             // 이미지가 있는 경우
-            if (memberDTO.checkProfileImgRequestNull()) {
-
+            if (updateProfile.checkProfileImgRequestNull()) {
                 Member member = memberRepository.findByMemberId(id);
 
                 // 기존 이미지 삭제
@@ -348,7 +394,7 @@ public class MemberService {
                     }
                 }
 
-                MultipartFile multipartFile = memberDTO.getProfileImgRequest().get(0);
+                MultipartFile multipartFile = updateProfile.getProfileImgRequest().get(0);
                 String current_date = null;
 
                 if (!multipartFile.isEmpty()) {
@@ -356,11 +402,10 @@ public class MemberService {
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
                     current_date = now.format(dateTimeFormatter);
 
-                    //            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
-                    String absolutePath = filePath + "/member";
 
-                    //            String path = "images" + File.separator + current_date;
+                    String absolutePath = filePath + "/member";
                     String path = absolutePath;
+
                     File file = new File(path);
 
                     if (!file.exists()) {
@@ -407,7 +452,7 @@ public class MemberService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
+            throw new RuntimeException("MemberService.updateProfile() : 에러 발생.");
         }
 
     }

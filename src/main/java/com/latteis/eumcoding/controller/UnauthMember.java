@@ -5,6 +5,7 @@ import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
 import com.latteis.eumcoding.service.MemberService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 @Slf4j
@@ -31,19 +33,16 @@ public class UnauthMember {
     private final PasswordEncoder passwordEncoder;
 
 
-    @GetMapping("/test/login")
-    public @ResponseBody String testLogin(@ApiIgnore Authentication authentication){
-        System.out.println("test/login");
-        System.out.println("authentication.getPrincipal() : " +authentication.getPrincipal().toString());
-        return "세션 정보 확인";
-    }
+
 
     // 회원가입
+    //@RequestParam("profileImgRequest") MultipartFile profileImgRequest
+    //swagger에서 테스트하려면 매개변수에 집어넣어야함
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO) {
 
         try {
-            System.out.println(memberDTO + "컨트롤러DTO");
             MemberDTO registeredMember = memberService.add(memberDTO);
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(registeredMember.getEmail())
@@ -133,9 +132,5 @@ public class UnauthMember {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
-
-
-
-
 
 }
