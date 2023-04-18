@@ -136,7 +136,7 @@ public class MemberController {
 
 
     // 프로필 이미지 변경
-    @PostMapping("/updateimgprofile") 
+    @PostMapping("/updateimgprofile")  
     public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication, @RequestParam MemberDTO.UpdateProfile updateProfile) {
 
         try {
