@@ -1,6 +1,5 @@
 package com.latteis.eumcoding.service;
 
-import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.ReviewCommentDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.model.Review;
