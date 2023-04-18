@@ -47,6 +47,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query(value = "SELECT COUNT(id) FROM member WHERE address = :address", nativeQuery = true)
     int findByAdd(@Param("address") String address);
 
+
+
     // 아이디로 주소 가져오기
     @Query(value = "SELECT address FROM member WHERE id = :id", nativeQuery = true)
     String findAddByMemberId(@Param("id") int id);
@@ -58,5 +60,9 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     // 아이디로 이름 가져오기
     @Query(value = "SELECT name FROM member WHERE id = :id", nativeQuery = true)
     String findNameByMemberId(@Param("id") int id);
+
+    // 아이디로 닉네임 가져오기
+    @Query(value = "SELECT nickname FROM member WHERE id = :id", nativeQuery = true)
+    String findNickNameByMemberId(@Param("id") int id);
 
 }

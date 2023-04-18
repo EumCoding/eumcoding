@@ -10,10 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 @Slf4j
@@ -98,7 +96,25 @@ public class MemberController {
 
     }
 
+    // 닉네임 변경
+    @PostMapping("/updatenickname")
+    public ResponseEntity<?> updateNickName(@ApiIgnore Authentication authentication,@RequestBody MemberDTO.UpdateNickName updateNickName) {
 
+        try {
+            String nickname = memberService.updateNickName(Integer.parseInt(authentication.getPrincipal().toString()), updateNickName.getNickname());
+            if (nickname != null || !nickname.equals("")) {
+                MemberDTO responseMemberDTO = MemberDTO.builder().nickname(nickname).build();
+                return ResponseEntity.ok().body(responseMemberDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
 
 
     // 비밀번호 변경하기 - 기존 비밀번호 체크 후 원하는 비밀번호로 변경하기
@@ -120,17 +136,16 @@ public class MemberController {
 
 
     // 프로필 이미지 변경
-    @PostMapping("/updateimgprofile")
-    public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication, @RequestBody MemberDTO memberDTO) {
+    @PostMapping("/updateimgprofile") 
+    public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication, @RequestParam MemberDTO.UpdateProfile updateProfile) {
 
         try {
-            MemberDTO responseMemberDTO = memberService.updateProfileImg(Integer.parseInt(authentication.getPrincipal().toString()), memberDTO);
+            MemberDTO responseMemberDTO = memberService.updateProfileImg(Integer.parseInt(authentication.getPrincipal().toString()),updateProfile);
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
-
 
 }
