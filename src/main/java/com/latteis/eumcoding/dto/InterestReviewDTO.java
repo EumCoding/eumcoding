@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InterestReviewDTO {
-    private int interestReviewId;
+
+    private int id;
 
     private int memberId;
 

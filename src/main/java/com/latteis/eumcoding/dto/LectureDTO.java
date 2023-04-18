@@ -1,12 +1,11 @@
 package com.latteis.eumcoding.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Column;
+import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,7 +14,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LectureDTO {
-    private int lectureId; // 사용자에게 고유하게 부여되는 값
+
+    @Getter
+    @NoArgsConstructor
+    public static class IdRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int id;
+    }
+    private int id; // 사용자에게 고유하게 부여되는 값
 
     private int memberId;
 

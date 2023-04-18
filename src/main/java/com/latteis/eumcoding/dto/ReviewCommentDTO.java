@@ -28,11 +28,7 @@ public class ReviewCommentDTO {
 
     private String content;
 
-    private LocalDateTime comment_day;
-
-    private int step;
-
-    private int group_num;
+    private LocalDateTime commentDay;
 
     private int modified;
 }
