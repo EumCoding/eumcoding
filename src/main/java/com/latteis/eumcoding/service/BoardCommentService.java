@@ -87,14 +87,14 @@ public class BoardCommentService {
         try {
 
             // 삭제할 최상위 댓글 엔티티 가져옴
-            BoardComment topBoardComment = boardCommentRepository.findByIdAndMemberId(idRequestDTO.getId(), memberId);
+            BoardComment parentBoardComment = boardCommentRepository.findByIdAndMemberId(idRequestDTO.getId(), memberId);
             // 현재 단계에서 하위 단계로 내려갈 때 이곳에 백업해둠
             List<BoardComment> oneStepUp = new ArrayList<>();
             // 현재 단계의 댓글들을 담고 있는 변수
             List<BoardComment> boardComments = new ArrayList<>();
 
             // 삭제할 최상위 댓글의 대댓글들이 모두 없어지면 false 반환으로 while문 종료
-            while (boardCommentRepository.existsByGroupNum(topBoardComment.getId())) {
+            while (boardCommentRepository.existsByGroupNum(parentBoardComment.getId())) {
                 // boardComments엔 값이 없고 oneStepup에는 값이 있다면
                 if (boardComments.isEmpty() && !oneStepUp.isEmpty()) {
                         // 값을 받고 oneStepUp은 비운다
@@ -104,20 +104,20 @@ public class BoardCommentService {
                 // boardComments와 oneStepUp 둘 다 값이 없었다면
                 if (boardComments.isEmpty()){
                     // 최상위 댓글의 한 단계 아래의 댓글들을 가져온다
-                    boardComments = boardCommentRepository.findAllByGroupNum(topBoardComment.getId());
+                    boardComments = boardCommentRepository.findAllByGroupNum(parentBoardComment.getId());
                 }
                 // foreach문 안에서 삭제를 완료했다면 0을 할당
                 int del = 1;
                 // boardComments 리스트에 담긴 댓글 수만큼 반복한다
                 for (BoardComment boardComment : boardComments) {
                     // 현재 댓글의 하위 단계 댓글이 있는지 확인하기 위해 하위 단계 리스트 가져옴
-                    List<BoardComment> boardComments1 = boardCommentRepository.findAllByGroupNum(boardComment.getId());
+                    List<BoardComment> childComments = boardCommentRepository.findAllByGroupNum(boardComment.getId());
                     // 현재 댓글의 하위 단계 댓글이 있다면
-                    if (!boardComments1.isEmpty()) {
+                    if (!childComments.isEmpty()) {
                         // oneStepUp에 현 단계 댓글 리스트를 백업한다
                         oneStepUp = boardComments;
                         // 하위 단계 댓글을 할당받음
-                        boardComments = boardComments1;
+                        boardComments = childComments;
                         // 삭제 작업 안 했으므로 1
                         del = 1;
                         break;
@@ -135,7 +135,7 @@ public class BoardCommentService {
             }
 
             // 삭제할 최상위 댓글의 하위 단계 댓글을 모두 삭제했으므로 최상위 댓글 삭제
-            boardCommentRepository.delete(topBoardComment);
+            boardCommentRepository.delete(parentBoardComment);
 
         } catch (Exception e) {
             e.printStackTrace();

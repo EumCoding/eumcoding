@@ -19,22 +19,28 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
+//
+//    @ManyToOne(optional = false)
+//    @JoinTable(
+//            name = "member_review",
+//            joinColumns = @JoinColumn(name = "member_id"),
+//            inverseJoinColumns = @JoinColumn(name = "id")
+//    )
+//    private Member member;
+    @Column(name = "member_id")
+    @JoinColumn(name = "id")
+    private int memberId;
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_review",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;
-
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_review",
-            joinColumns = @JoinColumn(name = "lecture_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Lecture lecture;
+//    @ManyToOne(optional = false)
+//    @JoinTable(
+//            name = "lecture_review",
+//            joinColumns = @JoinColumn(name = "lecture_id"),
+//            inverseJoinColumns = @JoinColumn(name = "id")
+//    )
+//    private Lecture lecture;
+    @Column(name = "lecture_id")
+    @JoinColumn(name = "id")
+    private int lectureId;
 
     @Column(name = "rating")
     private int rating;
@@ -46,5 +52,5 @@ public class Review {
     private int heart;
 
     @Column(name = "created_day")
-    private LocalDateTime created_day;
+    private LocalDateTime createdDay;
 }
