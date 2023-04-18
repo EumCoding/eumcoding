@@ -1,8 +1,10 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.LectureDTO;
+import com.latteis.eumcoding.dto.ReviewCommentDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.model.Review;
+import com.latteis.eumcoding.persistence.ReviewCommentRepository;
 import com.latteis.eumcoding.persistence.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+
+    private final ReviewCommentRepository reviewCommentRepository;
 
     // 리뷰 작성
     public void writeReview(int memberId, ReviewDTO.WriteRequestDTO writeRequestDTO) {
@@ -64,12 +68,57 @@ public class ReviewService {
         }
     }
 
+    // 리뷰 삭제
+    public void deleteReview(int memberId, ReviewDTO.IdRequestDTO idRequestDTO) {
+        try {
+
+            Review review = reviewRepository.findByIdAndMemberId(idRequestDTO.getId(), memberId);
+            reviewRepository.delete(review);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("BoardCommentService.deleteReview() : 에러 발생");
+        }
+    }
+
+    // 리뷰 목록 가져오기
+    public List<ReviewDTO.ListResponseDTO> getReviewList(Pageable pageable) {
+
+        try {
+
+            // 오브젝트에 리스트 담기
+            Page<Object[]> pageList = reviewRepository.getReviewList(pageable);
+            List<Object[]> objects = pageList.getContent();
+            List<ReviewDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
+            // 반복으로 DTO에 넣기
+            for (Object[] object : objects) {
+                // ReviewDTO에 담기
+                ReviewDTO.ListResponseDTO listResponseDTO = new ReviewDTO.ListResponseDTO(object);
+                // 오브젝트에 댓글 담기
+                Object commentObject = reviewCommentRepository.getCommentList(listResponseDTO.getId());
+                // 오브젝트가 null이 아니라면 리뷰DTO에 댓글 DTO 추가
+                if (commentObject != null) {
+                    ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject);
+                    listResponseDTO.setListCommentResponseDTO(listCommentResponseDTO);
+                }
+                // 리뷰DTO 리스트에 저장
+                listResponseDTOList.add(listResponseDTO);
+            }
+            return listResponseDTOList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("BoardCommentService.getReviewList() : 에러 발생");
+        }
+
+    }
+
     // 내가 작성한 리뷰 목록 가져오기
     public List<ReviewDTO.MyListResponseDTO> getMyReviewList(int memberId, Pageable pageable) {
 
         try {
 
-            // 엔티티 리스트에 담기
+            // 오브젝트에 리스트 담기
             Page<Object[]> pageList = reviewRepository.getMyReviewList(memberId, pageable);
             List<Object[]> objects = pageList.getContent();
             List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
@@ -88,4 +137,5 @@ public class ReviewService {
         }
 
     }
+
 }

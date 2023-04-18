@@ -1,7 +1,5 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.BoardCommentDTO;
-import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.service.ReviewService;
 import io.swagger.annotations.Api;
@@ -13,10 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -61,22 +56,37 @@ public class ReviewController {
 
     }
 
+    // 리뷰 삭제
+    @PostMapping(value = "/delete")
+    @ApiOperation(value = "리뷰 삭제")
+    public ResponseEntity<Object> deleteReview(@ApiIgnore Authentication authentication, @Valid @RequestBody ReviewDTO.IdRequestDTO idRequestDTO) {
+
+
+        try {
+            reviewService.deleteReview(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
     // 리뷰 목록
-//    @PostMapping(value = "/list")
-//    @ApiOperation(value = "리뷰 목록")
-//    public ResponseEntity<> getReviewList(@ApiIgnore Authentication authentication, @Valid @RequestBody LectureDTO.IdRequestDTO idRequestDTO) {
-//
-//        try {
-//            reviewService.getReviewList(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
-//            return ResponseEntity.ok().build();
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//
-//    }
+    @GetMapping(value = "/list")
+    @ApiOperation(value = "리뷰 목록")
+    public ResponseEntity<List<ReviewDTO.ListResponseDTO>> getReviewList(@PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            List<ReviewDTO.ListResponseDTO> listResponseDTOList = reviewService.getReviewList(pageable);
+            return ResponseEntity.ok().body(listResponseDTOList);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
 
     // 내가 쓴 리뷰 목록
-    @PostMapping(value = "/list")
+    @PostMapping(value = "/my_list")
     @ApiOperation(value = "리뷰 목록")
     public ResponseEntity<List<ReviewDTO.MyListResponseDTO>> getMyReviewList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
 

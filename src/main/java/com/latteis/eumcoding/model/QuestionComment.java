@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "answer")
-public class Answer {
+@Table(name = "question_comment")
+public class QuestionComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
@@ -44,4 +44,9 @@ public class Answer {
 
     @Column(name = "created_day")
     private LocalDateTime createdDay; // 생성된 날짜
+
+    @Column(name = "step")
+    private int step; // 생성된 날짜
+    @Column(name = "group_num")
+    private int groupNum; // 생성된 날짜
 }
