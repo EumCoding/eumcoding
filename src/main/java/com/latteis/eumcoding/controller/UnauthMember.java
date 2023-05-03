@@ -5,11 +5,14 @@ import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
 import com.latteis.eumcoding.service.MemberService;
+import com.latteis.eumcoding.service.UnauthMemberService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,11 +31,9 @@ public class UnauthMember {
 
     private final TokenProvider tokenProvider;
 
-    private final MemberService memberService;
+    private final UnauthMemberService unauthMemberService;
 
     private final PasswordEncoder passwordEncoder;
-
-
 
 
     // 회원가입
@@ -40,10 +41,10 @@ public class UnauthMember {
     //swagger에서 테스트하려면 매개변수에 집어넣어야함
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO) {
+    public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO,@RequestParam("profileImgRequest") MultipartFile profileImgRequest ) {
 
         try {
-            MemberDTO registeredMember = memberService.add(memberDTO);
+            MemberDTO registeredMember = unauthMemberService.add(memberDTO,profileImgRequest);
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(registeredMember.getEmail())
                     .nickname(registeredMember.getNickname())
@@ -67,7 +68,7 @@ public class UnauthMember {
     public ResponseEntity<?> signin(@RequestBody MemberDTO.loginDTO loginDTO) {
 
         // 로그인 성공 시에만 MemberEntity 가져옴
-        MemberDTO successMemberDTO = memberService.getByCredentials(
+        MemberDTO successMemberDTO = unauthMemberService.getByCredentials(
                 loginDTO.getEmail(),
                 loginDTO.getPassword(),
                 passwordEncoder
@@ -102,7 +103,7 @@ public class UnauthMember {
     @PostMapping("/checkemail")
     public ResponseEntity<?> checkEmail(@RequestBody MemberDTO.CheckEmail checkEmail){
         try{
-            if(memberService.checkEmail(checkEmail.getEmail())){
+            if(unauthMemberService.checkEmail(checkEmail.getEmail())){
                 ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
                 System.out.println(responseDTO + "성공");
                 return ResponseEntity.ok().body(responseDTO);
@@ -122,7 +123,7 @@ public class UnauthMember {
 
     // 인증 이메일 재전송
     @PostMapping("/reconfirm")
-    public ResponseEntity<?> viewConfirmEmail(@RequestBody MemberDTO.ViewConfirmEmail viewConfirmEmail){
+    public ResponseEntity<?> resendConfirmEmail(@RequestBody MemberDTO.ViewConfirmEmail viewConfirmEmail){
         try{
             emailTokenService.createEmailToken(viewConfirmEmail.getId(), viewConfirmEmail.getEmail()); // 이메일 전송
             ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
