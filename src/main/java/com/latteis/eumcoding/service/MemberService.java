@@ -313,6 +313,5 @@ public class MemberService {
             e.printStackTrace();
             throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
         }
-
     }
 }
