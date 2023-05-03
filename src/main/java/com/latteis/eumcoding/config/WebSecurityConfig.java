@@ -6,6 +6,7 @@ import com.latteis.eumcoding.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -42,10 +43,13 @@ public class WebSecurityConfig {
                         "/lecture/review/unauth/**",
                         "/images/menu/**",
                         "/images/**",
+                        "/gender/**",
                         "/error",
-                        "/confirm/**").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
-                // "/error" 추가해야 403오류와 json 함께 반환
-                .authenticated();
+                        "/confirm/**",
+                        "/google/**",
+                        "/login/**").permitAll()
+                .anyRequest().authenticated(); // 인증 안해도 되는 경로 설정                ;
+
         //filter 등록
         //매 요청마다
         //CorsFilter 실행한 후에
@@ -58,6 +62,8 @@ public class WebSecurityConfig {
     public PasswordEncoder passwordEncoder() { // 회원가입 시 패스워드를 암호화하기 위한 객체
         return new BCryptPasswordEncoder();
     }
+
+
 }
 
 

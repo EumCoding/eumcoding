@@ -17,6 +17,13 @@ import java.util.List;
 @AllArgsConstructor
 public class MemberDTO {
 
+
+    public MemberDTO(int id, String nickname, String email) {
+        this.id = id;
+        this.nickname = nickname;
+        this.email = email;
+    }
+
     @Getter
     @NoArgsConstructor
     public static class loginDTO{
