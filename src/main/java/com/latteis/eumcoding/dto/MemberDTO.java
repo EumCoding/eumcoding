@@ -52,19 +52,16 @@ public class MemberDTO {
     }
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class UpdateProfile{
         private String profile; // 프로필 이미지가 들어있는 경로
 
-
         private List<MultipartFile> profileImgRequest;
-
         public boolean checkProfileImgRequestNull() {
             return this.profileImgRequest != null;
         }
     }
-
-
 
     @Getter
     @NoArgsConstructor
@@ -118,6 +115,22 @@ public class MemberDTO {
 
 
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class StudentProfileDTO{
+        private int memberId;
+        private String nickname;
+        private String profileImage;
+        private String  grade;
+        //badge 배지 경로, 수료한 해당 강의
+        private String url;
+        private String lectureId;
+        private String lectureName;
+    }
+
 
 
 

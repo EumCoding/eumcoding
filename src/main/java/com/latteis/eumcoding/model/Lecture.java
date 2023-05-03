@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -20,14 +21,19 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
-
+/*
     @ManyToOne(optional = false)
     @JoinTable(
             name = "member_lecture",
             joinColumns = @JoinColumn(name = "member_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
-    private Member member;
+    private Member member;*/
+
+
+    @Column(name = "member_id")
+    private int memberId;
+
 
     @Column(name = "name")
     private String name;
@@ -44,15 +50,18 @@ public class Lecture {
     @Column(name = "grade")
     private int grade; // 학년
 
-    @Column(name = "create_day")
-    private LocalDateTime createDay; // 강좌생성일
+    @Column(name = "created_day")
+    private LocalDateTime createdDay; // 강좌생성일
 
     @Column(name = "thumb")
     private String thumb; // 강좌 썸네일
 
-    @Column(name = "address")
+    @Column(name = "state")
     private int state; // 0:등록대기중, 1:등록
 
     @Column(name = "badge")
     private String badge; // 프로필 이미지가 들어있는 경로
+
+
+
 }

@@ -2,6 +2,7 @@ package com.latteis.eumcoding.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -15,7 +16,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableSwagger2
@@ -34,6 +37,7 @@ public class SwaggerConfiguration {
                 .securityContexts(Arrays.asList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()));
     }
+
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()

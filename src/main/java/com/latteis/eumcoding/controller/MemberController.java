@@ -5,14 +5,20 @@ import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.MemberService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,19 +32,6 @@ public class MemberController {
     private final TokenProvider tokenProvider;
 
     private final MemberRepository memberRepository;
-
-
-    // 프로필
-/*    @PostMapping("/profile")
-    public ResponseEntity<?> viewProfile(@RequestBody MemberDTO memberDTO) {
-        try {
-            MemberDTO responseMemberDTO = memberService.viewProfile(memberDTO);
-            return ResponseEntity.ok().body(responseMemberDTO);
-        } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }*/
 
 
     // 로그인한 정보
@@ -135,17 +128,45 @@ public class MemberController {
     }
 
 
-    // 프로필 이미지 변경
-    @PostMapping("/updateimgprofile")  
-    public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication, @RequestParam MemberDTO.UpdateProfile updateProfile) {
 
+    // 프로필 이미지 변경
+   @PostMapping("/updateProfileImg")
+    @ApiOperation(value = "", notes = "")
+    public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication,
+                                              @ApiParam(value = "updateProfile", required = true)
+                                              @RequestPart(value = "updateProfile", required = false) MemberDTO.UpdateProfile updateProfile,
+                                              @RequestPart(value = "profileImgRequest", required = false) MultipartFile[] files) {
         try {
-            MemberDTO responseMemberDTO = memberService.updateProfileImg(Integer.parseInt(authentication.getPrincipal().toString()),updateProfile);
+            if (files != null) {
+                List<MultipartFile> fileList = Arrays.asList(files);
+                updateProfile.setProfileImgRequest(fileList);
+            }
+            MemberDTO responseMemberDTO = memberService.updateProfileImg(
+                    Integer.parseInt(authentication.getPrincipal().toString()),
+                    updateProfile);
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+
+    // 프로필 이미지 변경
+/*    @PostMapping("/updateProfileImg")
+    public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication, @RequestBody MemberDTO.UpdateProfile memberDTO) {
+
+        try {
+            MemberDTO responseMemberDTO = memberService.updateProfileImg(Integer.parseInt(authentication.getPrincipal().toString()),memberDTO);
+            return ResponseEntity.ok().body(responseMemberDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }*/
+
+
+
+
 
 }

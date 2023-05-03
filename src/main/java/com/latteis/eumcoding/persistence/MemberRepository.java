@@ -1,11 +1,15 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.dto.TeacherProfileDTO;
+import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +26,10 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     // 아이디로 찾기
     Optional<Member> findById(int id);
+
+
+    @Query(value = "SELECT * FROM member where id = :id", nativeQuery = true)
+    TeacherProfileDTO findByTeacherId(@Param("id") int id);
 
     @Query(value = "SELECT * FROM member where id = :id", nativeQuery = true)
     Member findByMemberId(@Param("id") int id);
@@ -64,5 +72,15 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     // 아이디로 닉네임 가져오기
     @Query(value = "SELECT nickname FROM member WHERE id = :id", nativeQuery = true)
     String findNickNameByMemberId(@Param("id") int id);
+
+    //멤버 권한 1번 강사
+    Member findByIdAndRole(int memberId, int i);
+
+
+    //선생 이름 검색, 이름은 동명이인 존재 가능
+    //nickname 달라야죠
+    List<Member> findByNameContaining(String searchKeyword, Pageable paging);
+
+
 
 }
