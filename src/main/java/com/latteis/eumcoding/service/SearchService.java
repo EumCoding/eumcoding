@@ -92,7 +92,7 @@ public class SearchService {
                 }
             }
         }
-
+  
         if (!teacherFound) {
             throw new NoSuchElementException("해당 선생님은 존재하지 않습니다.");
         }
