@@ -20,21 +20,13 @@ public class QuestionComment {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "question_answer",
-            joinColumns = @JoinColumn(name = "question_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Question question;
+    @Column(name = "question_id")
+    @JoinColumn(name = "id")
+    private int questionId;
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_answer",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;
+    @Column(name = "member_id")
+    @JoinColumn(name = "id")
+    private int memberId;
 
     @Column(name = "content")
     private String content;

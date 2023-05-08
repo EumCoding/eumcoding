@@ -1,24 +1,16 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Lecture;
-import com.latteis.eumcoding.model.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class QuestionDTO {
     private int questionId; // 사용자에게 고유하게 부여되는 값
 

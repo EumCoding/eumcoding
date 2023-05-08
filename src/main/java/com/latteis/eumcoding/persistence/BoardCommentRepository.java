@@ -19,8 +19,11 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Inte
     // groupNum으로 엔티티 리스트 가져오기
     List<BoardComment> findAllByGroupNum(int groupNum);
 
+    // groupNum과 step으로 엔티티 리스트 가져오기
+    List<BoardComment> findAllByGroupNumAndStep(int groupNum, int step);
+
     // 해당 groupNum을 가진 댓글이 있는지 검사
-    boolean existsByGroupNum(int groupNum);
+    boolean existsByGroupNumAndStep(int groupNum, int step);
 
     // boardId로 엔티티 리스트 가져오기
     List<BoardComment> findAllByBoardId(int boardId);

@@ -2,6 +2,7 @@ package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.BoardDTO;
 import com.latteis.eumcoding.service.InterestBoardService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import javax.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/interest_board")
+@Api(tags = "Interest Board Controller", description = "게시판 좋아요 컨트롤러")
 public class InterestBoardController {
 
     private final InterestBoardService interestBoardService;

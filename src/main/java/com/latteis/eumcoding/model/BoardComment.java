@@ -20,26 +20,13 @@ public class BoardComment {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-//    @ManyToOne(optional = false)
-//    @JoinTable(
-//            name = "board_board_comment",
-//            joinColumns = @JoinColumn(name = "board_id"),
-//            inverseJoinColumns = @JoinColumn(name = "id")
-//    )
-//    private Board board;
-    @Column(name = "board_id")
-    @JoinColumn(name = "id")
-    private int boardId;
-//    @ManyToOne(optional = false)
-//    @JoinTable(
-//            name = "member_board_comment",
-//            joinColumns = @JoinColumn(name = "member_id"),
-//            inverseJoinColumns = @JoinColumn(name = "id")
-//    )
-//    private Member member;
-    @Column(name = "member_id")
-    @JoinColumn(name = "id")
-    private int memberId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "board_id")
+    private Board board;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "content")
     private String content;

@@ -21,24 +21,10 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
-/*
+
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_lecture",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;*/
-
-
-
-    @OneToMany(mappedBy = "lecture")
-    private List<Section> section;
-
-
-    @Column(name = "member_id")
-    private int memberId;
-
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "name")
     private String name;
@@ -66,6 +52,9 @@ public class Lecture {
 
     @Column(name = "badge")
     private String badge; // 프로필 이미지가 들어있는 경로
+
+    @OneToMany(mappedBy = "lecture")
+    private List<Section> section;
 
 
 
