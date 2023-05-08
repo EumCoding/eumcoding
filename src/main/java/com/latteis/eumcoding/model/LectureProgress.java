@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -20,15 +21,30 @@ public class LectureProgress {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
+/*    @ManyToOne(optional = false)
     @JoinTable(
             name = "pay_lecture_lecture_progress",
             joinColumns = @JoinColumn(name = "pay_lecture_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
+    private PayLecture payLecture;*/
+
+    @ManyToOne
+    @JoinColumn(name = "pay_lecture_id")
     private PayLecture payLecture;
 
-    @Column(name = "price")
-    private int price;
+    @Column(name = "state")
+    private int state; //수강상태. 0 : 수강 전, 1 : 수강 시작, 2 : 수강 중, 3 : 수강 종료
+
+    @Column(name = "start_day")
+    private LocalDateTime start_day;
+
+    @Column(name = "end_day")
+    private LocalDateTime end_day;
+
+
+    //video_progress 랑 일대다관계 , 양방향 맵핑을 위해 1인쪽에 OneToMany 어노테이션 붙임
+    @OneToMany(mappedBy = "lectureProgress")
+    private List<VideoProgress> videoProgresses;
 
 }

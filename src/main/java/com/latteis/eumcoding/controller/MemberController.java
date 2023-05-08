@@ -1,9 +1,11 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.MemberDTO;
+import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
+import com.latteis.eumcoding.service.CurriculumService;
 import com.latteis.eumcoding.service.MemberService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,6 +34,9 @@ public class MemberController {
     private final TokenProvider tokenProvider;
 
     private final MemberRepository memberRepository;
+
+    private final CurriculumService curriculumService;
+
 
 
     // 로그인한 정보
@@ -166,7 +171,19 @@ public class MemberController {
     }*/
 
 
+    //내 커리큘럼 목록 확인하기
+    @GetMapping("/myplan/list")
+    public ResponseEntity<?> getMyPlanList(@ApiIgnore Authentication authentication) {
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<MyPlanListDTO> myPlanList = curriculumService.getMyPlanList(memberId);
+            //return new ResponseEntity<>(myPlanList, HttpStatus.OK);
+            return ResponseEntity.ok().body(myPlanList);
 
-
-
+        }catch(Exception e)
+        {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 }

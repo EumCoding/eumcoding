@@ -6,8 +6,10 @@ import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.TeacherProfileDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.model.PayLecture;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
+import com.latteis.eumcoding.persistence.PayLectureRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,9 +30,16 @@ public class ProfileService {
 
     private final LectureRepository lectureRepository;
 
+    private final LectureService lectureService;
+
+
+
+
+
     public TeacherProfileDTO getTeacherProfile(int memberId) {
 
         Member member = memberRepository.findByIdAndRole(memberId, 1);
+
 
         if (member == null) {
             throw new NoSuchElementException("해당 선생님 프로필이 없습니다.");
@@ -38,6 +47,9 @@ public class ProfileService {
 
         List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
         List<LectureDTO.profileDTO> lectureDTOList = new ArrayList<>();
+
+        int totalStudent = 0;
+
         for (Lecture lecture : lectureList) {
             LectureDTO.profileDTO lectureDTO = LectureDTO.profileDTO.builder()
                     .id(lecture.getId())
@@ -48,15 +60,27 @@ public class ProfileService {
                     .grade(lecture.getGrade())
                     .thumb(lecture.getThumb())
                     .price(lecture.getPrice())
+                    .state(lecture.getState())
+                    .badge(lecture.getBadge())
                     .build();
             lectureDTOList.add(lectureDTO);
+
+            int studentsInLecture = lectureService.getTotalStudentsByLectureId(lecture.getId());
+            if (studentsInLecture >= 0) {
+                totalStudent += studentsInLecture;
+            } else {
+                throw new IllegalStateException("결제가 완료되지 않은 상태입니다.");
+            }
         }
 
-            TeacherProfileDTO teacherProfileDTO = TeacherProfileDTO.builder()
+
+        TeacherProfileDTO teacherProfileDTO = TeacherProfileDTO.builder()
                     .memberId(member.getId())
                     .teacherName(member.getName())
                     .teacherProfileImage(member.getProfile())
                     .teacherId(member.getId())
+                    .totalLecture(lectureDTOList.size())
+                    .totalStudent(totalStudent)
                     .lectureDTOList(lectureDTOList)
                     .build();
 

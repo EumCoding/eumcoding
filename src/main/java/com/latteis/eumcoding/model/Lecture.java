@@ -31,6 +31,11 @@ public class Lecture {
     private Member member;*/
 
 
+
+    @OneToMany(mappedBy = "lecture")
+    private List<Section> section;
+
+
     @Column(name = "member_id")
     private int memberId;
 

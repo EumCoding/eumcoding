@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -19,7 +20,7 @@ public class PayLecture {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
+/*    @ManyToOne(optional = false)
     @JoinTable(
             name = "lecture_pay_lecture",
             joinColumns = @JoinColumn(name = "lecture_id"),
@@ -33,8 +34,19 @@ public class PayLecture {
             joinColumns = @JoinColumn(name = "payment_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
+    private Payment payment;*/
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
     private Payment payment;
+
+    @ManyToOne
+    @JoinColumn(name = "lecture_id")
+    private Lecture lecture;
 
     @Column(name = "price")
     private int price; // 결제일
+
+    @OneToMany(mappedBy = "payLecture")
+    private List<LectureProgress> lectureProgresses;
 }

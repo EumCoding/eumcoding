@@ -41,4 +41,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
 
 
+
+
 }

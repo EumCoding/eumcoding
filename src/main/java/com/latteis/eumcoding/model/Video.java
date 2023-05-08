@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -21,13 +22,21 @@ public class Video {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
+/*    @ManyToOne(optional = false)
     @JoinTable(
             name = "section_video",
             joinColumns = @JoinColumn(name = "section_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    )*/
+    
+    //sectino이랑 video는 일대다관계
+    //1주차 section에는 여러개의 video.. 2주차 3주차 반복
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "section_id")
     private Section section;
+
+    @OneToMany(mappedBy = "video")
+    private List<VideoProgress> videoProgresses;
 
     @Column(name = "name")
     private String name; // 비디오 이름
@@ -38,7 +47,7 @@ public class Video {
     @Column(name = "description")
     private String description; // 영상 설명
 
-    @Column(name = "upload_date")
+    @Column(name = "upload_day")
     private LocalDateTime uploadDate; // 영상 업로드 날짜
 
     @Column(name = "preview")

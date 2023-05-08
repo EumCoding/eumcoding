@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -19,19 +20,34 @@ public class Curriculum {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
+/*    @ManyToOne(optional = false)
     @JoinTable(
             name = "member_curriculum",
             joinColumns = @JoinColumn(name = "member_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
-    private Member member;
-
     @ManyToOne(optional = false)
     @JoinTable(
             name = "secion_curriculum",
             joinColumns = @JoinColumn(name = "section_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    )*/
+
+    //연관관계의 주인이 되는쪽에 @ManyToOne
+    //fk가 있는쪽이 주인이되는쪽
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @ManyToOne
+    @JoinColumn(name = "section_id")
     private Section section;
+
+
+    @Column(name="time_taken")
+    private int timeTaken;
+
+    @Column(name="create_date")
+    private LocalDate createDate;
+
 }
