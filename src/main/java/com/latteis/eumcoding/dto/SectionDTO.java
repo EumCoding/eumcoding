@@ -35,4 +35,8 @@ public class SectionDTO {
     private int mainTestId; // mainTestId가 0이 아니면 테스트가 있는 Section임.
 
     private List<VideoDTO> videoDTOList;
+
+    private int progress;
+
+
 }

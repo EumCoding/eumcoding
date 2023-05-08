@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -20,12 +21,18 @@ public class Section {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
+/*    @ManyToOne(optional = false)
     @JoinTable(
             name = "lecture_section",
             joinColumns = @JoinColumn(name = "lecture_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
+    private lecture lecture;*/
+    
+    //lecture랑 section은 일대다관계
+    //이를 나타내는 어노테이션
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "lecture_id")
     private Lecture lecture;
 
     @Column(name = "time_taken")
@@ -34,9 +41,15 @@ public class Section {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "create_day")
+    @Column(name = "created_day")
     private LocalDateTime createDay;
 
     @Column(name = "sequence")
     private int sequence; // 섹션 순서
+
+    @OneToMany(mappedBy = "section")
+    private List<Curriculum> curriculums;
+
+    @OneToMany(mappedBy = "section")
+    private List<Video> videos;
 }

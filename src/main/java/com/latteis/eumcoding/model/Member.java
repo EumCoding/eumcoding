@@ -57,6 +57,13 @@ public class Member {
     @Column(name = "state")
     private int state;
 
+    @OneToMany(mappedBy = "member")
+    private List<Payment> payments;
+
+    @OneToMany(mappedBy = "member")
+    private List<Curriculum> curriculums;
+
+
     public void changePassword(String password){
         this.password = password;
     }
