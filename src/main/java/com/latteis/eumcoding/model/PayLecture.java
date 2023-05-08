@@ -20,22 +20,6 @@ public class PayLecture {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-/*    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_pay_lecture",
-            joinColumns = @JoinColumn(name = "lecture_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Lecture lecture;
-
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "payment_pay_lecture",
-            joinColumns = @JoinColumn(name = "payment_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Payment payment;*/
-
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
@@ -47,6 +31,5 @@ public class PayLecture {
     @Column(name = "price")
     private int price; // 결제일
 
-    @OneToMany(mappedBy = "payLecture")
-    private List<LectureProgress> lectureProgresses;
+
 }

@@ -32,6 +32,8 @@ public class ProfileService {
 
     private final LectureService lectureService;
 
+    private final PayLectureRepository payLectureRepository;
+
 
 
 
@@ -44,7 +46,7 @@ public class ProfileService {
         if (member == null) {
             throw new NoSuchElementException("해당 선생님 프로필이 없습니다.");
         }
-
+        //memberId 여기서 널이들어같다.
         List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
         List<LectureDTO.profileDTO> lectureDTOList = new ArrayList<>();
 
@@ -53,7 +55,7 @@ public class ProfileService {
         for (Lecture lecture : lectureList) {
             LectureDTO.profileDTO lectureDTO = LectureDTO.profileDTO.builder()
                     .id(lecture.getId())
-                    .memberId(lecture.getMemberId())
+                    .memberId(memberId)
                     .name(lecture.getName())
                     .description(lecture.getDescription())
                     .createdDay(lecture.getCreatedDay())
@@ -65,7 +67,7 @@ public class ProfileService {
                     .build();
             lectureDTOList.add(lectureDTO);
 
-            int studentsInLecture = lectureService.getTotalStudentsByLectureId(lecture.getId());
+            int studentsInLecture = getTotalStudentsByLectureId(lecture.getId());
             if (studentsInLecture >= 0) {
                 totalStudent += studentsInLecture;
             } else {
@@ -153,5 +155,11 @@ public class ProfileService {
         return null;
     }
 
+
+    //강의를 결제한 학생 수 구하기
+    public int getTotalStudentsByLectureId(int lectureId) {
+        List<PayLecture> paymentLectures = payLectureRepository.findByLectureIdAndState(lectureId, 0);
+        return paymentLectures.size();
+    }
 
 }

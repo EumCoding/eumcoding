@@ -33,7 +33,7 @@ public class MainService {
 
         for (Lecture lecture : lectures) {
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
-            Member member = memberRepository.findById(lecture.getMemberId()).orElseThrow(() -> new NoSuchElementException("인기강좌에 해당하는 선생님이 없습니다."));
+            Member member = memberRepository.findById(lecture.getMember().getId()).orElseThrow(() -> new NoSuchElementException("인기강좌에 해당하는 선생님이 없습니다."));
 
             //동점일경우 id가 낮은 경우 먼저 출력되는걸로 보임
             //lectureid : 1 avg(rating) 3
@@ -76,7 +76,7 @@ public class MainService {
         List<MainNewLectureDTO> newLectures = new ArrayList<>();
 
         for (Lecture lecture : lectures) {
-            Member member = memberRepository.findById(lecture.getMemberId()).orElseThrow(()->new NoSuchElementException("새로운 강의를 올린 선생님이 없습니다."));
+            Member member = memberRepository.findById(lecture.getMember().getId()).orElseThrow(()->new NoSuchElementException("새로운 강의를 올린 선생님이 없습니다."));
 
             MainNewLectureDTO newLecture = MainNewLectureDTO.builder()
                     .lectureId(lecture.getId())

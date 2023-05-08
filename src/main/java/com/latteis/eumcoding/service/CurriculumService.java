@@ -24,6 +24,7 @@ public class CurriculumService {
 
     private final CurriculumRepository curriculumRepository;
     private final VideoProgressRepository videoProgressRepository;
+    private final VideoRepository videoRepository;
 
 
 
@@ -35,19 +36,18 @@ public class CurriculumService {
             List<SectionDTO> sectionDTOList = new ArrayList<>(); //plan
 
             Section section = curriculum.getSection();
-            List<Video> videos = section.getVideos();
+            List<Video> videos = videoRepository.findBySectionId(section.getId());
             int totalVideos = videos.size();
             int completedVideos = 0;
 
             for (Video video : videos) {
-                List<VideoProgress> videoProgresses = video.getVideoProgresses();
-                for (VideoProgress videoProgress : videoProgresses) {
-                    if(videoProgress.getLectureProgress().getPayLecture().getPayment().getMember().getId() == memberId){
-                        updateVideoProgressState(videoProgress,video);
-                        if(videoProgress.getState() == 3){
-                            completedVideos++;
-                        }
-                        break;
+                VideoProgress videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
+
+                if (videoProgress != null) {
+                    updateVideoProgressState(videoProgress, video);
+
+                    if (videoProgress.getState() == 3) {
+                        completedVideos++;
                     }
                 }
             }

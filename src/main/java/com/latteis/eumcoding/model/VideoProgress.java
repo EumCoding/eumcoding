@@ -22,22 +22,6 @@ public class VideoProgress {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-/*    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_progress_video_progress",
-            joinColumns = @JoinColumn(name = "lecture_progress_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private LectureProgress lectureProgress;
-
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "video_video_progress",
-            joinColumns = @JoinColumn(name = "video_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Video video;*/
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "lecture_progress_id")
     private LectureProgress lectureProgress;
@@ -45,7 +29,6 @@ public class VideoProgress {
     @ManyToOne(optional = false)
     @JoinColumn(name = "video_id")
     private Video video;
-
 
     @Column(name = "state")
     private int state; // 0:수강전, 1:수강시작, 2:수강중, 3:수강종료

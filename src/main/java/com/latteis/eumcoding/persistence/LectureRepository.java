@@ -21,12 +21,14 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     Optional<Lecture> findByName(String name);
 
-    List<Lecture> findByMemberId(int memberId);
+
+    @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
+    List<Lecture> findByMemberId(@Param("memberId")int memberId);
 
     //review 테이블 이랑 연결해서 
     //review 테이블에 rating 컬럼을 가져와서
     //이를 바탕으로 lecutre, 강좌 평점순으로 나열하기 위한 메서드
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lectureId = :lectureId")
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lecture.id = :lectureId")
     Integer findAverageRatingByLectureId(@Param("lectureId") int lectureId);
 
     //날짜순으로 새강좌 불러오기 5개
