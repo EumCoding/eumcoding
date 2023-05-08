@@ -1,22 +1,14 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.Question;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class QuestionCommentDTO {
     private int answerId;
 

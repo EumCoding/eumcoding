@@ -41,6 +41,7 @@ public class WebSecurityConfig {
                         "/board/unauth/**",
                         "/board/comment/unauth/**",
                         "/lecture/review/unauth/**",
+                        "/lecture/question/unauth/**",
                         "/images/menu/**",
                         "/images/**",
                         "/gender/**",

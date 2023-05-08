@@ -1,8 +1,12 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.ReviewCommentDTO;
+import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.model.Review;
 import com.latteis.eumcoding.model.ReviewComment;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.ReviewCommentRepository;
+import com.latteis.eumcoding.persistence.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,14 +20,21 @@ public class ReviewCommentService {
 
     private final ReviewCommentRepository reviewCommentRepository;
 
+    private final ReviewRepository reviewRepository;
+
+    private final MemberRepository memberRepository;
+
     // 리뷰 댓글 작성
     public void writeReviewComment(int memberId, ReviewCommentDTO.WriteRequestDTO writeRequestDTO) {
 
         try {
 
+            Review review = reviewRepository.findById(writeRequestDTO.getReviewId());
+            Member member = memberRepository.findByMemberId(memberId);
+
             ReviewComment reviewComment = ReviewComment.builder()
-                    .reviewId(writeRequestDTO.getReviewId())
-                    .memberId(memberId)
+                    .review(review)
+                    .member(member)
                     .content(writeRequestDTO.getContent())
                     .commentDay(LocalDateTime.now())
                     .modified(0)

@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Integer> {
 
+    Board findById(int id);
+
     // Board 아이디와 작성자로 Board 엔티티 가져오기
     Board findByIdAndMemberId(int boardId, int memberId);
 

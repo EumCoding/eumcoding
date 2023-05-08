@@ -9,16 +9,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
-    Optional<Lecture> findById(int id);
+    Lecture findById(int id);
 
     Optional<Lecture> findByName(String name);
-
 
     List<Lecture> findByMemberId(int memberId);
 
@@ -27,7 +28,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     //이를 바탕으로 lecutre, 강좌 평점순으로 나열하기 위한 메서드
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lectureId = :lectureId")
     Integer findAverageRatingByLectureId(@Param("lectureId") int lectureId);
-
 
     //날짜순으로 새강좌 불러오기 5개
     @Query(value = "SELECT * FROM lecture ORDER BY created_day DESC LIMIT 5", nativeQuery = true)
@@ -39,8 +39,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     //학년으로 검색
     List<Lecture> findByGrade(int searchKeyword, Pageable paging);
 
-
-
-
+    // 강의 Id로 회원Id 찾기
+    @Query(value = "SELECT member_id FROM lecture WHERE id = :id", nativeQuery = true)
+    int findMemberIdById(@Param("id") int lectureId);
 
 }

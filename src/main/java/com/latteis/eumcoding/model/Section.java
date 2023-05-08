@@ -21,14 +21,6 @@ public class Section {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-/*    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_section",
-            joinColumns = @JoinColumn(name = "lecture_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private lecture lecture;*/
-    
     //lecture랑 section은 일대다관계
     //이를 나타내는 어노테이션
     @ManyToOne(optional = false)
@@ -42,7 +34,7 @@ public class Section {
     private String name;
 
     @Column(name = "created_day")
-    private LocalDateTime createDay;
+    private LocalDateTime createdDay;
 
     @Column(name = "sequence")
     private int sequence; // 섹션 순서

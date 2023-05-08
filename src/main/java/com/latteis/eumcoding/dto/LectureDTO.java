@@ -1,11 +1,14 @@
 package com.latteis.eumcoding.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class LectureDTO {
 
     @Getter
     @NoArgsConstructor
+    @ApiModel(value = "강의 ID 요청 DTO")
     public static class IdRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
@@ -24,6 +28,7 @@ public class LectureDTO {
         private int id;
     }
 
+    // 프로필 불러오기
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -45,7 +50,33 @@ public class LectureDTO {
         private String badge; // 프로필 이미지가 들어있는 경로
     }
 
+    // 강의 생성 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "강의 생성 요청 DTO")
+    public static class CreateRequestDTO {
 
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "강의명", example = "강의명입니다")
+        private String name;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "강의 설명", example = "강의 설명입니다")
+        private String description;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "가격", example = "10000")
+        private int price;
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "추천 학년", example = "1")
+        private int grade;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "0 : 등록 대기, 1 : 등록", example = "1")
+        private int state;
+
+    }
     private int id; // 사용자에게 고유하게 부여되는 값
 
     private int memberId;

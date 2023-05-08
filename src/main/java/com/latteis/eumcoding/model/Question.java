@@ -20,21 +20,13 @@ public class Question {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_question",
-            joinColumns = @JoinColumn(name = "lecture_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Lecture lecture;
+    @Column(name = "lecture_id")
+    @JoinColumn(name = "id")
+    private int lectureId;
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_question",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;
+    @Column(name = "member_id")
+    @JoinColumn(name = "id")
+    private int memberId;
 
     @Column(name = "title")
     private String title;

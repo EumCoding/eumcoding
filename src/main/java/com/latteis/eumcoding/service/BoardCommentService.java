@@ -2,8 +2,12 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.BoardCommentDTO;
 import com.latteis.eumcoding.dto.BoardDTO;
+import com.latteis.eumcoding.model.Board;
 import com.latteis.eumcoding.model.BoardComment;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.BoardCommentRepository;
+import com.latteis.eumcoding.persistence.BoardRepository;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,14 +25,21 @@ public class BoardCommentService {
 
     private final BoardCommentRepository boardCommentRepository;
 
+    private final MemberRepository memberRepository;
+
+    private final BoardRepository boardRepository;
+
     // 댓글 작성
     public void writeComment(int memberId, BoardCommentDTO.WriteRequestDTO writeRequestDTO) {
 
         try {
 
+            Member member = memberRepository.findByMemberId(memberId);
+            Board board = boardRepository.findById(writeRequestDTO.getBoardId());
+
             BoardComment boardComment = BoardComment.builder()
-                    .memberId(memberId)
-                    .boardId(writeRequestDTO.getBoardId())
+                    .member(member)
+                    .board(board)
                     .content(writeRequestDTO.getContent())
                     .commentDay(LocalDateTime.now())
                     .step(0)
@@ -48,9 +59,12 @@ public class BoardCommentService {
 
         try {
 
+            Member member = memberRepository.findByMemberId(memberId);
+            Board board = boardRepository.findById(writeReplyRequestDTO.getBoardId());
+
             BoardComment boardComment = BoardComment.builder()
-                    .memberId(memberId)
-                    .boardId(writeReplyRequestDTO.getBoardId())
+                    .member(member)
+                    .board(board)
                     .content(writeReplyRequestDTO.getContent())
                     .commentDay(LocalDateTime.now())
                     .step(writeReplyRequestDTO.getStep() + 1)
@@ -88,13 +102,16 @@ public class BoardCommentService {
 
             // 삭제할 최상위 댓글 엔티티 가져옴
             BoardComment parentBoardComment = boardCommentRepository.findByIdAndMemberId(idRequestDTO.getId(), memberId);
+            // 삭제할 최상위 댓글의 STEP
+            int parentStep = parentBoardComment.getStep();
             // 현재 단계에서 하위 단계로 내려갈 때 이곳에 백업해둠
             List<BoardComment> oneStepUp = new ArrayList<>();
             // 현재 단계의 댓글들을 담고 있는 변수
             List<BoardComment> boardComments = new ArrayList<>();
 
             // 삭제할 최상위 댓글의 대댓글들이 모두 없어지면 false 반환으로 while문 종료
-            while (boardCommentRepository.existsByGroupNum(parentBoardComment.getId())) {
+            while (boardCommentRepository.existsByGroupNumAndStep(parentBoardComment.getId(), parentStep + 1)) {
+            log.info("boardComments : {}", boardComments);
                 // boardComments엔 값이 없고 oneStepup에는 값이 있다면
                 if (boardComments.isEmpty() && !oneStepUp.isEmpty()) {
                         // 값을 받고 oneStepUp은 비운다
@@ -104,7 +121,7 @@ public class BoardCommentService {
                 // boardComments와 oneStepUp 둘 다 값이 없었다면
                 if (boardComments.isEmpty()){
                     // 최상위 댓글의 한 단계 아래의 댓글들을 가져온다
-                    boardComments = boardCommentRepository.findAllByGroupNum(parentBoardComment.getId());
+                    boardComments = boardCommentRepository.findAllByGroupNumAndStep(parentBoardComment.getId(), parentStep + 1);
                 }
                 // foreach문 안에서 삭제를 완료했다면 0을 할당
                 int del = 1;

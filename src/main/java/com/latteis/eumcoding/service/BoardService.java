@@ -2,7 +2,9 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.BoardDTO;
 import com.latteis.eumcoding.model.Board;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.BoardRepository;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,15 +29,20 @@ public class BoardService {
 
     private final BoardCommentService boardCommentService;
 
+    private final MemberRepository memberRepository;
+
     private final EntityManager em;
 
     // 글 작성
     public void writeBoard(int memberId, BoardDTO.CreateRequestDTO createRequestDTO) {
 
         try {
+
+            Member member = memberRepository.findByMemberId(memberId);
+
             // Board 엔티티 생성
             Board board = Board.builder()
-                    .memberId(memberId)
+                    .member(member)
                     .title(createRequestDTO.getTitle())
                     .content(createRequestDTO.getContent())
                     .createdDay(LocalDateTime.now())

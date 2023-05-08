@@ -2,7 +2,11 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.ReviewCommentDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
+import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Review;
+import com.latteis.eumcoding.persistence.LectureRepository;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.ReviewCommentRepository;
 import com.latteis.eumcoding.persistence.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,10 @@ public class ReviewService {
 
     private final ReviewCommentRepository reviewCommentRepository;
 
+    private final MemberRepository memberRepository;
+
+    private final LectureRepository lectureRepository;
+
     // 리뷰 작성
     public void writeReview(int memberId, ReviewDTO.WriteRequestDTO writeRequestDTO) {
 
@@ -34,9 +42,15 @@ public class ReviewService {
             if (reviewRepository.existsByLectureIdAndMemberId(lectureId, memberId)) {
                 throw new RuntimeException("BoardCommentService.writeReview() : 에러 발생");
             } else {
+
+                // Member Entity 가져오기
+                Member member = memberRepository.findByMemberId(memberId);
+                // Lecture Entity 가져오기
+                Lecture lecture = lectureRepository.findById(lectureId);
+
                 Review review = Review.builder()
-                        .memberId(memberId)
-                        .lectureId(lectureId)
+                        .member(member)
+                        .lecture(lecture)
                         .content(writeRequestDTO.getContent())
                         .rating(writeRequestDTO.getRating())
                         .heart(0)

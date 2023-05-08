@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
+    Review findById(int id);
+
     // id와 memberId로 엔티티 가져오기
     Review findByIdAndMemberId(int id, int memberId);
 
