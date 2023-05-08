@@ -14,8 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "member")
 public class Member {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "id")
@@ -57,17 +55,8 @@ public class Member {
     @Column(name = "state")
     private int state;
 
-    @OneToMany(mappedBy = "member")
-    private List<Payment> payments;
-
-    @OneToMany(mappedBy = "member")
-    private List<Curriculum> curriculums;
-
-
     public void changePassword(String password){
         this.password = password;
     }
-
-
 
 }

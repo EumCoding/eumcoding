@@ -21,14 +21,6 @@ public class Payment {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-/*    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_payment",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Member member;*/
-
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
@@ -39,7 +31,6 @@ public class Payment {
     @Column(name = "state")
     private int state; // 1:결제성공, 2:결제실패
 
-    @OneToMany(mappedBy = "payment")
-    private List<PayLecture> payLectures;
+
 
 }

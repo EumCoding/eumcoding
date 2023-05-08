@@ -53,9 +53,4 @@ public class Lecture {
     @Column(name = "badge")
     private String badge; // 프로필 이미지가 들어있는 경로
 
-    @OneToMany(mappedBy = "lecture")
-    private List<Section> section;
-
-
-
 }

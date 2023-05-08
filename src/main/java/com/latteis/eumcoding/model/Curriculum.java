@@ -32,7 +32,6 @@ public class Curriculum {
             joinColumns = @JoinColumn(name = "section_id"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )*/
-
     //연관관계의 주인이 되는쪽에 @ManyToOne
     //fk가 있는쪽이 주인이되는쪽
     @ManyToOne

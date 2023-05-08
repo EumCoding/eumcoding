@@ -23,10 +23,10 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @ApiOperation(value = "")
-    @GetMapping("/{memberId}")
+    @GetMapping("/{teacherId}")
     public ResponseEntity<?> getTeacherProfile(
             @ApiParam(value = "", required = true)
-            @PathVariable("memberId") int memberId) {
+            @PathVariable("teacherId") int memberId) {
         try{
             TeacherProfileDTO teacherProfileDTO = profileService.getTeacherProfile(memberId);
             System.out.println(teacherProfileDTO + "선생정보");

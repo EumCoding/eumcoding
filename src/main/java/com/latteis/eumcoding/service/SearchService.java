@@ -40,7 +40,7 @@ public class SearchService {
 
         for (Lecture lecture : lectures) {
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
-            Member member = memberRepository.findById(lecture.getMemberId()).orElse(null);
+            Member member = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
             SearchDTO searchLecture = SearchDTO.builder()
                     .lectureId(lecture.getId())
@@ -75,7 +75,7 @@ public class SearchService {
                 List<Lecture> resultLectures = lectureRepository.findByMemberId(member.getId());
                 for (Lecture lecture : resultLectures) {
                     Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
-                    Member TeacherMember = memberRepository.findById(lecture.getMemberId()).orElse(null);
+                    Member TeacherMember = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
                     SearchDTO searchLecture = SearchDTO.builder()
                             .lectureId(lecture.getId())
@@ -92,7 +92,7 @@ public class SearchService {
                 }
             }
         }
-  
+
         if (!teacherFound) {
             throw new NoSuchElementException("해당 선생님은 존재하지 않습니다.");
         }
@@ -117,7 +117,7 @@ public class SearchService {
 
             for (Lecture lecture : lectures) {
                 Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
-                Member member = memberRepository.findById(lecture.getMemberId()).orElse(null);
+                Member member = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
                 SearchDTO.SearchGradeDTO searchGrade = SearchDTO.SearchGradeDTO.builder()
                         .lectureId(lecture.getId())

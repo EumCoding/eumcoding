@@ -39,9 +39,4 @@ public class Section {
     @Column(name = "sequence")
     private int sequence; // 섹션 순서
 
-    @OneToMany(mappedBy = "section")
-    private List<Curriculum> curriculums;
-
-    @OneToMany(mappedBy = "section")
-    private List<Video> videos;
 }
