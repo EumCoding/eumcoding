@@ -80,4 +80,17 @@ public class SectionDTO {
 
     private int progress;
 
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SectionDTOList {
+        private int sectionId;
+        private int lectureId;
+        private String lectureName;
+        private String sectionName;
+        private int progress;
+    }
+
 }

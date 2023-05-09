@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -40,5 +41,5 @@ public class VideoProgress {
     private LocalDateTime end_day; // 수강종료일
 
     @Column(name = "last_view")
-    private LocalTime lastView; // 마지막 영상 위치
+    private Duration lastView; // 마지막 영상 위치
 }

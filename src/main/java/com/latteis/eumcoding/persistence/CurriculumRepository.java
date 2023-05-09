@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CurriculumRepository extends JpaRepository<Curriculum, Integer> {
     @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s where m.id = :memberId ")
-    List<Curriculum> findByMemeberId(@Param("memberId") int memberId);
+    List<Curriculum> findByMemberId(@Param("memberId") int memberId);
 
 
 }
