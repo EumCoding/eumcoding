@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Video {
     private String name; // 비디오 이름
 
     @Column(name = "play_time")
-    private LocalTime playTime; // 총 재생시간
+    private Duration playTime; // 총 재생시간
 
     @Column(name = "description")
     private String description; // 영상 설명

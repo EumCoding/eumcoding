@@ -24,5 +24,5 @@ public class MyPlanListDTO {
     private int sectionProgress;//강좌 진행과정(전체 강좌에서 몇개 강좌를 완주하고있는지..)
 
     //plan
-    private List<SectionDTO> sectionDTOList;
+    private List<SectionDTO.SectionDTOList> sectionDTOList;
 }

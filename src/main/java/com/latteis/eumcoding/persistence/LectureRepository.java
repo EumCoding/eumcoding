@@ -22,6 +22,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Optional<Lecture> findByName(String name);
 
 
+    //lecture entity에 private Membef member로 받아서 쿼리문 저렇게 작성
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberId(@Param("memberId")int memberId);
 
