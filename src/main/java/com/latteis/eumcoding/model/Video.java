@@ -32,7 +32,7 @@ public class Video {
     private String name; // 비디오 이름
 
     @Column(name = "play_time")
-    private Duration playTime; // 총 재생시간
+    private LocalTime playTime; // 총 재생시간
 
     @Column(name = "description")
     private String description; // 영상 설명

@@ -17,7 +17,7 @@ public class MyPlanListDTO {
 
     private LocalDate date;
 
-    private int over; // 0: 안지남, 1: 지남
+    //private int over; // 0: 안지남, 1: 지남
 
     private int videoProgress; //강의 진행과정(한 강의 에서 얼마나 들었는지..)
 
