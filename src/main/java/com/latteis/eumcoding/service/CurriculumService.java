@@ -55,17 +55,12 @@ public class CurriculumService {
                 //현재 섹션에 포함된 모든 비디오를 조회
                 List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
 
-                // 섹션의 totalPlayTime을 계산
-                int totalPlayTime = sectionRepository.calculateTotalPlayTime(lectureSection.getId());
-                // timeTaken을 업데이트
-                lectureSection.setTimeTaken(totalPlayTime);
-
                 //VideoService 만든 이유가 반복문 안에 쓰면 매번 DB에 접근하게 돼서 섹션 수가 많아지면 느려짐
-                //VideoService에 add,update안쓰면 밑에 .save써야함
+                //VideoService에 add 밑에 .save써야함
                 //sectionRepository.save(lectureSection);
 
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
-                int over = CheckOver(curriculum, lectureSection, videoProgresses);
+                int over = CheckOver(lectureSection.getId(), videoProgresses);
 
 
                 for (Video video : sectionVideos) {
@@ -94,13 +89,10 @@ public class CurriculumService {
                 sectionDTOLists.add(sectionDTO);
             }
 
-            int timeTaken = curriculum.getTimeTaken();
 
-            List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
             MyPlanListDTO myPlanListDTO = MyPlanListDTO.builder()
                     .curriculumId(curriculum.getId())
                     .date(curriculum.getCreateDate())
-                    //.over(isOver(curriculum, curriculum.getSection(), videoProgresses))
                     .videoProgress(calculateOverallProgress(sectionDTOLists))
                     .sectionDTOList(sectionDTOLists)
                     .build();
@@ -127,38 +119,54 @@ public class CurriculumService {
     //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1
     //videoProgress에 state는 last_View를 가지고 Video에 playTime이랑 일치할 경우 state는 1로 바뀌도록
     //밑에 메서드에 표시해놨음  updateVideoProgressState
-    private int CheckOver(Curriculum curriculum, Section section, List<VideoProgress> videoProgresses) {
-        //섹션의 모든 동영상 가져오기
-        List<Video> videos = videoRepository.findBySection(section);
+    private int CheckOver(int sectionId, List<VideoProgress> videoProgresses) {
+        //section_id로 curriculum찾기
+        Curriculum curriculum = curriculumRepository.findBySectionId(sectionId);
+        //curriculum에 section_id에 설정되지 않은 섹션 아이디는 일단은 over 0으로 할거임
+        //즉 설정하지 않은 것에 대해선 다 0으로 기간지나지않음으로 처리
+        if (curriculum == null) {
+            return 0; // Curriculum이 없는 경우 over는 0
+        }
 
-        int totalViewTime = 0;
-        boolean allVideosCompleted = true;
+
+        // Curriculum에 연결된 모든 비디오를 가져옴
+        List<Video> videos = videoRepository.findByCurriculum(curriculum);
+
+        int totalViewTime = 0; //전체 시청 시간 저장
+        boolean allVideosCompleted = true; //섹션에 있는 비디오가 완료되었는지 확인
 
         for (Video video : videos) {
-            boolean videoCompleted = false;
-
+            boolean videoCompleted = false; //각 비디오가 완료되엇는지 확인
             for (VideoProgress vp : videoProgresses) {
-                //videoProgress가 현재 비디오와 일치하고 상태 1인지 확인
                 if (vp.getVideo().getId() == video.getId() && vp.getState() == 1) {
-                    // 총 시청 시간에 동영상 재생 시간을 더합니다(분으로 환산).
-                    //type 이 LocalTime이라 toMinute못씀
-                    totalViewTime += video.getPlayTime().toSecondOfDay() / 60;  //playTime을 분으로 변환
-                    videoCompleted = true;
+                    totalViewTime += video.getPlayTime().toSecondOfDay() / 60; //전체 시청시간에 비디오 재생 시간더하기
+                    videoCompleted = true; //비디오 완료
                     break;
                 }
             }
-            if(!videoCompleted){
+            if (!videoCompleted) {
                 allVideosCompleted = false;
-                //section.setTimeTaken(section.getTimeTaken() + (int) Math.ceil((double) video.getPlayTime().toSecondOfDay() / 60)); // 섹션 시간에 비디오 시간을 더함
             }
         }
-        //총 시청 시간이 커리큘럼에 설정된 소요 시간보다 큰지 확인 && state는 1이어야함
-        if (totalViewTime <= curriculum.getTimeTaken() && allVideosCompleted) {
-            return 0;
-        } else {
+
+        // Curriculum의 timeTaken을 분으로 변환 (1일 = 24시간 = 1440분)
+        int curriculumTimeTakenInMinutes = curriculum.getTimeTaken() * 24 * 60;
+
+        //섹션에 포함된 모든 비디오가 다 state가 1이아니면 over 1
+        if(!allVideosCompleted)
+        {
             return 1;
         }
+        // 모든 비디오가 완전히 시청되었지만, 전체 시청 시간이 Curriculum의 timeTaken을 초과하면 over는 1
+        if (totalViewTime > curriculumTimeTakenInMinutes) {
+            return 1;
+        }
+        // 그 외의 경우에는 over는 0
+        else {
+            return 0;
+        }
     }
+
 
     //video_progress에 state 상태를 해당 조건에 맞게 변경
     //lastView를 기준으로 영상의 10%들으면 수강시작

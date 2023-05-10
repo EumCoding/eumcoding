@@ -18,8 +18,8 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
 
 
 
-    @Query(value = "SELECT SUM(TIME_TO_SEC(play_time) / 60) FROM video WHERE section_id = :sectionId", nativeQuery = true)
-    Integer calculateTotalPlayTime(@Param("sectionId") int sectionId);
+/*    @Query(value = "SELECT SUM(TIME_TO_SEC(play_time) / 60) FROM video WHERE section_id = :sectionId", nativeQuery = true)
+    Integer calculateTotalPlayTime(@Param("sectionId") int sectionId);*/
 
 
 
