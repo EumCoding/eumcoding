@@ -12,4 +12,5 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     List<Curriculum> findByMemberId(@Param("memberId") int memberId);
 
 
+    Curriculum findBySectionId(int sectionId);
 }

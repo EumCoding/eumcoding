@@ -91,6 +91,7 @@ public class SectionDTO {
         private String lectureName;
         private String sectionName;
         private int progress;
+        private int over;
     }
 
 }

@@ -41,5 +41,5 @@ public class VideoProgress {
     private LocalDateTime end_day; // 수강종료일
 
     @Column(name = "last_view")
-    private Duration lastView; // 마지막 영상 위치
+    private LocalTime lastView; // 마지막 영상 위치
 }
