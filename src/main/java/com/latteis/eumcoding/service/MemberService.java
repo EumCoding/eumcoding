@@ -312,4 +312,6 @@ public class MemberService {
             throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
         }
     }
+
+
 }
