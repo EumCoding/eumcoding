@@ -19,6 +19,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+//myplan/list, myplan/update
 public class CurriculumService {
 
     private final CurriculumRepository curriculumRepository;
@@ -189,4 +190,16 @@ public class CurriculumService {
         videoProgressRepository.save(videoProgress);
     }
 
+    //내 커리큘럼 timetaken 수정하는 메서드
+    public Curriculum updateTimeTaken(int curriculumId, int newTimeTaken){
+        //커리큘럼 id로 커리큘럼 찾기
+        Curriculum curriculum = curriculumRepository.findById(curriculumId)
+        .orElseThrow(()-> new RuntimeException("없는 커리큘럼 입니다. 확인해주세요"));
+
+        //timetaken업데이트
+        curriculum.setTimeTaken(newTimeTaken);
+
+        //변경사항 저장하고 업데이트된 커리큘럼 반환
+        return curriculumRepository.save(curriculum);
+    }
 }

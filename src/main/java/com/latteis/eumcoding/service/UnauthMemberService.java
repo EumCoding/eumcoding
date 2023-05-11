@@ -165,6 +165,7 @@ public class UnauthMemberService {
         final Member originalMember = memberRepository.findByEmail(email); // 이메일로 MemberEntity를 찾음
         // 패스워드가 같은지 확인
         if(originalMember != null && encoder.matches(password, originalMember.getPassword())){
+            checkMemberState(originalMember.getId());
             MemberDTO memberDTO = new MemberDTO(originalMember);
             return memberDTO;
         }
@@ -198,6 +199,18 @@ public class UnauthMemberService {
             return false;
         }
         return true;
+    }
+
+
+    // 회원의 state(이메일인증확인) 0인지 1인지
+    //1이어야 모든 사이트 서비스 이용가능(게시판,리뷰,결제,강의듣기 등등)
+    private void checkMemberState(int memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+
+        if (member.getState() != 1) {
+            throw new RuntimeException("이메일 인증을 해주셔야 합니다.");
+        }
     }
 
 }

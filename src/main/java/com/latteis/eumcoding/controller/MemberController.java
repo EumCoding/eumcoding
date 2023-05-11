@@ -3,6 +3,7 @@ package com.latteis.eumcoding.controller;
 import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
+import com.latteis.eumcoding.model.Curriculum;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.CurriculumService;
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -183,6 +185,23 @@ public class MemberController {
         {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    //내 커리큘럼 timetaken 업데이트 컨트롤러
+    @PostMapping("/myplan/update/{curriculumId}")
+    public ResponseEntity<?> myPlanUpdate(@ApiIgnore Authentication authentication
+                                        ,@PathVariable int curriculumId,@RequestParam int newTimeTaken) {
+
+        if(authentication == null || !authentication.isAuthenticated()){
+            return new ResponseEntity<>("로그인을 해주세요",HttpStatus.UNAUTHORIZED);
+        }
+        try{
+            Curriculum updateCurriculum = curriculumService.updateTimeTaken(curriculumId,newTimeTaken);
+            return new ResponseEntity<>("timeTaken 변경에 성공했습니다.",HttpStatus.OK);
+
+        }catch(RuntimeException e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -67,6 +67,8 @@ public class UnauthMember {
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody MemberDTO.loginDTO loginDTO) {
 
+        try{
+
         // 로그인 성공 시에만 MemberEntity 가져옴
         MemberDTO successMemberDTO = unauthMemberService.getByCredentials(
                 loginDTO.getEmail(),
@@ -92,10 +94,15 @@ public class UnauthMember {
         } else {
             // MemberEntity 가져오기 실패 시 -> 로그인 실패
             ResponseDTO responseDTO = ResponseDTO.builder()
-                    .error("login failed").build();
+                    .error("로그인 실패").build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
-
+    } catch (RuntimeException e){
+            //예외발생->이메일 인증 실패,
+            ResponseDTO responseDTO = ResponseDTO.builder()
+                    .error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 
