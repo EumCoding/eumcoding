@@ -1,35 +1,21 @@
 package com.latteis.eumcoding.service;
 
-import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.beans.Transient;
 import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,6 +31,12 @@ public class MemberService {
     @Value("${file.path}")
     private String filePath;
 
+    // 로그인한 아이디로 찾은 Entity가 비어있는지 검사
+    public void chkIfEntityIsEmpty(Object object) {
+        if (object == null) {
+            throw new RuntimeException("LectureService.chkIfEntityIsEmpty() : 로그인한 유저는 자격이 없습니다.");
+        }
+    }
 
     //프로필 확인
     public MemberDTO viewProfile(MemberDTO memberDTO){

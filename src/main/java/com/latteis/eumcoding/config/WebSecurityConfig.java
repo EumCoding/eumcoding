@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.filter.CorsFilter;
 
 @EnableWebSecurity
@@ -42,6 +43,7 @@ public class WebSecurityConfig {
                         "/board/comment/unauth/**",
                         "/lecture/review/unauth/**",
                         "/lecture/question/unauth/**",
+                        "/lecture/section/unauth/**",
                         "/images/menu/**",
                         "/images/**",
                         "/gender/**",
