@@ -45,21 +45,67 @@ public class SectionDTO {
 
     }
 
-    // 섹션 추가 요청 DTO
+    // TimeTaken 수정 요청 DTO
     @Getter
     @NoArgsConstructor
-    @ApiModel(value = "섹션 추가 요청 DTO")
+    @ApiModel(value = "TimeTaken 수정 요청 DTO")
     public static class TimeTakenRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
-        @ApiModelProperty(value = "강의 ID", example = "1")
-        private int lectureId;
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int id;
 
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "섹션 수강 완료에 걸리는 시간", example = "1000")
         private int timeTaken;
 
     }
+
+    // 섹션 이름 수정 요청 DTO
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "섹션 이름 수정 요청 DTO")
+    public static class NameRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int id;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "섹션 이름", example = "섹션입니다")
+        private String name;
+
+    }
+
+    // 섹션 추가 응답 DTO
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "섹션 리스트 응답 DTO")
+    public static class ListResponseDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int id;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 수강 완료에 걸리는 시간", example = "1000")
+        private int timeTaken;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "섹션명", example = "섹션명입니다")
+        private String name;
+
+        @ApiModelProperty(value = "비디오 리스트", example = "비디오 리스트입니다")
+        private List<VideoDTO.SectionListDTO> videoDTOList;
+
+        public ListResponseDTO(Object[] objects) {
+            this.id = (int) objects[0];
+            this.timeTaken = (int) objects[1];
+            this.name = (String) objects[2];
+        }
+    }
+
     private int sectionId; // 사용자에게 고유하게 부여되는 값
 
     private int lectureId;

@@ -1,7 +1,5 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.dto.MainPopularLectureDTO;
-import com.latteis.eumcoding.model.Board;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import org.springframework.data.domain.Page;
@@ -46,4 +44,15 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query(value = "SELECT member_id FROM lecture WHERE id = :id", nativeQuery = true)
     int findMemberIdById(@Param("id") int lectureId);
 
+    // 해당 lectureId와 member에 맞는 Entity가 있는지 검사
+    boolean existsByIdAndMember(int id, Member member);
+
+    Lecture findByIdAndMember(int id, Member member);
+
+    @Query(value = "SELECT * FROM lecture WHERE id = :id AND member_id = :memberId", nativeQuery = true)
+    Lecture findByIdAndMemberId(@Param("id") int id, @Param("memberId") int memberId);
+
+    // 내가 등록한 강의 리스트 가져오기
+    @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
+    Page<Object[]> getUploadListByMemberId(@Param("memberId") int memberId, Pageable pageable);
 }

@@ -1,3 +1,4 @@
+/*
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.MemberDTO;
@@ -90,4 +91,4 @@ public class SearchController {
 
     }
 
-}
+}*/

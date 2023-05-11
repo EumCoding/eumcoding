@@ -34,30 +34,30 @@ public class LectureStudentDTO {
 
     // 학생 목록 응답 DTO
     @Getter
+    @Setter
     @NoArgsConstructor
     @ApiModel(value = "학생 목록 응답 DTO")
     public static class ListResponseDTO {
 
         @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "학생 ID", example = "1")
-        private int id;
+        private int memberId;
 
         @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "닉네임", example = "닉네임")
         private String nickname;
 
-        @Positive(message = "양수만 가능합니다.")
-        @ApiModelProperty(value = "progress", example = "progress")
-        private int progress;
-
         @ApiModelProperty(value = "시작일", example = "2023-04-13 01:47:52.000")
         private LocalDateTime startDay;
 
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "전체 진행도. %표시", example = "progress")
+        private int progress;
+
         public ListResponseDTO(Object[] objects) {
-            this.id = (int) objects[0];
+            this.memberId = (int) objects[0];
             this.nickname = (String) objects[1];
-            this.progress = (int) objects[2];
-            this.startDay = timestampToLocalDateTime((Timestamp) objects[4]);
+            this.startDay = timestampToLocalDateTime((Timestamp) objects[2]);
         }
 
         // Timestamp -> LocalDateTime 변환
