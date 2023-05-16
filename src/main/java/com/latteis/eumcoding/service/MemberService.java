@@ -223,10 +223,7 @@ public class MemberService {
 
     // 프로필 이미지 변경
     public MemberDTO updateProfileImg(int memberId, MemberDTO.UpdateProfile memberDTO) {
-
-
         try {
-
             // 이미지가 있는 경우
             if (memberDTO.checkProfileImgRequestNull()) {
 
@@ -234,7 +231,7 @@ public class MemberService {
 
                 // 기존 이미지 삭제
                 if (member.getProfile() != null) {
-                    String tempPath = "C:" + File.separator + "eum" + File.separator + "member" + File.separator + member.getProfile();
+                    String tempPath = "C:" + File.separator + "eum" + File.separator + "member" + File.separator + member.getId();
                     File delFile = new File(tempPath);
                     // 해당 파일이 존재하는지 한번 더 체크 후 삭제
                     if(delFile.isFile()){
@@ -293,7 +290,7 @@ public class MemberService {
                     }
                 }
                 memberRepository.save(member);
-                return MemberDTO.builder().profileImg(member.getProfile()).build();
+                return MemberDTO.builder().profile(member.getProfile()).build();
             } else {
                 log.warn("MemberService.updateProfileImg() : 사진이 없습니다.");
                 throw new RuntimeException("MemberService.updateProfileImg() : 사진이 없습니다.");
@@ -303,6 +300,7 @@ public class MemberService {
             e.printStackTrace();
             throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
         }
+
     }
 
 

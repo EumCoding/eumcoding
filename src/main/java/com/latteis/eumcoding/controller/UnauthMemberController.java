@@ -4,28 +4,19 @@ import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
-import com.latteis.eumcoding.service.MemberService;
 import com.latteis.eumcoding.service.UnauthMemberService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/unauth/member")
-public class UnauthMember {
+public class UnauthMemberController {
 
     private final EmailTokenService emailTokenService;
 
@@ -39,12 +30,11 @@ public class UnauthMember {
     // 회원가입
     //@RequestParam("profileImgRequest") MultipartFile profileImgRequest
     //swagger에서 테스트하려면 매개변수에 집어넣어야함
-
     @PostMapping("/signup")
-    public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO,@RequestParam("profileImgRequest") MultipartFile profileImgRequest ) {
+    public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO) {
 
         try {
-            MemberDTO registeredMember = unauthMemberService.add(memberDTO,profileImgRequest);
+            MemberDTO registeredMember = unauthMemberService.add(memberDTO);
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(registeredMember.getEmail())
                     .nickname(registeredMember.getNickname())
@@ -61,6 +51,8 @@ public class UnauthMember {
         }
 
     }
+
+
 
 
     // 로그인
@@ -85,7 +77,7 @@ public class UnauthMember {
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(successMemberDTO.getEmail())
                     .id(successMemberDTO.getId())
-                    .token(token)
+                    .token(token) 
                     .role(successMemberDTO.getRole())//멤버 타입
                     .nickname(successMemberDTO.getNickname())
                     .build();

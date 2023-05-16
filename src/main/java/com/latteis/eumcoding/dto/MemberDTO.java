@@ -84,11 +84,9 @@ public class MemberDTO {
 
     }
 
-    @Getter
-    @Setter
+    @Data
     @NoArgsConstructor
     public static class Sign{
-
 
         private String password;
 
@@ -205,5 +203,6 @@ public class MemberDTO {
     public boolean checkProfileImgRequestNull() {
         return this.profileImgRequest != null;
     }
+
 
 }
