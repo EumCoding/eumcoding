@@ -21,9 +21,9 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
             "AND m.id = p.member_id AND pl.lecture_id = :lectureId AND lp.state = :state", nativeQuery = true)
     Page<Object[]> getStudentList(@Param("lectureId") int lectureId, @Param("state") int state, Pageable pageable);
 
-    /*@Query(value = "SELECT p.member.id, m.nickname,lp.start_day " +
-            "FROM LectureProgress lp, lp.payLecture pl, pl.payment p, p.member m " +
-            "WHERE pl.lecture = :lecture AND lp.state = :state")
-    Page<Object[]> getStudentList1(@Param("lecture") Lecture lecture, @Param("state") int state, Pageable pageable);
-     */
+    @Query(value = "SELECT p.member.id, m.nickname,lp.start_day, lp.end_day " +
+            "FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m " +
+            "WHERE pl.lecture.id = :lectureId")
+    Page<Object[]> getStudentList1(@Param("lectureId") int lectureId, Pageable pageable);
+
 }

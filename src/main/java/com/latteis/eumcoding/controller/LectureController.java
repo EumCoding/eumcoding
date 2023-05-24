@@ -10,10 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -32,10 +30,18 @@ public class LectureController {
     // 강의 생성
     @PostMapping(value = "/create")
     @ApiOperation(value = "강의 생성")
-    public ResponseEntity<Object> createLecture(@ApiIgnore Authentication authentication, @Valid @RequestBody LectureDTO.CreateRequestDTO createRequestDTO) {
+    public ResponseEntity<Object> createLecture(@ApiIgnore Authentication authentication,
+                                                @Valid LectureDTO.CreateRequestDTO createRequestDTO,
+                                                @RequestPart(value = "image", required = false) List<MultipartFile> image,
+                                                @RequestPart(value = "thumb", required = false) List<MultipartFile> thumb,
+                                                @RequestPart(value = "badge", required = false) List<MultipartFile> badge) {
 
         try {
-            lectureService.createLecture(Integer.parseInt(authentication.getPrincipal().toString()), createRequestDTO);
+            lectureService.createLecture(Integer.parseInt(authentication.getPrincipal().toString()),
+                                        createRequestDTO,
+                                        image,
+                                        thumb,
+                                        badge);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -106,6 +112,54 @@ public class LectureController {
 
         try {
             lectureService.updatePrice(Integer.parseInt(authentication.getPrincipal().toString()), priceRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 강의 설명 이미지 수정
+    @PostMapping(value = "/update/image")
+    @ApiOperation(value = "강의 설명 이미지 수정")
+    public ResponseEntity<Object> updateImage(@ApiIgnore Authentication authentication,
+                                              @Valid LectureDTO.IdRequestDTO idRequestDTO,
+                                              @RequestPart(value = "image", required = false) List<MultipartFile> image) {
+
+        try {
+            lectureService.updateImage(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO, image);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 강의 썸네일 이미지 수정
+    @PostMapping(value = "/update/thumb")
+    @ApiOperation(value = "강의 썸네일 이미지 수정")
+    public ResponseEntity<Object> updateThumb(@ApiIgnore Authentication authentication,
+                                              @Valid LectureDTO.IdRequestDTO idRequestDTO,
+                                              @RequestPart(value = "thumb", required = false) List<MultipartFile> thumb) {
+
+        try {
+            lectureService.updateThumb(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO, thumb);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 강의 뱃지 이미지 수정
+    @PostMapping(value = "/update/badge")
+    @ApiOperation(value = "강의 뱃지 이미지 수정")
+    public ResponseEntity<Object> updateBadge(@ApiIgnore Authentication authentication,
+                                              @Valid LectureDTO.IdRequestDTO idRequestDTO,
+                                              @RequestPart(value = "badge", required = false) List<MultipartFile> badge) {
+
+        try {
+            lectureService.updateBadge(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO, badge);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

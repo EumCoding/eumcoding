@@ -52,6 +52,7 @@ public class LectureDTO {
 
     // 강의 생성 요청 DTO
     @Getter
+    @Setter
     @NoArgsConstructor
     @ApiModel(value = "강의 생성 요청 DTO")
     public static class CreateRequestDTO {
@@ -185,6 +186,47 @@ public class LectureDTO {
             return timestamp.toLocalDateTime();
         }
 
+
+    }
+
+    // 통계 메인에 들어가는 강의 리스트 응답 DTO
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "통계 메인에 들어가는 강의 리스트 응답 DTO")
+    public static class StatsListResponseDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int id;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "강의명", example = "강의명입니다")
+        private String name;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "가격", example = "10000")
+        private int price;
+
+        @ApiModelProperty(value = "등록일", example = "2023-04-13 01:47:52.000")
+        private LocalDateTime createdDay;
+
+        @ApiModelProperty(value = "강의 썸네일", example = ".jpg")
+        private String thumb;
+
+        private int salesVolume;
+
+        public StatsListResponseDTO(Object[] objects) {
+            this.id = (int) objects[0];
+            this.name = (String) objects[1];
+            this.price = (int) objects[2];
+            this.createdDay = timestampToLocalDateTime((Timestamp) objects[3]);
+            this.thumb = objects[4] != null ? (String) objects[4] : null;
+        }
+
+        // Timestamp -> LocalDateTime 변환
+        public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
+            return timestamp.toLocalDateTime();
+        }
 
     }
 
