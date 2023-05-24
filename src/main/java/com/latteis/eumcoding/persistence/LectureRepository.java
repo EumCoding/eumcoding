@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     //lecture entity에 private Membef member로 받아서 쿼리문 저렇게 작성
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
-    List<Lecture> findByMemberId(@Param("memberId")int memberId);
+    List<Lecture> findByMemberId(@Param("memberId") int memberId);
 
     //review 테이블 이랑 연결해서 
     //review 테이블에 rating 컬럼을 가져와서
@@ -55,4 +56,25 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     // 내가 등록한 강의 리스트 가져오기
     @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
     Page<Object[]> getUploadListByMemberId(@Param("memberId") int memberId, Pageable pageable);
+
+
+    // 기간별 통계
+    @Query(value = "SELECT sum(pl3.price) AS salesRevenue, " +
+            "count(*) AS salesVolume, " +
+            "(SELECT avg(rating) FROM review r WHERE r.lecture_id = :lectureId " +
+            "AND r.created_day  >= :startDate AND r.created_day  <= :endDate) AS reviewRating " +
+            "FROM lecture l, payment p, pay_lecture pl3 " +
+            "WHERE l.id = pl3.lecture_id " +
+            "AND p.id = pl3.payment_id " +
+            "AND l.member_id = :memberId AND p.state = 1 AND l.id = :lectureId " +
+            "AND p.pay_day >= :startDate AND p.pay_day <= :endDate " +
+            "GROUP BY l.id", nativeQuery = true)
+    Object[] getStatsByDate(@Param("memberId") int memberId,
+                               @Param("lectureId") int lectureId,
+                               @Param("startDate") LocalDate startDate,
+                               @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = "SELECT l.id, l.name, l.price, l.createdDay, l.thumb FROM Lecture l WHERE l.member.id = :memberId")
+    List<Object[]> getStatsLectureList(@Param("memberId") int memberId);
 }
