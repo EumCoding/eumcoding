@@ -28,8 +28,7 @@ public class UnauthMemberController {
 
 
     // 회원가입
-    //@RequestParam("profileImgRequest") MultipartFile profileImgRequest
-    //swagger에서 테스트하려면 매개변수에 집어넣어야함
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerMember(MemberDTO.Sign memberDTO) {
 
@@ -51,9 +50,6 @@ public class UnauthMemberController {
         }
 
     }
-
-
-
 
     // 로그인
     @PostMapping("/signin")

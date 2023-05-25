@@ -26,12 +26,13 @@ public class SearchService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
 
-    public List<SearchDTO> searchLectures(String searchKeyword, Pageable pageable) {
-        if (searchKeyword == null || searchKeyword.isEmpty()) {
+    public List<SearchDTO> searchLectures(String name, Pageable pageable) {
+        Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("값을 입력하세요");
         }
 
-        List<Lecture> lectures = lectureRepository.findByNameContaining(searchKeyword, pageable);
+        List<Lecture> lectures = lectureRepository.findByNameContaining(name, updatedPageable);
         if (lectures.isEmpty()) {
             throw new NoSuchElementException("해당 강좌는 없습니다.");
         }
@@ -61,10 +62,11 @@ public class SearchService {
 
 
     //선생님 이름 입력했을경우, 해당 선생님이 등록한 강좌 모두 나오게
-    public List<SearchDTO> searchTeacher(String searchKeyword, Pageable pageable) {
+    public List<SearchDTO> searchTeacher(String teacherName, Pageable pageable) {
+        Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         boolean teacherFound = false;
 
-        List<Member> members = memberRepository.findByNameContaining(searchKeyword, pageable);
+        List<Member> members = memberRepository.findByName(teacherName, updatedPageable);
         List<SearchDTO> searchTeachers = new ArrayList<>();
 
         for (Member member : members) {
@@ -101,12 +103,13 @@ public class SearchService {
     }
 
         //학년으로 검색햇을경우 해당 학년에 맞는 강좌가 쭈르륵 나와야함
-        public List<SearchDTO.SearchGradeDTO> searchGrade(int searchKeyword, Pageable pageable){
+        public List<SearchDTO.SearchGradeDTO> searchGrade(int grade, Pageable pageable){
+            Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
 
-            if (searchKeyword < 1 || searchKeyword > 6) { //잘못된 학년 값 입력
+            if (grade < 1 || grade > 6) { //잘못된 학년 값 입력
                 throw new IllegalArgumentException("1~6학년까지만 존재합니다.");
             }
-            List<Lecture> lectures = lectureRepository.findByGrade(searchKeyword, pageable);
+            List<Lecture> lectures = lectureRepository.findByGrade(grade, updatedPageable);
 
             if(lectures.isEmpty()){
                 throw new NoSuchElementException("해당 학년의 강의는 존재하지 않습니다.");
