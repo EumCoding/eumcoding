@@ -1,18 +1,25 @@
 package com.latteis.eumcoding.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 
+import javax.validation.constraints.Positive;
+
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class InterestLectureDTO {
-    private int interestLectureId;
 
-    private int lectureId;
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "강의 ID 요청 DTO")
+    public static class IdRequestDTO {
 
-    private int memberId;
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int lectureId;
+
+    }
+
 }
