@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.AnswerDTO;
+import com.latteis.eumcoding.dto.QuestionCommentDTO;
 import com.latteis.eumcoding.model.Answer;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
@@ -8,9 +9,16 @@ import com.latteis.eumcoding.model.Question;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -118,6 +126,47 @@ public class QuestionCommentService {
         return answerDeleteDTOResult;
     }
 
+    //강사가 자신이 답변한 목록들 볼 수 있게 하는 부분
+    public List<QuestionCommentDTO.QnAAnswerListDTO> getQnAAnswerList(int memberId, LocalDate start, LocalDate end, int page, int size) {
+        // 페이징을 위한 처리
+        int defaultPage = page - 1;
+        if (defaultPage < 0){
+            throw new IllegalArgumentException("페이지오류");
+        }
 
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.plusDays(1).atStartOfDay();
+
+
+        Pageable pageable = PageRequest.of(defaultPage, size, Sort.by(Sort.Direction.DESC, "createdDay"));
+
+        Member member = memberRepository.findByMemberId(memberId);
+        List<QuestionCommentDTO.QnAAnswerListDTO> qnaAnswerListDTOs = new ArrayList<>();
+
+
+        if (member != null && member.getRole() == 1) {
+            Page<Answer> answersPage = answerRepository.findByMemberAndCreatedDayBetween(member, startDateTime, endDateTime, pageable);
+
+            for (Answer answer : answersPage) {
+                Question question = answer.getQuestion();
+
+                QuestionCommentDTO.QnAAnswerListDTO qnaAnswerListDTO = QuestionCommentDTO.QnAAnswerListDTO.builder()
+                        .qnaId(answer.getId())
+                        .title(question.getTitle())
+                        .questionId(question.getId())
+                        .memberId(question.getMember().getId())
+                        .nickname(question.getMember().getNickname())
+                        .date(answer.getCreatedDay())
+                        .lectureId(question.getLecture().getId())
+                        .lectureName(question.getLecture().getName())
+                        .answerId(answer.getId())
+                        .build();
+
+                qnaAnswerListDTOs.add(qnaAnswerListDTO);
+            }
+        }
+
+        return qnaAnswerListDTOs;
+    }
 
 }

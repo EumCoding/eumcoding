@@ -48,6 +48,9 @@ public class QuestionService {
     @Transactional
     public QuestionDTO.writeQuestionDTO writeQuestion(int memberId, QuestionDTO.writeQuestionDTO writeQuestionDTO) throws IOException {
         Member member = memberRepository.findByMemberId(memberId);
+        if (member.getRole() != 0) {
+            throw new IllegalArgumentException("회원만 질문을 작성할 수 있습니다.");
+        }
 
         Lecture lecture = lectureRepository.findById(writeQuestionDTO.getLectureId());
         if (lecture == null) {
@@ -77,7 +80,6 @@ public class QuestionService {
             if (!multipartFile.isEmpty()) {
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-
 
                 //String absolutePath = "C:" +File.separator + "eumCoding" + File.separator + "member";
                 String absolutePath = filePath;
