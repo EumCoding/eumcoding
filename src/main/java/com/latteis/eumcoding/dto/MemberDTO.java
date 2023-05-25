@@ -84,11 +84,9 @@ public class MemberDTO {
 
     }
 
-    @Getter
-    @Setter
+    @Data
     @NoArgsConstructor
     public static class Sign{
-
 
         private String password;
 
@@ -159,7 +157,7 @@ public class MemberDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate birthDay;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime joinDay;
 
     private int gender;
@@ -205,5 +203,6 @@ public class MemberDTO {
     public boolean checkProfileImgRequestNull() {
         return this.profileImgRequest != null;
     }
+
 
 }

@@ -21,19 +21,11 @@ public class Answer {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "question_answer",
-            joinColumns = @JoinColumn(name = "question_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinColumn(name = "question_id")
     private Question question;
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_answer",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(name = "content")

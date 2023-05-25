@@ -20,13 +20,13 @@ public class Question {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @Column(name = "lecture_id")
-    @JoinColumn(name = "id")
-    private int lectureId;
+    @ManyToOne
+    @JoinColumn(name = "lecture_id")
+    private Lecture lecture;
 
-    @Column(name = "member_id")
-    @JoinColumn(name = "id")
-    private int memberId;
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "title")
     private String title;

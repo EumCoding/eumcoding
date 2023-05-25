@@ -19,19 +19,11 @@ public class Basket {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "lecture_basket",
-            joinColumns = @JoinColumn(name = "lecture_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @ManyToOne
+    @JoinColumn(name = "lecture_id")
     private Lecture lecture;
 
-    @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_basket",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @ManyToOne
+    @JoinColumn(name = "member_id")
     private Member member;
 }

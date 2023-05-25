@@ -21,7 +21,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Optional<Lecture> findByName(String name);
 
 
-    //lecture entity에 private Membef member로 받아서 쿼리문 저렇게 작성
+    //lecture entity에 private Member member로 받아서 쿼리문 저렇게 작성
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberId(@Param("memberId") int memberId);
 
@@ -36,10 +36,13 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Lecture> findTop5ByOrderByCreatedDayDesc();
 
     //강좌 이름 검색
-    List<Lecture> findByNameContaining(String searchKeyword, Pageable paging);
+    @Query("SELECT l FROM Lecture l WHERE l.name = :name")
+    List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
 
     //학년으로 검색
-    List<Lecture> findByGrade(int searchKeyword, Pageable paging);
+    @Query("SELECT l FROM Lecture l WHERE l.grade = :grade")
+    List<Lecture> findByGrade(@Param("grade") int grade, Pageable paging);
+
 
     // 강의 Id로 회원Id 찾기
     @Query(value = "SELECT member_id FROM lecture WHERE id = :id", nativeQuery = true)

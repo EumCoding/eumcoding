@@ -1,4 +1,3 @@
-/*
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.MemberDTO;
@@ -38,7 +37,7 @@ public class SearchController {
     @GetMapping("/lecture")
     public ResponseEntity<?> searchLectures(
             @RequestParam("searchKeyword") String searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         List<SearchDTO> searchLectures;
@@ -57,7 +56,7 @@ public class SearchController {
     @GetMapping("/teacher")
     public ResponseEntity<?> searchTeacherLectures(
             @RequestParam("searchKeyword") String searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         List<SearchDTO> searchTeacherLectures;
@@ -76,7 +75,7 @@ public class SearchController {
     @GetMapping("/grade")
     public ResponseEntity<?> searchGradeLectures(
             @RequestParam("searchKeyword") int searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         List<SearchDTO.SearchGradeDTO> searchGradeLectures;
@@ -91,4 +90,4 @@ public class SearchController {
 
     }
 
-}*/
+}
