@@ -19,13 +19,71 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class VideoDTO {
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 ID 요청 DTO")
+    public static class IdRequestDTO {
 
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 ID", example = "1")
+        private int Id;
+
+    }
+
+        // 동영상 업로드 요청 DTO
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 업로드 요청 DTO")
+    public static class UploadRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int sectionId;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "동영상 이름", example = "동영상 이름입니다")
+        private String name;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "동영상 설명", example = "동영상 설명입니다")
+        private String description;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "0 : 미리보기 금지, 1 : 미리보기 가능", example = "1")
+        private int preview;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 수정 요청 DTO")
+    public static class UpdateRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 ID", example = "1")
+        private int Id;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "동영상 이름", example = "동영상 이름입니다")
+        private String name;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "동영상 설명", example = "동영상 설명입니다")
+        private String description;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "0 : 미리보기 금지, 1 : 미리보기 가능", example = "1")
+        private int preview;
+
+    }
 
 
     // 섹션 리스트 응답 DTO
@@ -85,5 +143,4 @@ public class VideoDTO {
 
     private String thumbResponse;
 
-    private String sequence; // 영상 순서. 0부터 시작
 }
