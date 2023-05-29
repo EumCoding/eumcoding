@@ -6,10 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 
 @Data
 @Entity
@@ -50,5 +48,5 @@ public class Video {
     private String thumb; // 썸네일이 저장된 위치
 
     @Column(name = "sequence")
-    private String sequence; // 영상 순서. 0부터 시작
+    private int sequence; // 영상 순서. 0부터 시작
 }
