@@ -22,11 +22,7 @@ public class VideoTest {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "video_video_test",
-            joinColumns = @JoinColumn(name = "video_Id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinColumn(name = "video_id")
     private Video video;
 
     @Column(name = "test_time")

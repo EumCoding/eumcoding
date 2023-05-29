@@ -19,7 +19,7 @@ import javax.persistence.ManyToOne;
 public class VideoTestLogDTO {
     private int videoTestLogId; // 사용자에게 고유하게 부여되는 값
 
-    private int videoId;
+    private int videoTestId;
 
     private int memberId;
 
