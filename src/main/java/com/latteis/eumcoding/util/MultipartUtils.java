@@ -21,6 +21,12 @@ public class MultipartUtils {
 //            "image/gif"
     );
 
+    // 사용 가능한 동영상 형식
+    private static final List<String> ALLOWED_VIDEO_TYPES = Arrays.asList(
+            "video/mp4",
+            "video/avi"
+    );
+
     /**
      * MultipartFile이 이미지 형식인지 확인합니다.
      */
@@ -31,6 +37,18 @@ public class MultipartUtils {
         }
 
         return ALLOWED_IMAGE_TYPES.contains(contentType);
+    }
+
+    /**
+     * MultipartFile이 비디오 형식인지 확인합니다.
+     */
+    public static boolean isVideo(MultipartFile multipartFile) {
+        String contentType = multipartFile.getContentType();
+        if (contentType == null) {
+            return false;
+        }
+
+        return ALLOWED_VIDEO_TYPES.contains(contentType);
     }
 
     /**
@@ -46,6 +64,36 @@ public class MultipartUtils {
 
         // 이미지 파일인지 체크
         Preconditions.checkArgument(isImage(multipartFile), "이미지 파일이 아닙니다. (파일명: %s)", multipartFile.getOriginalFilename());
+
+        // 확장자 계산
+        String contentType = multipartFile.getContentType();
+        String fileExtension = contentType.substring(contentType.lastIndexOf("/") + 1);
+
+        // 새로운 파일 경로 지정
+        directory.mkdirs();
+        File newFile = new File(directory, fileName + "." + fileExtension);
+
+        // 파일 저장
+        multipartFile.transferTo(newFile);
+
+        log.info(multipartFile.getOriginalFilename() + " -> " + fileName + " 저장 완료 (" + newFile.getAbsolutePath() + ")");
+
+        return newFile;
+    }
+
+    /**
+     * MultipartFile을 지정된 폴더에 비디오 파일로 저장합니다.
+     * 저장한 후 저장한 File을 반환합니다.
+     * @param directory 저장할 폴더
+     * @param fileName 파일 이름 (확장자 제외)
+     * @return 저장된 파일을 반환합니다.
+     */
+    @SneakyThrows
+    public static File saveVideo(MultipartFile multipartFile, File directory, String fileName) {
+        log.info(multipartFile.getOriginalFilename() + " -> " + fileName + " 저장 시작");
+
+        // 이미지 파일인지 체크
+        Preconditions.checkArgument(isVideo(multipartFile), "비디오 파일이 아닙니다. (파일명: %s)", multipartFile.getOriginalFilename());
 
         // 확장자 계산
         String contentType = multipartFile.getContentType();
