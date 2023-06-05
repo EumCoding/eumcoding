@@ -95,29 +95,62 @@ public class PaymentService {
 
             List<LectureDTO.PayLectureIdNameDTO> lectureDTOList = new ArrayList<>();
 
-            for (PayLecture payLecture : payLectures) {
-                Lecture lecture = payLecture.getLecture();
+            if(payment.getState() == 1){
+                for (PayLecture payLecture : payLectures) {
+                    Lecture lecture = payLecture.getLecture();
 
-                LectureDTO.PayLectureIdNameDTO lectureDTO = LectureDTO.PayLectureIdNameDTO.builder()
-                        .id(lecture.getId())
-                        .name(lecture.getName())
-                        .price(lecture.getPrice())
+                    LectureDTO.PayLectureIdNameDTO lectureDTO = LectureDTO.PayLectureIdNameDTO.builder()
+                            .id(lecture.getId())
+                            .name(lecture.getName())
+                            .price(lecture.getPrice())
+                            .build();
+
+                    lectureDTOList.add(lectureDTO);
+                }
+
+                PaymentDTO paymentDTO = PaymentDTO.builder()
+                        .paymentId(payment.getId())
+                        .memberId(payment.getMember().getId())
+                        .date(payment.getPayDay())
+                        .lectureDTOList(lectureDTOList)
                         .build();
 
-                lectureDTOList.add(lectureDTO);
+                paymentDTOs.add(paymentDTO);
             }
-
-            PaymentDTO paymentDTO = PaymentDTO.builder()
-                    .paymentId(payment.getId())
-                    .date(payment.getPayDay())
-                    .lectureDTOList(lectureDTOList)
-                    .build();
-
-            paymentDTOs.add(paymentDTO);
         }
-
         return paymentDTOs;
 }
+
+    @Transactional
+    public void cancelPayment(int memberId, int paymentId) throws Exception {
+        // 회원 확인
+        Member member = memberRepository.findByMemberId(memberId);
+
+        // 결제 확인
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new Exception("해당 결제가 존재하지 않습니다."));
+
+        // 결제 회원 확인
+        if (payment.getMember().getId() != member.getId()) {
+            throw new Exception("해당 회원의 결제가 아닙니다.");
+        }
+
+        // 결제 상태 확인
+        if (payment.getState() != 1) { // 1: 결제 완료
+            throw new Exception("이미 취소되었거나 완료되지 않은 결제입니다.");
+        }
+
+        // 결제 상태를 취소로 변경 (0: 취소 상태로 설정)
+        payment.setState(0);
+        paymentRepository.save(payment);
+
+        // 관련된 PayLecture도 삭제
+        List<PayLecture> payLectures = payLectureRepository.findByPaymentId(paymentId);
+        for (PayLecture payLecture : payLectures) {
+           payLectureRepository.delete(payLecture);
+        }
+    }
+
 
 
 }

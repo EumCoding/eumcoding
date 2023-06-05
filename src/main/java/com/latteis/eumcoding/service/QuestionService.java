@@ -113,7 +113,6 @@ public class QuestionService {
 
                     //file = new File(absolutePath + File.separator + new_file_name + originalFileExtension);
                     file = new File(absolutePath + (absolutePath.endsWith(File.separator) ? "" : File.separator) + new_file_name + originalFileExtension);
-
                     multipartFile.transferTo(file);
 
                     file.setWritable(true);
@@ -209,7 +208,7 @@ public class QuestionService {
                 }
             }
         }
-        question = questionRepository.save(question);
+        questionRepository.save(question);
 
         QuestionDTO.updateQuestionDTO updatedQuestion = QuestionDTO.updateQuestionDTO.builder()
                 .questionId(updateQuestionDTO.getQuestionId())

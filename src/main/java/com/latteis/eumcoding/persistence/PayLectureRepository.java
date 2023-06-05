@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PayLectureRepository extends JpaRepository<PayLecture, Integer> {
-    
+
+
     //해당 강의를 결제한 학생들을 파악하기 위해 사용
-    //totalStudent구하기위해서, state 가 0이면 성공, 1이면 실패
+    //totalStudent구하기위해서, state 가 0이면 실패, 1이면 성공
     @Query("SELECT p1 FROM PayLecture p1 JOIN p1.payment p JOIN p1.lecture l WHERE l.id = :lectureId AND p.state = :state")
     List<PayLecture> findByLectureIdAndState(@Param("lectureId")int lectureId, @Param("state") int state);
 

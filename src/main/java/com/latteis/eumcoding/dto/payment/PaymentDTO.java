@@ -18,10 +18,9 @@ import java.util.List;
 public class PaymentDTO {
     @ApiParam("결제번호")
     private int paymentId;
-    /*
+
     @ApiParam("결제회원")
     private int memberId;
-    */
 
     @ApiParam("결제일")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
