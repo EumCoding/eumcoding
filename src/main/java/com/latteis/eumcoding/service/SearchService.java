@@ -40,7 +40,7 @@ public class SearchService {
 
         // SearchDTO 인스턴스 생성
         SearchDTO searchLectures = SearchDTO.builder()
-                .count(lectures.size())
+                .count(lectureRepository.countByName(name))
                 .content(new ArrayList<>())
                 .build();
 

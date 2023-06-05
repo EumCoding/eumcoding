@@ -49,19 +49,22 @@ public class MyLectureListService {
         Sort.Direction direction = Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(direction));
 
-        Page<Payment> paymentsPage = null;
+        Page<Payment> paymentsPage;
         List<Payment> payments = null;
         switch (sort) {
             case 0: // 결제일순
-                paymentsPage = paymentRepository.findAllByMemberIdAndState(memberId, pageable);
+                Pageable sortedByPayDay = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("payDay").descending());
+                paymentsPage = paymentRepository.findAllByMemberIdAndState(memberId, sortedByPayDay);
                 payments = paymentsPage.getContent();
                 break;
             case 1: // 마지막 학습일순
-                paymentsPage = videoProgressRepository.findAllByMemberIdAndStateOrderByLastView(memberId, pageable);
+                Pageable sortedByLastView = PageRequest.of(page - 1, 10, Sort.by("lastView"));
+                paymentsPage = videoProgressRepository.findAllByMemberIdAndState(memberId, sortedByLastView);
                 payments = paymentsPage.getContent();
                 break;
             case 2: // 강의명순(가나다순)
-                paymentsPage = lectureProgressRepository.findAllByMemberIdAndStateOrderByName(memberId, pageable);
+                Pageable sortedByName =  PageRequest.of(page - 1, 10, Sort.by("lectureName"));
+                paymentsPage = lectureProgressRepository.findAllByMemberIdAndStateOrderByName(memberId, sortedByName);
                 payments = paymentsPage.getContent();
                 break;
         }
