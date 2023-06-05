@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface SectionRepository extends JpaRepository<Section, Integer> {
 
 
+    List<Section> findByLectureId(int lectureId);
+
     @Query("SELECT s FROM Section s WHERE s.id IN (SELECT c.section.id FROM Curriculum c WHERE c.id = :curriculumId)")
     List<Section> findByCurriculumId(@Param("curriculumId")int curriculumId);
 

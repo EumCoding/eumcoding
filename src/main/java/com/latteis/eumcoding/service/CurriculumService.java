@@ -60,11 +60,14 @@ public class CurriculumService {
                 for (Video video : sectionVideos) {
                     //해당 회원이 해당 비디오 진행상황 조회
                     Optional<VideoProgress> videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
+                    boolean isLectureCompleted = true; // 강의를 모두 들었는지 표시하는 변수, 처음에는 true로 설정
 
                     if (videoProgress.isPresent()) {
                         updateVideoProgressState(videoProgress.get(), video);
                         if (videoProgress.get().getState() == 1) { //0:수강중 1:수강종료
                             completedVideos++; //완강한 비디오 갯수
+                        }else{
+                            isLectureCompleted = false; // videoProgress의 state가 1이 아니면, 강의를 모두 들지 않았다는 뜻
                         }
                     }
                 }

@@ -30,8 +30,6 @@ public class ProfileService {
 
     private final LectureRepository lectureRepository;
 
-    private final LectureService lectureService;
-
     private final PayLectureRepository payLectureRepository;
 
 
@@ -158,7 +156,7 @@ public class ProfileService {
 
     //강의를 결제한 학생 수 구하기
     public int getTotalStudentsByLectureId(int lectureId) {
-        List<PayLecture> paymentLectures = payLectureRepository.findByLectureIdAndState(lectureId, 0);
+        List<PayLecture> paymentLectures = payLectureRepository.findByLectureIdAndState(lectureId, 1);
         return paymentLectures.size();
     }
 

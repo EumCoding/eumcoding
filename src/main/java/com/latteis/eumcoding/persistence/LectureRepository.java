@@ -25,6 +25,10 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberId(@Param("memberId") int memberId);
 
+    //Pageable을 사용하기 위해 부득이하게 다시 만듬
+    @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
+    List<Lecture> findByMemberIdMyLecture(@Param("memberId") int memberId,Pageable pageable);
+
     //review 테이블 이랑 연결해서 
     //review 테이블에 rating 컬럼을 가져와서
     //이를 바탕으로 lecutre, 강좌 평점순으로 나열하기 위한 메서드
@@ -36,7 +40,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Lecture> findTop5ByOrderByCreatedDayDesc();
 
     //강좌 이름 검색
-    @Query("SELECT l FROM Lecture l WHERE l.name = :name")
+    @Query("SELECT l FROM Lecture l WHERE l.name like %:name%")
     List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
 
     //학년으로 검색

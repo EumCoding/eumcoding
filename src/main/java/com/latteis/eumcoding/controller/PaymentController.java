@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -60,7 +61,15 @@ public class PaymentController {
 
     }
 
-
-
+    @PostMapping("/cancel/{paymentId}")
+    public ResponseEntity<?> cancelPayment(@ApiIgnore Authentication authentication, @PathVariable int paymentId) {
+        try {
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            paymentService.cancelPayment(memberId, paymentId);
+            return ResponseEntity.ok("결제가 성공적으로 취소되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 }
