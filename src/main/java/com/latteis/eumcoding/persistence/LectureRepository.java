@@ -43,9 +43,20 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query("SELECT l FROM Lecture l WHERE l.name like %:name%")
     List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
 
-    //갯수세기
+    //이름갯수세기
     @Query("SELECT count(*) FROM Lecture l WHERE l.name like %:name%")
     int countByName(@Param("name") String name);
+
+    //학년갯수세기
+    @Query("SELECT count(*) FROM Lecture l WHERE l.grade = :grade")
+    int countByGrade(@Param("grade") int grade);
+
+    //선생강의갯수세기
+    @Query("SELECT count(l) FROM Lecture l " +
+            "JOIN Member m ON l.member.id = m.id " +
+            "WHERE m.name like %:name% AND m.role = 1")
+    int countByTeacherName(@Param("name") String name);
+
 
 
     //학년으로 검색

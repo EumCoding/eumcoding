@@ -1,9 +1,6 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.dto.ResponseDTO;
-import com.latteis.eumcoding.dto.SearchDTO;
-import com.latteis.eumcoding.dto.SearchGradeDTO;
+import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
 import com.latteis.eumcoding.service.SearchService;
@@ -60,7 +57,7 @@ public class SearchController {
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        SearchDTO searchTeacherLectures;
+        SearchTeacherDTO searchTeacherLectures;
 
         try{
             searchTeacherLectures = searchService.searchTeacher(searchKeyword,pageable);
