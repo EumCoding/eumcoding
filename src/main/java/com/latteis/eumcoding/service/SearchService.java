@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.SearchDTO;
+import com.latteis.eumcoding.dto.SearchGradeDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 
@@ -26,7 +27,7 @@ public class SearchService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
 
-    public List<SearchDTO> searchLectures(String name, Pageable pageable) {
+    public SearchDTO searchLectures(String name, Pageable pageable) {
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("값을 입력하세요");
@@ -37,13 +38,17 @@ public class SearchService {
             throw new NoSuchElementException("해당 강좌는 없습니다.");
         }
 
-        List<SearchDTO> searchLectures = new ArrayList<>();
+        // SearchDTO 인스턴스 생성
+        SearchDTO searchLectures = SearchDTO.builder()
+                .count(lectures.size())
+                .content(new ArrayList<>())
+                .build();
 
         for (Lecture lecture : lectures) {
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
             Member member = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
-            SearchDTO searchLecture = SearchDTO.builder()
+            SearchDTO.contentsDTO searchLecture = SearchDTO.contentsDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
                     .lectureThumb(lecture.getThumb())
@@ -54,7 +59,8 @@ public class SearchService {
                     .rating(averageRating != null ? Math.round(averageRating) : 0)
                     .build();
 
-            searchLectures.add(searchLecture);
+            // DTO에 검색 결과 추가
+            searchLectures.getContent().add(searchLecture);
         }
 
         return searchLectures;
@@ -62,12 +68,18 @@ public class SearchService {
 
 
     //선생님 이름 입력했을경우, 해당 선생님이 등록한 강좌 모두 나오게
-    public List<SearchDTO> searchTeacher(String teacherName, Pageable pageable) {
+    public SearchDTO searchTeacher(String teacherName, Pageable pageable) {
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         boolean teacherFound = false;
 
         List<Member> members = memberRepository.findByName(teacherName, updatedPageable);
-        List<SearchDTO> searchTeachers = new ArrayList<>();
+        //List<SearchDTO> searchTeachers = new ArrayList<>();
+
+
+        SearchDTO searchDTO = SearchDTO.builder()
+                .count(members.size())
+                .content(new ArrayList<>())
+                .build();
 
         for (Member member : members) {
             // 0: 학생, 1: 선생님
@@ -79,7 +91,7 @@ public class SearchService {
                     Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
                     Member TeacherMember = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
-                    SearchDTO searchLecture = SearchDTO.builder()
+                    SearchDTO.contentsDTO searchLecture = SearchDTO.contentsDTO.builder()
                             .lectureId(lecture.getId())
                             .lectureName(lecture.getName())
                             .lectureThumb(lecture.getThumb())
@@ -90,7 +102,7 @@ public class SearchService {
                             .rating(averageRating != null ? Math.round(averageRating) : 0)
                             .build();
 
-                    searchTeachers.add(searchLecture);
+                    searchDTO.getContent().add(searchLecture);
                 }
             }
         }
@@ -99,11 +111,11 @@ public class SearchService {
             throw new NoSuchElementException("해당 선생님은 존재하지 않습니다.");
         }
 
-        return searchTeachers;
+        return searchDTO;
     }
 
         //학년으로 검색햇을경우 해당 학년에 맞는 강좌가 쭈르륵 나와야함
-        public List<SearchDTO.SearchGradeDTO> searchGrade(int grade, Pageable pageable){
+        public SearchGradeDTO searchGrade(int grade, Pageable pageable){
             Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
 
             if (grade < 1 || grade > 6) { //잘못된 학년 값 입력
@@ -115,14 +127,19 @@ public class SearchService {
                 throw new NoSuchElementException("해당 학년의 강의는 존재하지 않습니다.");
             }
 
-            List<SearchDTO.SearchGradeDTO> searchGradeLectures = new ArrayList<>();
+            List<SearchGradeDTO> searchGradeLectures = new ArrayList<>();
+
+            SearchGradeDTO searchGradeDTO = SearchGradeDTO.builder()
+                    .count(lectures.size())
+                    .content(new ArrayList<>())
+                    .build();
 
 
             for (Lecture lecture : lectures) {
                 Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
                 Member member = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
-                SearchDTO.SearchGradeDTO searchGrade = SearchDTO.SearchGradeDTO.builder()
+                SearchGradeDTO.contentsDTO searchGrade = SearchGradeDTO.contentsDTO.builder()
                         .lectureId(lecture.getId())
                         .lectureName(lecture.getName())
                         .lectureThumb(lecture.getThumb())
@@ -134,10 +151,10 @@ public class SearchService {
                         .grade(lecture.getGrade())
                         .build();
 
-                searchGradeLectures.add(searchGrade);
+                searchGradeDTO.getContent().add(searchGrade);
             }
 
-            return searchGradeLectures;
+            return searchGradeDTO;
         }
 
 }

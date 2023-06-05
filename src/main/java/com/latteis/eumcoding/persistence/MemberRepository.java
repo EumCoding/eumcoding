@@ -81,7 +81,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     //선생 이름 검색, 이름은 동명이인 존재 가능
     //nickname 달라야죠
-    List<Member> findByName(String teacherName, Pageable paging);
+    @Query("SELECT m FROM Member m WHERE m.name like %:name% AND m.role = 1")
+    List<Member> findByName(@Param("name")String name, Pageable paging);
 
 
 
