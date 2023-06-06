@@ -94,6 +94,15 @@ public class MyLectureListService {
             LocalTime lastView = null;
             boolean isLectureCompleted = true; // 강의 수강 완료 여부
 
+            // Payment로부터 payDay를 얻어옴
+            for (Payment payment : paymentsPage) {
+                List<PayLecture> payLectures = payLectureRepository.findByPaymentId(payment.getId());
+                if (payment.getState() == 1 && payLectures.stream().anyMatch(payLecture -> payLecture.getLecture().getId() == lecture.getId())) {
+                    payDay = payment.getPayDay();
+                    break;
+                }
+            }
+
             // memberId와 lectureId를 사용해 LectureProgress를 찾아 lastView를 얻어옴
             List<LectureProgress> lectureProgresses = lectureProgressRepository.findByMemberIdAndLectureId(memberId, lecture.getId());
             for (LectureProgress lectureProgress : lectureProgresses) {
@@ -168,6 +177,7 @@ public class MyLectureListService {
             if (averageRating == null) averageRating = 0;
 
             MyLectureListDTO myLectureListDTO = MyLectureListDTO.builder()
+                    .memberId(memberId)
                     .lectureId(lecture.getId())
                     .teacherId(lecture.getMember().getId())
                     .score(averageRating)
