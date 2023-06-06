@@ -177,6 +177,9 @@ public class LectureDTO {
         @ApiModelProperty(value = "강의명", example = "강의명입니다")
         private String name;
 
+        @ApiModelProperty(value = "상태", example = "1")
+        private int state;
+
         @ApiModelProperty(value = "등록일", example = "2023-04-13 01:47:52.000")
         private LocalDateTime createdDay;
 
@@ -186,6 +189,7 @@ public class LectureDTO {
         public MyListResponseDTO(Lecture lecture) {
             this.id = lecture.getId();
             this.name = lecture.getName();
+            this.state = lecture.getState();
             this.createdDay = lecture.getCreatedDay();
         }
     }
