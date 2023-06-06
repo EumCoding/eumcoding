@@ -2,6 +2,7 @@ package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.SectionDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
+import com.latteis.eumcoding.dto.VideoProgressDTO;
 import com.latteis.eumcoding.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -99,6 +100,22 @@ public class VideoController {
 
     }
 
+
+    /*
+    * 비디오 시청 결과
+    */
+    @PostMapping(value = "/view/result")
+    @ApiOperation(value = "섹션 순서 앞으로 이동")
+    public ResponseEntity<Object> saveViewedResult(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoProgressDTO.ViewedResultRequestDTO viewedResultRequestDTO) {
+
+        try {
+            videoService.saveViewedResult(Integer.parseInt(authentication.getPrincipal().toString()), viewedResultRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
 
     /*
     * 비디오 순서 앞으로 이동

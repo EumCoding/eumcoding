@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.LectureProgressDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
+import com.latteis.eumcoding.dto.VideoProgressDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
@@ -36,6 +37,8 @@ public class VideoService {
     private final LectureProgressRepository lectureProgressRepository;
 
     private final PayLectureRepository payLectureRepository;
+
+    private final VideoProgressRepository videoProgressRepository;
 
     @Value("${file.path.lecture.video.file}")
     private String videoFilePath;
@@ -77,13 +80,35 @@ public class VideoService {
         VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
         viewResponseDTO.setPath("http://localhost:8081/eumCodingImgs/lecture/video/file/" + video.getPath());
 
-        // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록 생성
-        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+        // 구매한 이력이 있거나 미리보기 허용인지 검사
         PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);
+        Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE);
+
+        // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록과 비디오 기록 생성
+        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
         if (payLecture != null && lectureProgress == null) {
             // lectureProgress 생성 후 저장
-            lectureProgressRepository.save(LectureProgress.builder()
-                    .payLecture(payLecture)
+            LectureProgress newLectureProgress = LectureProgress.builder()
+                            .payLecture(payLecture)
+                            .state(LectureProgressDTO.LectureProgressState.STUDYING)
+                            .startDay(LocalDateTime.now())
+                            .build();
+            lectureProgressRepository.save(newLectureProgress);
+
+            // videoProgress 생성 후 저장
+            videoProgressRepository.save(VideoProgress.builder()
+                    .lectureProgress(newLectureProgress)
+                    .video(video)
+                    .state(LectureProgressDTO.LectureProgressState.STUDYING)
+                    .startDay(LocalDateTime.now())
+                    .build());
+        }
+        // 해당 강의를 구매한 이력은 있고 해당 비디오 시청 기록이 없다면
+        else if (payLecture != null && lectureProgress != null && videoProgressRepository.findByVideoAndLectureProgress(video, lectureProgress) == null) {
+            // 비디오 시청 기록 생성 후 저장
+            videoProgressRepository.save(VideoProgress.builder()
+                    .lectureProgress(lectureProgress)
+                    .video(video)
                     .state(LectureProgressDTO.LectureProgressState.STUDYING)
                     .startDay(LocalDateTime.now())
                     .build());
@@ -309,7 +334,7 @@ public class VideoService {
         Member member = memberRepository.findByMemberId(memberId);
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // Section 가져오기
+        // video 가져오기
         Video video = videoRepository.findByIdAndSectionLectureMember(idRequestDTO.getId(), member);
         Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", idRequestDTO.getId());
 
@@ -332,6 +357,34 @@ public class VideoService {
 
     }
 
+    /*
+    * 동영상 시청 결과 저장
+    * */
+    public void saveViewedResult(int memberId, VideoProgressDTO.ViewedResultRequestDTO viewedResultRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // video 가져오기
+        Video video = videoRepository.findByIdAndSectionLectureMember(viewedResultRequestDTO.getVideoId(), member);
+        Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", viewedResultRequestDTO.getVideoId());
+
+        // 수강 중인 강의인지 검사
+        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+        Preconditions.checkNotNull(lectureProgress, "해당 강의를 수강하고 있지 않습니다. (강의 ID : %s)", video.getSection().getLecture().getId());
+
+        // 해당 비디오 시청 기록 가져오기
+        VideoProgress videoProgress = videoProgressRepository.findByVideoAndLectureProgress(video, lectureProgress);
+        // 받아온 마지막 영상 위치가 비디오 전체 시간과 같다면 수강 완료
+        if (video.getPlayTime() == viewedResultRequestDTO.getLastView()) {
+            videoProgress.setState(VideoProgressDTO.VideoProgressState.COMPLETION);
+            videoProgress.setEndDay(LocalDateTime.now());
+        }
+        videoProgress.setLastView(viewedResultRequestDTO.getLastView());
+        videoProgressRepository.save(videoProgress);
+
+    }
 
     // 파일 저장
     private File saveFile(String fileName, int videoId, File directoryPath, MultipartFile multipartFile, boolean isVideoFile) {
