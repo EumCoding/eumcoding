@@ -3,6 +3,7 @@ package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.LectureDTO;
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
@@ -307,22 +308,24 @@ public class LectureService {
     // 내가 등록한 강의 리스트 가져오기
     public List<LectureDTO.MyListResponseDTO> getMyUploadList(int memberId, Pageable pageable) {
 
-        try {
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-            // 내가 등록한 강의 리스트 가져오기
-            Page<Object[]> pageObjects = lectureRepository.getUploadListByMemberId(memberId, pageable);
-            // 리스트 DTO 생성
-            List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
-            for (Object[] object : pageObjects) {
-                LectureDTO.MyListResponseDTO myListResponseDTO = new LectureDTO.MyListResponseDTO(object);
-                myListResponseDTOList.add(myListResponseDTO);
-            }
-            return myListResponseDTOList;
+        // 가이드 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("LectureService.getMyUploadList() : 에러 발생");
+        // 내가 등록한 강의 리스트 가져오기
+        Page<Lecture> lecturePage = lectureRepository.findAllByMember(member, pageable);
+        List<Lecture> lectureList = lecturePage.getContent();
+        // 리스트 DTO 생성
+        List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
+        for (Lecture lecture : lectureList) {
+            LectureDTO.MyListResponseDTO myListResponseDTO = new LectureDTO.MyListResponseDTO(lecture);
+            myListResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
+            myListResponseDTOList.add(myListResponseDTO);
         }
+        return myListResponseDTOList;
 
     }
 
@@ -353,5 +356,21 @@ public class LectureService {
 
     }
 
+    // 강의 정보 불러오기
+    public LectureDTO.ViewResponseDTO getLectureInfo(LectureDTO.IdRequestDTO idRequestDTO) {
+
+        // lecture 가져오기
+        Lecture lecture = lectureRepository.findById(idRequestDTO.getId());
+        Preconditions.checkNotNull(lecture, "등록된 강의가 없습니다. (강의 ID : %s)", idRequestDTO.getId());
+
+        LectureDTO.ViewResponseDTO viewResponseDTO = new LectureDTO.ViewResponseDTO(lecture);
+        // 강의 정보에 들어가는 이미지들 저장
+        viewResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
+        viewResponseDTO.setBadge("http://localhost:8081/eumCodingImgs/lecture/badge/" + lecture.getBadge());
+        viewResponseDTO.setImage("http://localhost:8081/eumCodingImgs/lecture/image/" + lecture.getImage());
+
+        return viewResponseDTO;
+
+    }
 
 }

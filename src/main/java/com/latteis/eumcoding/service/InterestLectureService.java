@@ -2,6 +2,7 @@ package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.InterestLectureDTO;
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.model.InterestLecture;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
@@ -26,7 +27,7 @@ public class InterestLectureService {
     // 강의 좋아요 추가
     public void addHeart(int memberId, InterestLectureDTO.IdRequestDTO idRequestDTO) {
 
-        // 호텔 정보 가져오기
+        // 강의 정보 가져오기
         Lecture lecture = lectureRepository.findById(idRequestDTO.getLectureId());
         Preconditions.checkNotNull(lecture, "등록된 강의가 없습니다. (강의 ID : %s)", idRequestDTO.getLectureId());
 
@@ -46,7 +47,7 @@ public class InterestLectureService {
     // 강의 좋아요 삭제
     public void deleteHeart(int memberId, InterestLectureDTO.IdRequestDTO idRequestDTO) {
 
-        // 호텔 정보 가져오기
+        // 강의 정보 가져오기
         InterestLecture interestLecture = interestLectureRepository.findByLectureIdAndMemberId(idRequestDTO.getLectureId(), memberId);
         Preconditions.checkNotNull(interestLecture, "등록된 좋아요가 없습니다. (강의 ID : %s)", idRequestDTO.getLectureId());
 
@@ -58,4 +59,21 @@ public class InterestLectureService {
 
     }
 
+    // 강의 좋아요 수 가져오기
+    public InterestLectureDTO.ViewResponseDTO getInterestCnt(LectureDTO.IdRequestDTO idRequestDTO) {
+
+        // lecture 가져오기
+        Lecture lecture = lectureRepository.findById(idRequestDTO.getId());
+        Preconditions.checkNotNull(lecture, "등록된 강의가 없습니다. (강의 ID : %s)", idRequestDTO.getId());
+
+        // 해당 강의의 좋아요 수 가져오기
+        long interestCnt = interestLectureRepository.countByLecture(lecture);
+
+        // DTO 생성 후 저장
+        InterestLectureDTO.ViewResponseDTO viewResponseDTO = new InterestLectureDTO.ViewResponseDTO();
+        viewResponseDTO.setInterestCnt((int) interestCnt);
+
+        return viewResponseDTO;
+
+    }
 }

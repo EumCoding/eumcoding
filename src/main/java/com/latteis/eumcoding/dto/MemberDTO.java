@@ -206,4 +206,17 @@ public class MemberDTO {
         return this.profileImgRequest != null;
     }
 
+
+    public static class MemberRole {
+
+        // 학생
+        public static final int STUDENT = 0;
+
+        // 강사
+        public static final int TEACHER = 1;
+
+        // 관리자
+        public static final int ADMIN = 2;
+
+    }
 }

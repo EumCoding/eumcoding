@@ -54,8 +54,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Lecture findByIdAndMemberId(@Param("id") int id, @Param("memberId") int memberId);
 
     // 내가 등록한 강의 리스트 가져오기
-    @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
-    Page<Object[]> getUploadListByMemberId(@Param("memberId") int memberId, Pageable pageable);
+//    @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
+    Page<Lecture> findAllByMember(Member member, Pageable pageable);
 
 
     // 기간별 통계

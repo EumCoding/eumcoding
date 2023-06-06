@@ -22,4 +22,14 @@ public class InterestLectureDTO {
 
     }
 
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "좋아요 수 응답 DTO")
+    public static class ViewResponseDTO {
+
+        @ApiModelProperty(value = "좋아요 수", example = "1")
+        private int interestCnt;
+
+    }
+
 }
