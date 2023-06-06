@@ -218,5 +218,6 @@ public class MemberDTO {
         // 관리자
         public static final int ADMIN = 2;
 
+
     }
 }
