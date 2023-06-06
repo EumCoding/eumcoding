@@ -230,6 +230,15 @@ public class LectureDTO {
         @ApiModelProperty(value = "뱃지", example = "~.png")
         private String badge;
 
+        @ApiModelProperty(value = "강의 평점", example = "4.1")
+        private String score;
+
+        @ApiModelProperty(value = "수강 중인 학생 수", example = "1")
+        private int totalStudent;
+
+        @ApiModelProperty(value = "리뷰 갯수", example = "1")
+        private int totalReview;
+
         public ViewResponseDTO(Lecture lecture) {
             this.id = lecture.getId();
             this.memberId = lecture.getMember().getId();

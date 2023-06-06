@@ -4,12 +4,14 @@ package com.latteis.eumcoding.service;
 import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
+import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.PayLectureRepository;
+import com.latteis.eumcoding.persistence.ReviewRepository;
 import com.latteis.eumcoding.util.MultipartUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,8 @@ public class LectureService {
     private final MemberRepository memberRepository;
 
     private final MemberService memberService;
+
+    private final ReviewRepository reviewRepository;
 
     @Value("${file.path.lecture.image}")
     private String imageFilePath;
@@ -362,6 +366,12 @@ public class LectureService {
         viewResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
         viewResponseDTO.setBadge("http://localhost:8081/eumCodingImgs/lecture/badge/" + lecture.getBadge());
         viewResponseDTO.setImage("http://localhost:8081/eumCodingImgs/lecture/image/" + lecture.getImage());
+        // 평점 저장
+        viewResponseDTO.setScore(String.format("%.1f", reviewRepository.avgRating(lecture)));
+        // 리뷰수 저장
+        viewResponseDTO.setTotalReview((int) reviewRepository.countByLecture(lecture));
+        // 학생 수 저장
+        viewResponseDTO.setTotalStudent((int) payLectureRepository.countByLectureAndPaymentState(lecture, PaymentDTO.PaymentState.SUCCESS));
 
         return viewResponseDTO;
 
