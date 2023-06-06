@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.dto;
 
 import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.Section;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -20,6 +21,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SectionDTO {
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "섹션 ID 요청 DTO")
+    public static class IdRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int id;
+
+    }
 
     // 섹션 추가 요청 DTO
     @Getter
@@ -31,10 +42,6 @@ public class SectionDTO {
         @ApiModelProperty(value = "강의 ID", example = "1")
         private int lectureId;
 
-        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
-        @ApiModelProperty(value = "섹션 수강 완료에 걸리는 시간", example = "1000")
-        private int timeTaken;
-
         @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "섹션명", example = "섹션명입니다")
         private String name;
@@ -42,6 +49,10 @@ public class SectionDTO {
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "섹션 순서", example = "1")
         private int sequence;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 소요시간", example = "1")
+        private int timeTaken;
 
     }
 
@@ -84,25 +95,26 @@ public class SectionDTO {
     @ApiModel(value = "섹션 리스트 응답 DTO")
     public static class ListResponseDTO {
 
-        @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "섹션 ID", example = "1")
         private int id;
 
-        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "섹션 수강 완료에 걸리는 시간", example = "1000")
         private int timeTaken;
 
-        @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "섹션명", example = "섹션명입니다")
         private String name;
+
+        @ApiModelProperty(value = "섹션 순서", example = "1")
+        private int sequence;
 
         @ApiModelProperty(value = "비디오 리스트", example = "비디오 리스트입니다")
         private List<VideoDTO.SectionListDTO> videoDTOList;
 
-        public ListResponseDTO(Object[] objects) {
-            this.id = (int) objects[0];
-            this.timeTaken = (int) objects[1];
-            this.name = (String) objects[2];
+        public ListResponseDTO(Section section) {
+            this.id = section.getId();
+            this.timeTaken = section.getTimeTaken();
+            this.name = section.getName();
+            this.sequence = section.getSequence();
         }
     }
 
