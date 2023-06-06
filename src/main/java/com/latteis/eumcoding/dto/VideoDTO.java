@@ -127,7 +127,7 @@ public class VideoDTO {
     @ApiModel(value = "동영상 정보 응답 DTO")
     public static class ViewResponseDTO {
 
-        @ApiModelProperty(value = "섹션 ID", example = "1")
+        @ApiModelProperty(value = "비디오 ID", example = "1")
         private int id;
 
         @ApiModelProperty(value = "비디오 이름", example = "비디오입니다")

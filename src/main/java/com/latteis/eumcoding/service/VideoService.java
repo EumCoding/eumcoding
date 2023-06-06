@@ -82,7 +82,7 @@ public class VideoService {
 
         // 구매한 이력이 있거나 미리보기 허용인지 검사
         PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);
-        Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE);
+        Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
 
         // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록과 비디오 기록 생성
         LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
@@ -282,6 +282,7 @@ public class VideoService {
         deleteVideoFile(video.getPath(), getVideoFileDirectoryPath());
         deleteVideoFile(video.getThumb(), getVideoThumbDirectoryPath());
 
+        // 삭제할 비디오보다 뒤 순서에 있는 비디오들 순서 당기기
         List<Video> videoList = videoRepository.findAllBySectionAndSequenceGreaterThan(video.getSection(), video.getSequence());
         videoList.forEach(video1 -> {
             video1.setSequence(video1.getSequence() - 1);
@@ -367,7 +368,7 @@ public class VideoService {
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
         // video 가져오기
-        Video video = videoRepository.findByIdAndSectionLectureMember(viewedResultRequestDTO.getVideoId(), member);
+        Video video = videoRepository.findById(viewedResultRequestDTO.getVideoId());
         Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", viewedResultRequestDTO.getVideoId());
 
         // 수강 중인 강의인지 검사
@@ -377,7 +378,7 @@ public class VideoService {
         // 해당 비디오 시청 기록 가져오기
         VideoProgress videoProgress = videoProgressRepository.findByVideoAndLectureProgress(video, lectureProgress);
         // 받아온 마지막 영상 위치가 비디오 전체 시간과 같다면 수강 완료
-        if (video.getPlayTime() == viewedResultRequestDTO.getLastView()) {
+        if (video.getPlayTime().equals(viewedResultRequestDTO.getLastView())) {
             videoProgress.setState(VideoProgressDTO.VideoProgressState.COMPLETION);
             videoProgress.setEndDay(LocalDateTime.now());
         }
