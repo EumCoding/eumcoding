@@ -29,4 +29,14 @@ public class PaymentDTO {
 
     @ApiParam("강좌 목록")
     private List<LectureDTO.PayLectureIdNameDTO> lectureDTOList;
+
+    public static class PaymentState {
+
+        // 실패
+        public static final int  FAILED = 0;
+
+        // 성공
+        public static final int  SUCCESS = 1;
+
+    }
 }

@@ -1,13 +1,12 @@
 package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
+import com.latteis.eumcoding.dto.LectureProgressDTO;
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.Section;
-import com.latteis.eumcoding.model.Video;
-import com.latteis.eumcoding.persistence.MemberRepository;
-import com.latteis.eumcoding.persistence.SectionRepository;
-import com.latteis.eumcoding.persistence.VideoRepository;
+import com.latteis.eumcoding.dto.payment.PaymentDTO;
+import com.latteis.eumcoding.model.*;
+import com.latteis.eumcoding.persistence.*;
 import com.latteis.eumcoding.util.MultipartUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,10 @@ public class VideoService {
     private final SectionRepository sectionRepository;
 
     private final MemberRepository memberRepository;
+
+    private final LectureProgressRepository lectureProgressRepository;
+
+    private final PayLectureRepository payLectureRepository;
 
     @Value("${file.path.lecture.video.file}")
     private String videoFilePath;
@@ -60,14 +63,31 @@ public class VideoService {
     /*
     * 비디오 정보 가져오기
     */
-    public VideoDTO.ViewResponseDTO getVideoInfo(VideoDTO.IdRequestDTO idRequestDTO) {
+    public VideoDTO.ViewResponseDTO getVideoInfo(int memberId, VideoDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
         // 비디오 정보 가져오기
         Video video = videoRepository.findById(idRequestDTO.getId());
         Preconditions.checkNotNull(video, "등록된 비디오가 없습니다. (비디오 ID : %s)", idRequestDTO.getId());
 
+        // 비디오 경로 추가
         VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
         viewResponseDTO.setPath("http://localhost:8081/eumCodingImgs/lecture/video/file/" + video.getPath());
+
+        // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록 생성
+        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+        PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);
+        if (payLecture != null && lectureProgress == null) {
+            // lectureProgress 생성 후 저장
+            lectureProgressRepository.save(LectureProgress.builder()
+                    .payLecture(payLecture)
+                    .state(LectureProgressDTO.LectureProgressState.STUDYING)
+                    .startDay(LocalDateTime.now())
+                    .build());
+        }
 
         return viewResponseDTO;
 
@@ -237,9 +257,81 @@ public class VideoService {
         deleteVideoFile(video.getPath(), getVideoFileDirectoryPath());
         deleteVideoFile(video.getThumb(), getVideoThumbDirectoryPath());
 
+        List<Video> videoList = videoRepository.findAllBySectionAndSequenceGreaterThan(video.getSection(), video.getSequence());
+        videoList.forEach(video1 -> {
+            video1.setSequence(video1.getSequence() - 1);
+            videoRepository.save(video1);
+        });
+
         videoRepository.delete(video);
 
     }
+
+
+    /*
+    * 비디오 순서 앞으로 이동
+    */
+    public void updateSequenceUp(int memberId, VideoDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // Section 가져오기
+        Video video = videoRepository.findByIdAndSectionLectureMember(idRequestDTO.getId(), member);
+        Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", idRequestDTO.getId());
+
+        // 강사 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 해당 섹션의 앞 순서 섹션 가져오기
+        Video frontVideo = videoRepository.findBySectionAndSequence(video.getSection(), video.getSequence() - 1);
+        Preconditions.checkNotNull(frontVideo, "앞 순서 비디오가 없습니다. (video ID : %s)", idRequestDTO.getId());
+
+        // 순서 + 1
+        frontVideo.setSequence(frontVideo.getSequence() + 1);
+        // 저장
+        videoRepository.save(frontVideo);
+
+        // 기존 비디오 순서 - 1
+        video.setSequence(video.getSequence() - 1);
+        // 저장
+        videoRepository.save(video);
+
+    }
+
+    /*
+    * 비디오 순서 뒤로 이동
+    */
+    public void updateSequenceDown(int memberId, VideoDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // Section 가져오기
+        Video video = videoRepository.findByIdAndSectionLectureMember(idRequestDTO.getId(), member);
+        Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", idRequestDTO.getId());
+
+        // 강사 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 해당 섹션의 앞 순서 섹션 가져오기
+        Video backVideo = videoRepository.findBySectionAndSequence(video.getSection(), video.getSequence() + 1);
+        Preconditions.checkNotNull(backVideo, "뒷 순서 비디오가 없습니다. (video ID : %s)", idRequestDTO.getId());
+
+        // 순서 + 1
+        backVideo.setSequence(backVideo.getSequence() - 1);
+        // 저장
+        videoRepository.save(backVideo);
+
+        // 기존 비디오 순서 - 1
+        video.setSequence(video.getSequence() + 1);
+        // 저장
+        videoRepository.save(video);
+
+    }
+
 
     // 파일 저장
     private File saveFile(String fileName, int videoId, File directoryPath, MultipartFile multipartFile, boolean isVideoFile) {

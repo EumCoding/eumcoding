@@ -2,6 +2,8 @@ package com.latteis.eumcoding.persistence;
 
 
 import com.latteis.eumcoding.model.Curriculum;
+import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.model.Section;
 import com.latteis.eumcoding.model.Video;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +34,20 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     long countByLectureId(int lectureId);
 
     // SectionList에 넣을 VideoList 가져오기
-    @Query(value = "SELECT id, name, preview, play_time FROM video WHERE section_id = :sectionId ORDER BY sequence", nativeQuery = true)
-    List<Object[]> getSectionList(@Param("sectionId") int sectionId);
+    List<Video> findAllBySectionOrderBySequence(Section section);
+
+    /*
+     * Video id, Member에 맞는 엔티티 가져오기
+     */
+    Video findByIdAndSectionLectureMember(int id, Member member);
+
+    /*
+     * Section, sequence에 맞는 엔티티 가져오기
+     */
+    Video findBySectionAndSequence(Section section, int sequence);
+
+    /*
+     * 받아온 sequence보다 큰 sequence, Section에 맞는 리스트 가져오기
+     */
+    List<Video> findAllBySectionAndSequenceGreaterThan(Section section, int sequence);
 }

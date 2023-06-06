@@ -30,10 +30,10 @@ public class LectureProgress {
     private int state; //수강상태. 0 : 수강 전, 1 : 수강 완료
 
     @Column(name = "start_day")
-    private LocalDateTime start_day;
+    private LocalDateTime startDay;
 
     @Column(name = "end_day")
-    private LocalDateTime end_day;
+    private LocalDateTime endDay;
 
 
     //video_progress 랑 일대다관계 , 양방향 맵핑을 위해 1인쪽에 OneToMany 어노테이션 붙임

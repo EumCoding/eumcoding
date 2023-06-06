@@ -91,32 +91,31 @@ public class VideoDTO {
     @ApiModel(value = "섹션 리스트 응답 DTO")
     public static class SectionListDTO {
 
-        @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "섹션 ID", example = "1")
         private int id;
 
-        @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "비디오 이름", example = "비디오입니다")
         private String name;
 
-        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "0 : 미리보기 금지, 1 : 미리보기 가능", example = "1")
         private int preview;
 
         @ApiModelProperty(value = "재생시간", example = "1")
         private LocalTime playTime;
 
-        public SectionListDTO(Object[] objects) {
-            this.id = (int) objects[0];
-            this.name = (String) objects[1];
-            this.preview = (int) objects[2];
-            this.playTime = timeToLocalTime((Time)objects[3]);
-        }
+        @ApiModelProperty(value = "순서", example = "1")
+        private int sequence;
 
-        public LocalTime timeToLocalTime(Time time) {
-            return time.toLocalTime();
-        }
+        @ApiModelProperty(value = "비디오 썸네일", example = "~.png")
+        private String thumb;
 
+        public SectionListDTO(Video video) {
+            this.id = video.getId();
+            this.name = video.getName();
+            this.preview = video.getPreview();
+            this.playTime = video.getPlayTime();
+            this.sequence = video.getSequence();
+        }
     }
 
     /*

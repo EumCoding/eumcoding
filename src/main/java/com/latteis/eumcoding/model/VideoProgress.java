@@ -35,10 +35,10 @@ public class VideoProgress {
     private int state; // 0:수강전, 1:수강시작, 2:수강중, 3:수강종료
 
     @Column(name = "start_day")
-    private LocalDateTime start_day; // 수강시작일
+    private LocalDateTime startDay; // 수강시작일
 
     @Column(name = "end_day")
-    private LocalDateTime end_day; // 수강종료일
+    private LocalDateTime endDay; // 수강종료일
 
     @Column(name = "last_view")
     private LocalTime lastView; // 마지막 영상 위치
