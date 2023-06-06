@@ -155,4 +155,46 @@ public class ImgController {
         }
     }
 
+    /*
+    * 동영상 가져오기
+    */
+    @GetMapping(value = "/lecture/video/file/{fileOriginName}")
+    public ResponseEntity<Resource> getVideoFile(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = videoService.getVideoFileDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception();
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception();
+        }
+    }
+
+    /*
+    * 동영상 썸네일 가져오기
+    */
+    @GetMapping(value = "/lecture/video/thumb/{fileOriginName}")
+    public ResponseEntity<Resource> getVideoThumb(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = videoService.getVideoThumbDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception();
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception();
+        }
+    }
+
 }

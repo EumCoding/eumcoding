@@ -6,10 +6,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -76,6 +78,22 @@ public class VideoController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    /*
+    * 동영상 정보 불러오기
+    */
+    @GetMapping(value = "/unauth/view")
+    @ApiOperation(value = "동영상 정보 불러오기")
+    public ResponseEntity<VideoDTO.ViewResponseDTO> getVideoInfo(@Valid VideoDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            VideoDTO.ViewResponseDTO viewResponseDTO = videoService.getVideoInfo(idRequestDTO);
+            return ResponseEntity.ok().body(viewResponseDTO);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 
     }
