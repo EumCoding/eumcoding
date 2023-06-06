@@ -184,4 +184,13 @@ public class VideoDTO {
 
     private String thumbResponse;
 
+    public static class VideoPreview {
+
+        // 미리보기 불가
+        public static final int IMPOSSIBLE = 0;
+
+        // 미리보기 가능
+        public static final int POSSIBLE = 1;
+
+    }
 }
