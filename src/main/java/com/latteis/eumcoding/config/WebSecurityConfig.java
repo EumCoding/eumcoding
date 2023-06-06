@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                 .antMatchers("/",
                         "/unauth/**",
                         "/partners/member/**",
+                        "/section/unauth/**",
                         "/nonmember/**",
                         "/board/unauth/**",
                         "/board/comment/unauth/**",
