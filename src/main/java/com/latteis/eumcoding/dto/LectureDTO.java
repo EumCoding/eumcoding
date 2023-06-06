@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.dto;
 
+import com.latteis.eumcoding.model.Lecture;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -160,32 +161,75 @@ public class LectureDTO {
     }
 
     // 내가 등록한 강의 리스트 응답 DTO
-    @Getter
+    @Data
     @NoArgsConstructor
     @ApiModel(value = "내가 등록한 강의 리스트 응답 DTO")
     public static class MyListResponseDTO {
 
-        @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "강의 ID", example = "1")
         private int id;
 
-        @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "강의명", example = "강의명입니다")
         private String name;
 
         @ApiModelProperty(value = "등록일", example = "2023-04-13 01:47:52.000")
         private LocalDateTime createdDay;
 
-        public MyListResponseDTO(Object[] objects) {
-            this.id = (int) objects[0];
-            this.name = (String) objects[1];
-            this.createdDay = timestampToLocalDateTime((Timestamp) objects[2]);
-        }
+        @ApiModelProperty(value = "썸네일", example = "~.png")
+        private String thumb;
 
-        public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
-            return timestamp.toLocalDateTime();
+        public MyListResponseDTO(Lecture lecture) {
+            this.id = lecture.getId();
+            this.name = lecture.getName();
+            this.createdDay = lecture.getCreatedDay();
         }
+    }
 
+    // 강의 정보 응답
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "강의 정보 응답 DTO")
+    public static class ViewResponseDTO {
+
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int id;
+
+        @ApiModelProperty(value = "강사 ID", example = "1")
+        private int memberId;
+
+        @ApiModelProperty(value = "강의명", example = "강의명입니다")
+        private String name;
+
+        @ApiModelProperty(value = "설명", example = "강의 설명입니다")
+        private String description;
+
+        @ApiModelProperty(value = "가격", example = "1")
+        private int price;
+
+        @ApiModelProperty(value = "학년", example = "1")
+        private int grade;
+
+        @ApiModelProperty(value = "등록일", example = "2023-04-13 01:47:52.000")
+        private LocalDateTime createdDay;
+
+        @ApiModelProperty(value = "썸네일", example = "~.png")
+        private String thumb;
+
+        @ApiModelProperty(value = "강좌설명에 들어가는 이미지", example = "~.png")
+        private String image;
+
+        @ApiModelProperty(value = "뱃지", example = "~.png")
+        private String badge;
+
+        public ViewResponseDTO(Lecture lecture) {
+            this.id = lecture.getId();
+            this.memberId = lecture.getMember().getId();
+            this.name = lecture.getName();
+            this.description = lecture.getDescription();
+            this.price = lecture.getPrice();
+            this.grade = lecture.getGrade();
+            this.createdDay = lecture.getCreatedDay();
+        }
 
     }
 
