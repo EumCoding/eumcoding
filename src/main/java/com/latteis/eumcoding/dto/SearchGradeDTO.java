@@ -1,28 +1,26 @@
 package com.latteis.eumcoding.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SearchDTO {
+public class SearchGradeDTO {
 
     private int count;
     private List<contentsDTO> content;
-
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class contentsDTO {
+        private int grade;
         private int lectureId;
         private String lectureName;
         private String lectureThumb;

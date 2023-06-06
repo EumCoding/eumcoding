@@ -1,4 +1,4 @@
-package com.latteis.eumcoding.dto;
+package com.latteis.eumcoding.dto.payment;
 
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Payment;
@@ -23,5 +23,5 @@ public class PayLectureDTO {
 
     private int paymentId;
 
-    private int price; // 결제일
+    private int price;
 }

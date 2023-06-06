@@ -1,9 +1,6 @@
-/*
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.dto.ResponseDTO;
-import com.latteis.eumcoding.dto.SearchDTO;
+import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailTokenService;
 import com.latteis.eumcoding.service.SearchService;
@@ -38,10 +35,10 @@ public class SearchController {
     @GetMapping("/lecture")
     public ResponseEntity<?> searchLectures(
             @RequestParam("searchKeyword") String searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<SearchDTO> searchLectures;
+        SearchDTO searchLectures;
         try{
             searchLectures = searchService.searchLectures(searchKeyword, pageable);
         }catch(IllegalArgumentException | NoSuchElementException e){
@@ -57,10 +54,10 @@ public class SearchController {
     @GetMapping("/teacher")
     public ResponseEntity<?> searchTeacherLectures(
             @RequestParam("searchKeyword") String searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<SearchDTO> searchTeacherLectures;
+        SearchTeacherDTO searchTeacherLectures;
 
         try{
             searchTeacherLectures = searchService.searchTeacher(searchKeyword,pageable);
@@ -76,10 +73,10 @@ public class SearchController {
     @GetMapping("/grade")
     public ResponseEntity<?> searchGradeLectures(
             @RequestParam("searchKeyword") int searchKeyword,
-            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<SearchDTO.SearchGradeDTO> searchGradeLectures;
+        SearchGradeDTO searchGradeLectures;
 
 
         try{
@@ -91,4 +88,4 @@ public class SearchController {
 
     }
 
-}*/
+}

@@ -274,6 +274,30 @@ public class LectureDTO {
 
     }
 
+
+    // 내결제 목록 강좌
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @ApiModel(value = "내가 결제한 강의")
+    public static class PayLectureIdNameDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int id;
+
+        @Positive(message = "강의제목작성")
+        @ApiModelProperty(value = "강의이름", example = "코딩강의")
+        private String name;
+
+        @PositiveOrZero(message = "가격")
+        @ApiModelProperty(value = "과목당가격", example = "과목당가격")
+        private int price;
+
+    }
+
+
     private int id; // 사용자에게 고유하게 부여되는 값
 
     private int memberId;

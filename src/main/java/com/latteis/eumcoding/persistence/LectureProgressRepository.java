@@ -2,6 +2,7 @@ package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.LectureProgress;
+import com.latteis.eumcoding.model.Payment;
 import com.sun.org.apache.bcel.internal.generic.VariableLengthInstruction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,5 +26,20 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
             "FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m " +
             "WHERE pl.lecture.id = :lectureId")
     Page<Object[]> getStudentList1(@Param("lectureId") int lectureId, Pageable pageable);
+
+
+
+    //video->videoProgress->lectureProgress->paylecture->lecture or payment
+    @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId AND m.role = 0 AND pl.lecture.id = :lectureId AND p.state = 1")
+    List<LectureProgress> findByMemberIdAndLectureId(@Param("memberId") int memberId, @Param("lectureId") int lectureId);
+
+    @Query("SELECT p FROM Payment p " +
+            "JOIN Member m ON p.member.id = m.id " +
+            "JOIN PayLecture pl ON p.id = pl.payment.id " +
+            "JOIN Lecture l ON pl.lecture.id = l.id " +
+            "WHERE m.id = :memberId AND m.state = 1 " +
+            "ORDER BY l.name")
+    Page<Payment> findAllByMemberIdAndStateOrderByName(@Param("memberId") int memberId, Pageable pageable);
+
 
 }

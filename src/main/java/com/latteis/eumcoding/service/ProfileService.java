@@ -30,8 +30,6 @@ public class ProfileService {
 
     private final LectureRepository lectureRepository;
 
-    private final LectureService lectureService;
-
     private final PayLectureRepository payLectureRepository;
 
 

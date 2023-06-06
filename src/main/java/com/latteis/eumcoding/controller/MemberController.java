@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.MemberDTO;
+import com.latteis.eumcoding.dto.MyLectureListDTO;
 import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.model.Curriculum;
@@ -8,6 +9,7 @@ import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.CurriculumService;
 import com.latteis.eumcoding.service.MemberService;
+import com.latteis.eumcoding.service.MyLectureListService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +34,9 @@ public class MemberController {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final TokenProvider tokenProvider;
-
-    private final MemberRepository memberRepository;
-
     private final CurriculumService curriculumService;
+
+    private final MyLectureListService myLectureListService;
 
 
 
@@ -202,6 +202,18 @@ public class MemberController {
 
         }catch(RuntimeException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/mylecture/list")
+    public ResponseEntity<?> getMyLectureList(@ApiIgnore Authentication authentication, int page,@RequestParam(defaultValue = "0") int sort) {
+        try {
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<MyLectureListDTO> myLectureList = myLectureListService.getMyLectureList(memberId, page,sort);
+            return ResponseEntity.ok().body(myLectureList);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
         }
     }
 }
