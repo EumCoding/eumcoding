@@ -42,7 +42,7 @@ public class BasketController {
     @ApiOperation(value = "장바구니 제거", notes = "장바구니 제거")
     @PostMapping("/delete")
     public ResponseEntity<?> removeBasket(@ApiIgnore Authentication authentication,
-                                                  @RequestParam int basketId) {
+                                          @RequestParam int basketId) {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         try {
             basketService.removeBasket(memberId, basketId);
