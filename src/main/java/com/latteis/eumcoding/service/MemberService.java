@@ -1,12 +1,17 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.MemberDTO;
+import com.latteis.eumcoding.model.LectureProgress;
 import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.persistence.LectureRepository;
-import com.latteis.eumcoding.persistence.MemberRepository;
+import com.latteis.eumcoding.model.Payment;
+import com.latteis.eumcoding.model.VideoProgress;
+import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -218,8 +224,6 @@ public class MemberService {
         }
         return true;
     }
-
-
 
     // 프로필 이미지 변경
     public MemberDTO updateProfileImg(int memberId, MemberDTO.UpdateProfile memberDTO) {
