@@ -131,11 +131,21 @@ public class MemberDTO {
         private int memberId;
         private String nickname;
         private String profileImage;
+        
+        //여기서부턴강좌
         private int grade;
         //badge 배지 경로, 수료한 해당 강의
+        private List<Badge> badge;
+
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Badge {
         private String url;
         private int lectureId;
-
     }
 
 
