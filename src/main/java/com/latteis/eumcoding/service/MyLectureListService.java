@@ -3,6 +3,7 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MyLectureListDTO;
+import com.latteis.eumcoding.dto.SearchMylectureDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
 import com.latteis.eumcoding.model.*;
@@ -48,7 +49,7 @@ public class MyLectureListService {
 
 
 
-    public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int sort) {
+    public List<MyLectureListDTO> getMyLectureList(int memberId, int page,int size, int sort) {
         Member member = memberRepository.findByIdAndRole(memberId, 0);
 
 
@@ -65,7 +66,7 @@ public class MyLectureListService {
         }
 
         // 페이지 요청 객체 생성 (PayDay로 정렬)
-        Pageable pageable = PageRequest.of(page - 1, 10, sortObj);
+        Pageable pageable = PageRequest.of(page - 1, size, sortObj);
 
         Page<Payment> paymentsPage = paymentRepository.findAllByMemberIdAndState(member.getId(), pageable);
         //List<Payment> payments = paymentRepository.findByMemberIdAndState(member.getId(), 1);
@@ -192,4 +193,7 @@ public class MyLectureListService {
         }
         return lectureProgressList;
     }
+
+
+
 }

@@ -206,10 +206,10 @@ public class MemberController {
     }
 
     @PostMapping("/mylecture/list")
-    public ResponseEntity<?> getMyLectureList(@ApiIgnore Authentication authentication, int page,int sort) {
+    public ResponseEntity<?> getMyLectureList(@ApiIgnore Authentication authentication, @RequestParam int page,@RequestParam int size,@RequestParam int sort) {
         try {
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-            List<MyLectureListDTO> myLectureList = myLectureListService.getMyLectureList(memberId, page,sort);
+            List<MyLectureListDTO> myLectureList = myLectureListService.getMyLectureList(memberId, page, size, sort);
             return ResponseEntity.ok().body(myLectureList);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
