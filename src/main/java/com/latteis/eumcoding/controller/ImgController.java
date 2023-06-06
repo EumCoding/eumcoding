@@ -1,5 +1,7 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.service.LectureService;
+import com.latteis.eumcoding.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,10 @@ import java.nio.file.Paths;
 @RestController
 @RequestMapping("/eumCodingImgs")
 public class ImgController {
+
+    private final LectureService lectureService;
+
+    private final VideoService videoService;
 
     @Value("${file.path}")
     private String filePath;
@@ -91,4 +97,62 @@ public class ImgController {
             throw new Exception();
         }
     }
+
+    // 강의 썸넬 이미지 url
+    @GetMapping(value = "/lecture/thumb/{fileOriginName}")
+    public ResponseEntity<Resource> getLectureThumbImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = lectureService.getThumbDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception();
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception();
+        }
+    }
+
+    // 강의 설명 이미지 url
+    @GetMapping(value = "/lecture/image/{fileOriginName}")
+    public ResponseEntity<Resource> getLectureDescriptionImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = lectureService.getImageDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception();
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception();
+        }
+    }
+
+    // 강의 뱃지 이미지 url
+    @GetMapping(value = "/lecture/badge/{fileOriginName}")
+    public ResponseEntity<Resource> getLectureBadgeImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = lectureService.getBadgeDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception();
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception();
+        }
+    }
+
 }

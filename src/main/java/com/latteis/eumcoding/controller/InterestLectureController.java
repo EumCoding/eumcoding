@@ -1,18 +1,18 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.InterestLectureDTO;
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.service.InterestLectureService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -54,4 +54,19 @@ public class InterestLectureController {
         }
 
     }
+
+    // 강의 정보 불러오기
+    @GetMapping(value = "/unauth/view")
+    @ApiOperation(value = "해당 강의의 좋아요 수 가져오기")
+    public ResponseEntity<InterestLectureDTO.ViewResponseDTO> getInterestCnt(LectureDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            InterestLectureDTO.ViewResponseDTO viewResponseDTO = interestLectureService.getInterestCnt(idRequestDTO);
+            return ResponseEntity.ok().body(viewResponseDTO);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
 }

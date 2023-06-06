@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -170,11 +171,25 @@ public class LectureController {
     // 내가 등록한 강의 리스트 가져오기
     @PostMapping(value = "/upload_list")
     @ApiOperation(value = "내가 등록한 강의 리스트")
-    public ResponseEntity<List<LectureDTO.MyListResponseDTO>> getMyUploadList(@ApiIgnore Authentication authentication, Pageable pageable) {
+    public ResponseEntity<List<LectureDTO.MyListResponseDTO>> getMyUploadList(@ApiIgnore Authentication authentication, @PageableDefault(size = 15) Pageable pageable) {
 
         try {
             List<LectureDTO.MyListResponseDTO> myListResponseDTOList = lectureService.getMyUploadList(Integer.parseInt(authentication.getPrincipal().toString()), pageable);
             return ResponseEntity.ok().body(myListResponseDTOList);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+    // 강의 정보 불러오기
+    @GetMapping(value = "/unauth/view")
+    @ApiOperation(value = "강의 정보 불러오기")
+    public ResponseEntity<LectureDTO.ViewResponseDTO> getLectureInfo(LectureDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            LectureDTO.ViewResponseDTO viewResponseDTO = lectureService.getLectureInfo(idRequestDTO);
+            return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
