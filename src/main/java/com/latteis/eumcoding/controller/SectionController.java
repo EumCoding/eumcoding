@@ -40,6 +40,22 @@ public class SectionController {
 
     }
 
+    /*
+    * 섹션 삭제
+    */
+    @PostMapping(value = "/delete")
+    @ApiOperation(value = "섹션 삭제")
+    public ResponseEntity<Object> deleteSection(@ApiIgnore Authentication authentication, @Valid @RequestBody SectionDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            sectionService.deleteSection(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
     // 섹션 완료 소요시간 수정
     @PostMapping(value = "/update/time_taken")
     @ApiOperation(value = "섹션 완료 소요시간 수정")
@@ -102,7 +118,6 @@ public class SectionController {
     public ResponseEntity<List<SectionDTO.ListResponseDTO>> getSectionList(@Valid LectureDTO.IdRequestDTO idRequestDTO) {
 
         try {
-            log.info("fdfsfs");
             List<SectionDTO.ListResponseDTO> listResponseDTOList = sectionService.getSectionList(idRequestDTO);
             return ResponseEntity.ok().body(listResponseDTOList);
         } catch (Exception e) {

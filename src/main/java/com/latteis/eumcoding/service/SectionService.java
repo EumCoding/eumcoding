@@ -8,6 +8,7 @@ import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Section;
+import com.latteis.eumcoding.model.Video;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.SectionRepository;
@@ -30,6 +31,8 @@ public class SectionService {
     private final LectureRepository lectureRepository;
 
     private final VideoRepository videoRepository;
+
+    private final VideoService videoService;
 
     private final MemberRepository memberRepository;
 
@@ -208,4 +211,32 @@ public class SectionService {
 
     }
 
+    /*
+    * 섹션 삭제
+    */
+    public void deleteSection(int memberId, SectionDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // Section 가져오기
+        Section section = sectionRepository.findByIdAndLectureMember(idRequestDTO.getId(), member);
+        Preconditions.checkNotNull(section, "등록된 섹션이 아닙니다. (section ID : %s)", idRequestDTO.getId());
+
+        // 강사 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        List<Video> videoList = videoRepository.findBySectionId(section.getId());
+        videoList.forEach(video -> videoService.deleteVideo(memberId, new VideoDTO.IdRequestDTO(video.getId())));
+
+        List<Section> sectionList = sectionRepository.findAllByLectureAndSequenceGreaterThan(section.getLecture(), section.getSequence());
+        sectionList.forEach(section1 -> {
+            section1.setSequence(section1.getSequence() - 1);
+            sectionRepository.save(section1);
+        });
+
+        sectionRepository.delete(section);
+
+    }
 }

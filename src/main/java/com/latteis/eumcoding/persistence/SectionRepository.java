@@ -45,4 +45,5 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
      */
     Section findByLectureAndSequence(Lecture lecture, int sequence);
 
+    List<Section> findAllByLectureAndSequenceGreaterThan(Lecture lecture, int sequence);
 }
