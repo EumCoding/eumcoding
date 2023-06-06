@@ -35,7 +35,7 @@ public class BasketService {
 
         Lecture lecture = lectureRepository.findById(basketAddDTO.getLectureId());
         if(lecture == null){
-            new IllegalArgumentException("강좌가 없습니다.");
+            throw new IllegalArgumentException("강좌가 없습니다.");
         }
 
 
