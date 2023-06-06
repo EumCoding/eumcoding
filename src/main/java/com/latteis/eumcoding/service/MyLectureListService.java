@@ -48,22 +48,33 @@ public class MyLectureListService {
 
 
 
-    public List<MyLectureListDTO> getMyLectureList(int memberId, int page) {
-
+    public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int sort) {
         Member member = memberRepository.findByIdAndRole(memberId, 0);
 
-        // 각 MyLectureListDTO에 대해 정렬을 수행합니다.
-        Sort.Direction direction = Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(direction));
 
-        Page<Payment> paymentsPage;
-        List<Payment> payments = paymentRepository.findByMemberIdPayment(member.getId());
+        Sort sortObj;
+        switch (sort) {
+            case 0:
+                sortObj = Sort.by(Sort.Direction.DESC, "payDay");
+                break;
+/*            case 1:
+                sortObj = Sort.by(Sort.Direction.DESC, "name");
+                break;*/
+            default:
+                sortObj = Sort.unsorted();
+        }
+
+        // 페이지 요청 객체 생성 (PayDay로 정렬)
+        Pageable pageable = PageRequest.of(page - 1, 10, sortObj);
+
+        Page<Payment> paymentsPage = paymentRepository.findAllByMemberIdAndState(member.getId(), pageable);
+        //List<Payment> payments = paymentRepository.findByMemberIdAndState(member.getId(), 1);
 
 
 
         // 각 Payment에 연결된 PayLecture 목록을 가져옴
         List<Lecture> lectures = new ArrayList<>();
-        for (Payment payment : payments) {
+        for (Payment payment : paymentsPage) {
             List<PayLecture> payLectures = payLectureRepository.findByPaymentId(payment.getId());
             if(payment.getState() == 1){
                 for (PayLecture payLecture : payLectures) {
@@ -83,27 +94,24 @@ public class MyLectureListService {
             LocalTime lastView = null;
             boolean isLectureCompleted = true; // 강의 수강 완료 여부
 
-            // Payment로부터 payDay를 얻어옴
-            for (Payment payment : payments) {
-                List<PayLecture> payLectures = payLectureRepository.findByPaymentId(payment.getId());
-                if (payment.getState() == 1 && payLectures.stream().anyMatch(payLecture -> payLecture.getLecture().getId() == lecture.getId())) {
-                    payDay = payment.getPayDay();
-                    break;
-                }
-            }
             // memberId와 lectureId를 사용해 LectureProgress를 찾아 lastView를 얻어옴
             List<LectureProgress> lectureProgresses = lectureProgressRepository.findByMemberIdAndLectureId(memberId, lecture.getId());
             for (LectureProgress lectureProgress : lectureProgresses) {
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByLectureProgressId(lectureProgress.getId());
                 for (VideoProgress videoProgress : videoProgresses) {
-                    // lastView 업데이트
+
+                    /*
+                    // lastView
                     if (videoProgress.getLastView() != null) {
-                        if (lastView == null || lastView.isBefore(videoProgress.getLastView())) {
+                        //videoProgress.getLastView()가 lastView보다 더 최근의 시간이거나 lastView가 아직 설정되지 않은 경우에만
+                        // lastView 값을 업데이트
+                        // 최근의 조회 시간을 추적하고 유지
+                      if (lastView == null || lastView.isBefore(videoProgress.getLastView())) {
                             lastView = videoProgress.getLastView();
                         }
-                    }
+                    }*/
 
-                    // Video의 전체 재생 시간과 VideoProgress의 lastView를 비교하여 state 업데이트
+                   // Video의 전체 재생 시간과 VideoProgress의 lastView를 비교하여 state 업데이트
                     Video video = videoProgress.getVideo();
                     if (video != null) {
                         long playTimeSeconds = ChronoUnit.SECONDS.between(LocalTime.MIDNIGHT, video.getPlayTime());
@@ -168,7 +176,6 @@ public class MyLectureListService {
                     .lectureName(lecture.getName())
                     .thumb(lecture.getThumb())
                     .payDay(payDay)
-                    .lastView(lastView)
                     .build();
 
             lectureProgressList.add(myLectureListDTO);

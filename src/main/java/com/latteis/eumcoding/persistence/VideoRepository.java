@@ -14,6 +14,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
     Video findById(int videoId);
 
+
     List<Video> findBySectionId(int sectionId);
 
     //Video 테이블에서 sectionId 컬럼 이용 ㅡCurriculum과 관련된 Video를 찾기

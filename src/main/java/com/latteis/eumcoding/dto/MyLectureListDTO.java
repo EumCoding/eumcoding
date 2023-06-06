@@ -28,5 +28,5 @@ public class MyLectureListDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime payDay;
-    private LocalTime lastView;
+
 }

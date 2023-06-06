@@ -35,13 +35,6 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     @Query("SELECT vp FROM VideoProgress vp WHERE vp.lectureProgress.id = :lectureProgressId")
     List<VideoProgress> findByLectureProgressId(@Param("lectureProgressId") int lectureProgressId);
 
-    @Query("SELECT p FROM Payment p " +
-            "JOIN Member m ON p.member.id = m.id " +
-            "JOIN PayLecture pl ON p.id = pl.payment.id " +
-            "JOIN LectureProgress lp ON pl.id = lp.payLecture.id " +
-            "JOIN VideoProgress vp ON lp.id = vp.lectureProgress.id " +
-            "WHERE m.id = :memberId AND m.state = 1")
-    Page<VideoProgress> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
 
     /*
     * Member, Video에 맞는 Entity 가져오기
