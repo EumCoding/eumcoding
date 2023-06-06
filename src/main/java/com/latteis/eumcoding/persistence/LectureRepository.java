@@ -25,6 +25,9 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberId(@Param("memberId") int memberId);
 
+
+
+
     //Pageable을 사용하기 위해 부득이하게 다시 만듬
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberIdMyLecture(@Param("memberId") int memberId,Pageable pageable);

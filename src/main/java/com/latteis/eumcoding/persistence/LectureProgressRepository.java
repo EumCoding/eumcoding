@@ -2,6 +2,7 @@ package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.LectureProgress;
+import com.latteis.eumcoding.model.PayLecture;
 import com.latteis.eumcoding.model.Payment;
 import com.sun.org.apache.bcel.internal.generic.VariableLengthInstruction;
 import org.springframework.data.domain.Page;
@@ -42,4 +43,7 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
     Page<LectureProgress> findAllByMemberIdAndStateOrderByName(@Param("memberId") int memberId, Pageable pageable);
 
 
+    //ProfileService에 Student부분
+    @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.lecture l JOIN pl.payment p JOIN p.member m WHERE pl = :payLecture")
+    LectureProgress findByPayLecture(@Param("payLecture") PayLecture payLecture);
 }

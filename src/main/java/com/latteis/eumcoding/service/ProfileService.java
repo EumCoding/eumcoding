@@ -5,20 +5,27 @@ import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.TeacherProfileDTO;
 import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.LectureProgress;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
+import com.latteis.eumcoding.persistence.LectureProgressRepository;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.PayLectureRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 @Slf4j
@@ -32,7 +39,10 @@ public class ProfileService {
 
     private final PayLectureRepository payLectureRepository;
 
+    private final LectureProgressRepository lectureProgressRepository;
 
+    @Value("${file.path.lecture.badge}")
+    private String badgePath;
 
 
 
@@ -91,66 +101,90 @@ public class ProfileService {
 
 
     //학생 정보 입력시 해당 학생이 어느 강의를 듣고 있는지 정보
-    public MemberDTO.StudentProfileDTO getStudentProfile(int memberId) {
-        Optional<Member> members = memberRepository.findById(memberId);
+    public List<MemberDTO.StudentProfileDTO> getStudentProfile(int memberId) throws IOException {
+        Optional<Member> memberOpt = memberRepository.findById(memberId);
 
-        if (!members.isPresent()) {
+        if (!memberOpt.isPresent()) {
             throw new NoSuchElementException("해당 학생 정보가 없습니다.");
         }
 
-        List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
-        if (lectureList.isEmpty()) {
+        Member member = memberOpt.get();
+
+        if(member.getRole() != 0) {
+            throw new NoSuchElementException("해당 사용자는 학생이 아닙니다.");
+        }
+
+        List<PayLecture> payLectures = payLectureRepository.findLecturesByStudentId(memberId);
+        if (payLectures.isEmpty()) {
             throw new NoSuchElementException("해당 학생이 듣는 강좌가 없습니다.");
         }
 
-        //학생이 강의를 여러개 들을 경우, 이를 받기 위해 리스트 타입으로 받음
-        List<Integer> grades = new ArrayList<>();
-        List<Integer> lectureIds = new ArrayList<>();
-        List<String> lectureName = new ArrayList<>();
+        List<MemberDTO.StudentProfileDTO> profiles = new ArrayList<>();
 
-        for (Lecture lecture : lectureList) {
-            grades.add(lecture.getGrade());
-            lectureIds.add(lecture.getId());
-            lectureName.add(lecture.getName());
+        for (PayLecture payLecture : payLectures) {
+
+            LectureProgress lectureProgress = lectureProgressRepository.findByPayLecture(payLecture);
+
+            if (lectureProgress == null) {
+                throw new NoSuchElementException("해당 학생은 강의를 듣고 있지 않습니다.");
+            }
+
+            //badge가져오는 부분
+            String badgeUrl = "";//state가0이면 ""로 출력
+            if (lectureProgress.getState() == 1) { // 강의 수강이 완료된 경우
+                //뱃지는 해당강좌 다 수료할경우 그 강좌 id를 이름으로 함
+                int badgeId = lectureProgress.getPayLecture().getLecture().getId();
+                
+                String[] extensions = {"png", "jpg"};
+                String fileExtension = "";
+                File badgeFile = null;
+
+                //badgePath경로에 저장된 이미지가 png,jpg둘중 어떤거여도 상관없이 그 타입에 맞게 저장됨(동적으로)
+                //c:eumCoding/lecture/badge/1.png or 1.jpg
+                for (String ext : extensions) {
+                    String fileName = badgeId + "." + ext;
+                    File tempFile = new File(badgePath, fileName);
+                    if (tempFile.exists()) {
+                        badgeFile = tempFile;
+                        fileExtension = ext;
+                        break;
+                    }
+                }
+
+                if (badgeFile != null) {
+                    //실제 파일의 MIME 타입이 png 또는 jpg인지 확인
+                    try {
+                        String mimeType = Files.probeContentType(badgeFile.toPath());
+                        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
+                            badgeUrl = badgePath + "/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
+                        } else {
+                            throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException("뱃지 파일을 읽는 중 오류가 발생했습니다.", e);
+                    }
+                } else {
+                    badgeUrl = "뱃지 발급 중입니다."; // 강의는 다들어서 state가1인데,뱃지 파일이 없는 경우
+                }
+            }
+
+            MemberDTO.Badge badge = MemberDTO.Badge.builder()
+                    .url(badgeUrl)
+                    .lectureId(payLecture.getLecture().getId())
+                    .build();
+
+            MemberDTO.StudentProfileDTO profile = MemberDTO.StudentProfileDTO.builder()
+                    .memberId(payLecture.getPayment().getMember().getId())
+                    .nickname(payLecture.getPayment().getMember().getNickname())
+                    .profileImage(payLecture.getPayment().getMember().getProfile())
+                    .grade(payLecture.getLecture().getGrade())
+                    .badge(Arrays.asList(badge))
+                    .build();
+
+            profiles.add(profile);
         }
 
-        //여러개 강의를 들을 시 즉, DB에 1번학생이 grade에 1,2,3이 저장되어 있으면
-        //1,2,3으로 출력되게 해줌
-        String gradesStr = grades.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-        String lectureIdsStr = lectureIds.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-        String lectureNameStr = lectureName.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-
-        if (members.isPresent()) {
-            Member member = members.get();
-            if(member.getRole() == 0)
-            {
-                System.out.println(member + "member");
-                MemberDTO.StudentProfileDTO studentProfileDTO = MemberDTO.StudentProfileDTO.builder()
-                        .memberId(member.getId())
-                        .nickname(member.getNickname())
-                        .profileImage(member.getProfile())
-                        .grade(gradesStr)
-                        .url("")
-                        .lectureId(lectureIdsStr)
-                        .lectureName(lectureNameStr)
-                        .build();
-                System.out.println(studentProfileDTO + "studentProfileDTO");
-                return studentProfileDTO;
-            }
-            else{
-                throw new NoSuchElementException("해당 학생은 존재하지 않습니다.");
-            }
-        }
-        return null;
+        return profiles;
     }
 
 

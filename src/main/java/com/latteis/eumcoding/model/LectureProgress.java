@@ -27,7 +27,7 @@ public class LectureProgress {
     private PayLecture payLecture;
 
     @Column(name = "state")
-    private int state; //수강상태. 0 : 수강 전, 1 : 수강 시작, 2 : 수강 중, 3 : 수강 종료
+    private int state; //수강상태. 0 : 수강 전, 1 : 수강 완료
 
     @Column(name = "start_day")
     private LocalDateTime start_day;
