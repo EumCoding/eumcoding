@@ -1,9 +1,11 @@
 package com.latteis.eumcoding.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.latteis.eumcoding.model.Lecture;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
@@ -45,6 +47,9 @@ public class LectureDTO {
         private String image; // 강좌 설명에 들어가는 이미지
         private int price;
         private int grade; // 학년
+
+        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdDay; // 강좌생성일
         private String thumb; // 강좌 썸네일
         private int state; // 0:등록대기중, 1:등록

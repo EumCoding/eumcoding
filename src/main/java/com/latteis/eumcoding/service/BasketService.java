@@ -50,7 +50,6 @@ public class BasketService {
                 .build();
 
         Basket savedBasket = basketRepository.save(basket);
-
         BasketDTO basketDTO = convertToDTO(savedBasket);
 
         return basketDTO;
@@ -65,8 +64,8 @@ public class BasketService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        BasketDTO basketDTO = convertToDTO(basket);
         basketRepository.delete(basket);
+        BasketDTO basketDTO = convertToDTO(basket);
 
         return basketDTO;
     }
@@ -90,6 +89,7 @@ public class BasketService {
     }
 
 
+    //entity->dto변환
     private BasketDTO convertToDTO(Basket basket){
         return BasketDTO.builder()
                 .basketId(basket.getId())

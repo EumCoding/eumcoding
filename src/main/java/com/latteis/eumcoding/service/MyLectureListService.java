@@ -73,13 +73,12 @@ public class MyLectureListService {
 
         }
 
+        // 강의에 대한 정보를 저장할 리스트를 생성
         List<MyLectureListDTO> lectureProgressList = new ArrayList<>();
 
         for (Lecture lecture : lectures) {
             int totalVideos = 0;
             int completedVideos = 0;
-
-
             LocalDateTime payDay = null;
             LocalTime lastView = null;
             boolean isLectureCompleted = true; // 강의 수강 완료 여부
@@ -152,8 +151,6 @@ public class MyLectureListService {
                         if (videoProgress.get().getState() == 1) { // 수강 종료 상태 체크
                             completedVideos++;
                         }
-
-
                     }
                 }
             }
