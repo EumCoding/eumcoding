@@ -1,6 +1,8 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Payment;
+import com.latteis.eumcoding.model.Video;
 import com.latteis.eumcoding.model.VideoProgress;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,10 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "WHERE m.id = :memberId AND m.state = 1")
     Page<VideoProgress> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
 
-
+    /*
+    * Member, Video에 맞는 Entity 가져오기
+    */
+    @Query("SELECT vp FROM VideoProgress vp WHERE vp.video = :video AND vp.lectureProgress.payLecture.payment.member = :member")
+    VideoProgress findByMemberAndVideo(@Param("member") Member member, @Param("video") Video video);
 }
 

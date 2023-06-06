@@ -68,6 +68,34 @@ public class SectionController {
 
     }
 
+    // 섹션 순서 앞으로 이동
+    @PostMapping(value = "/sequence/up")
+    @ApiOperation(value = "섹션 순서 앞으로 이동")
+    public ResponseEntity<Object> updateSequenceUp(@ApiIgnore Authentication authentication, @Valid @RequestBody SectionDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            sectionService.updateSequenceUp(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 섹션 순서 뒤로 이동
+    @PostMapping(value = "/sequence/down")
+    @ApiOperation(value = "섹션 순서 뒤로 이동")
+    public ResponseEntity<Object> updateSequenceDown(@ApiIgnore Authentication authentication, @Valid @RequestBody SectionDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            sectionService.updateSequenceDown(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
     // 섹션 리스트 가져오기
     @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "섹션 리스트 가져오기")
