@@ -32,9 +32,6 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     @Query(value = "SELECT * FROM section WHERE id = :id", nativeQuery = true)
     Section findBySectionId(@Param("id") int id);
 
-    // lecture의 모든 section 가져오기
-    List<Section> findAllByLecture(Lecture lecture);
-
     /*
     * SectionId와 강사에 맞는 Section 가져오기
     */
@@ -45,5 +42,13 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
      */
     Section findByLectureAndSequence(Lecture lecture, int sequence);
 
+    /*
+    *
+    * */
     List<Section> findAllByLectureAndSequenceGreaterThan(Lecture lecture, int sequence);
+
+    /*
+    * Lecture로 섹션 순서대로 가져오기
+    */
+    List<Section> findAllByLectureOrderBySequence(Lecture lecture);
 }

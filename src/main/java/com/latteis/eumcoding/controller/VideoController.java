@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.dto.SectionDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.service.VideoService;
 import io.swagger.annotations.Api;
@@ -85,15 +86,48 @@ public class VideoController {
     /*
     * 동영상 정보 불러오기
     */
-    @GetMapping(value = "/unauth/view")
+    @PostMapping(value = "/view")
     @ApiOperation(value = "동영상 정보 불러오기")
-    public ResponseEntity<VideoDTO.ViewResponseDTO> getVideoInfo(@Valid VideoDTO.IdRequestDTO idRequestDTO) {
+    public ResponseEntity<VideoDTO.ViewResponseDTO> getVideoInfo(@ApiIgnore Authentication authentication, @Valid VideoDTO.IdRequestDTO idRequestDTO) {
 
         try {
-            VideoDTO.ViewResponseDTO viewResponseDTO = videoService.getVideoInfo(idRequestDTO);
+            VideoDTO.ViewResponseDTO viewResponseDTO = videoService.getVideoInfo(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
             return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+
+    /*
+    * 비디오 순서 앞으로 이동
+    */
+    @PostMapping(value = "/sequence/up")
+    @ApiOperation(value = "섹션 순서 앞으로 이동")
+    public ResponseEntity<Object> updateSequenceUp(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            videoService.updateSequenceUp(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    /*
+    * 비디오 순서 뒤로 이동
+    */
+    @PostMapping(value = "/sequence/down")
+    @ApiOperation(value = "섹션 순서 뒤로 이동")
+    public ResponseEntity<Object> updateSequenceDown(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            videoService.updateSequenceDown(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
     }

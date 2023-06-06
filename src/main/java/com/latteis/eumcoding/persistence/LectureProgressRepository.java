@@ -2,9 +2,8 @@ package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.LectureProgress;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
-import com.latteis.eumcoding.model.Payment;
-import com.sun.org.apache.bcel.internal.generic.VariableLengthInstruction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +22,7 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
             "AND m.id = p.member_id AND pl.lecture_id = :lectureId AND lp.state = :state", nativeQuery = true)
     Page<Object[]> getStudentList(@Param("lectureId") int lectureId, @Param("state") int state, Pageable pageable);
 
-    @Query(value = "SELECT p.member.id, m.nickname,lp.start_day, lp.end_day " +
+    @Query(value = "SELECT p.member.id, m.nickname,lp.startDay, lp.endDay " +
             "FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m " +
             "WHERE pl.lecture.id = :lectureId")
     Page<Object[]> getStudentList1(@Param("lectureId") int lectureId, Pageable pageable);
@@ -46,4 +45,11 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
     //ProfileService에 Student부분
     @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.lecture l JOIN pl.payment p JOIN p.member m WHERE pl = :payLecture")
     LectureProgress findByPayLecture(@Param("payLecture") PayLecture payLecture);
+
+    /*
+     * Member, Lecture에 맞는 Entity 가져오기
+     */
+    @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member")
+    LectureProgress findByMemberAndLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
+
 }

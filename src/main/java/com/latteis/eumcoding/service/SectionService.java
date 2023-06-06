@@ -120,7 +120,7 @@ public class SectionService {
         Preconditions.checkNotNull(lecture, "등록된 강의가 없습니다. (강의 ID : %s)", idRequestDTO.getId());
 
         // 해당 Lecture에 있는 모든 Section 가져옴
-        List<Section> sectionObjects = sectionRepository.findAllByLecture(lecture);
+        List<Section> sectionObjects = sectionRepository.findAllByLectureOrderBySequence(lecture);
         // 섹션 DTO 리스트 생성
         List<SectionDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
         // 섹션 반복문
@@ -130,11 +130,12 @@ public class SectionService {
             // VideoDTOList 생성
             List<VideoDTO.SectionListDTO> videoDTOList = new ArrayList<>();
             // 해당 section에 있는 모든 Video 가져옴
-            List<Object[]> videoObjects = videoRepository.getSectionList(section.getId());
+            List<Video> videoList = videoRepository.findAllBySectionOrderBySequence(section);
             // 비디오 반복문
-            for (Object[] videoObject : videoObjects) {
+            for (Video video : videoList) {
                 // videoDTO에 해당 object 저장
-                VideoDTO.SectionListDTO videoDTO = new VideoDTO.SectionListDTO(videoObject);
+                VideoDTO.SectionListDTO videoDTO = new VideoDTO.SectionListDTO(video);
+                videoDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/video/thumb/" + video.getThumb());
                 // videoList에 저장
                 videoDTOList.add(videoDTO);
             }
