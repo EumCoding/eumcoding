@@ -91,66 +91,40 @@ public class ProfileService {
 
 
     //학생 정보 입력시 해당 학생이 어느 강의를 듣고 있는지 정보
-    public MemberDTO.StudentProfileDTO getStudentProfile(int memberId) {
-        Optional<Member> members = memberRepository.findById(memberId);
+    public List<MemberDTO.StudentProfileDTO> getStudentProfile(int memberId) {
+        Optional<Member> memberOpt = memberRepository.findById(memberId);
 
-        if (!members.isPresent()) {
+        if (!memberOpt.isPresent()) {
             throw new NoSuchElementException("해당 학생 정보가 없습니다.");
         }
 
-        List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
+        Member member = memberOpt.get();
+
+        if(member.getRole() != 0) {
+            throw new NoSuchElementException("해당 사용자는 학생이 아닙니다.");
+        }
+
+        List<Lecture> lectureList = payLectureRepository.findLecturesByStudentId(memberId);
         if (lectureList.isEmpty()) {
             throw new NoSuchElementException("해당 학생이 듣는 강좌가 없습니다.");
         }
 
-        //학생이 강의를 여러개 들을 경우, 이를 받기 위해 리스트 타입으로 받음
-        List<Integer> grades = new ArrayList<>();
-        List<Integer> lectureIds = new ArrayList<>();
-        List<String> lectureName = new ArrayList<>();
+        List<MemberDTO.StudentProfileDTO> profiles = new ArrayList<>();
 
         for (Lecture lecture : lectureList) {
-            grades.add(lecture.getGrade());
-            lectureIds.add(lecture.getId());
-            lectureName.add(lecture.getName());
+            MemberDTO.StudentProfileDTO profile = MemberDTO.StudentProfileDTO.builder()
+                    .memberId(member.getId())
+                    .nickname(member.getNickname())
+                    .profileImage(member.getProfile())
+                    .grade(lecture.getGrade())
+                    .url("")
+                    .lectureId(lecture.getId())
+                    .build();
+
+            profiles.add(profile);
         }
 
-        //여러개 강의를 들을 시 즉, DB에 1번학생이 grade에 1,2,3이 저장되어 있으면
-        //1,2,3으로 출력되게 해줌
-        String gradesStr = grades.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-        String lectureIdsStr = lectureIds.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-        String lectureNameStr = lectureName.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-
-
-        if (members.isPresent()) {
-            Member member = members.get();
-            if(member.getRole() == 0)
-            {
-                System.out.println(member + "member");
-                MemberDTO.StudentProfileDTO studentProfileDTO = MemberDTO.StudentProfileDTO.builder()
-                        .memberId(member.getId())
-                        .nickname(member.getNickname())
-                        .profileImage(member.getProfile())
-                        .grade(gradesStr)
-                        .url("")
-                        .lectureId(lectureIdsStr)
-                        .lectureName(lectureNameStr)
-                        .build();
-                System.out.println(studentProfileDTO + "studentProfileDTO");
-                return studentProfileDTO;
-            }
-            else{
-                throw new NoSuchElementException("해당 학생은 존재하지 않습니다.");
-            }
-        }
-        return null;
+        return profiles;
     }
 
 

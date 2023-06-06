@@ -131,11 +131,11 @@ public class MemberDTO {
         private int memberId;
         private String nickname;
         private String profileImage;
-        private String  grade;
+        private int grade;
         //badge 배지 경로, 수료한 해당 강의
         private String url;
-        private String lectureId;
-        private String lectureName;
+        private int lectureId;
+
     }
 
 

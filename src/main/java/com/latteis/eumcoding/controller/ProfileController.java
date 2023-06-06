@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Api(tags = "Profiles")
@@ -43,14 +44,12 @@ public class ProfileController {
     //학생 정보 누르면 해당 학생이 어떤 학년의 강의를 듣는지 출력
     @ApiOperation(value = "")
     @GetMapping("/student/{memberId}")
-    //public ResponseEntity<MemberDTO.StudentProfileDTO> getStudentProfile
-    //?쓰는 이유는 e.getMessage()사용하기위해서, 문제가 되면 위에 코드로 대체
     public ResponseEntity<?> getStudentProfile(
             @ApiParam(value = "", required = true)
             @PathVariable("memberId") int memberId) {
 
         try{
-            MemberDTO.StudentProfileDTO studentProfileDTO = profileService.getStudentProfile(memberId);
+            List<MemberDTO.StudentProfileDTO> studentProfileDTO = profileService.getStudentProfile(memberId);
             System.out.println(studentProfileDTO + "학생 정보");
             return new ResponseEntity<>(studentProfileDTO, HttpStatus.OK);
 
