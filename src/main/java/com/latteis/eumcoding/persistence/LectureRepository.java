@@ -103,4 +103,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     @Query(value = "SELECT l.id, l.name, l.price, l.createdDay, l.thumb FROM Lecture l WHERE l.member.id = :memberId")
     List<Object[]> getStatsLectureList(@Param("memberId") int memberId);
+
+
 }
