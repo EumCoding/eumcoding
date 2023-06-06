@@ -1,20 +1,15 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Section;
+import com.latteis.eumcoding.model.Video;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -32,8 +27,11 @@ public class VideoDTO {
 
         @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "동영상 ID", example = "1")
-        private int Id;
+        private int id;
 
+        public IdRequestDTO(int id) {
+            this.id = id;
+        }
     }
 
         // 동영상 업로드 요청 DTO
@@ -119,6 +117,50 @@ public class VideoDTO {
             return time.toLocalTime();
         }
 
+    }
+
+    /*
+    * 동영상 정보 응답
+    */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 정보 응답 DTO")
+    public static class ViewResponseDTO {
+
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int id;
+
+        @ApiModelProperty(value = "비디오 이름", example = "비디오입니다")
+        private String name;
+
+        @ApiModelProperty(value = "비디오 설명", example = "비디오 설명입니다")
+        private String description;
+
+        @ApiModelProperty(value = "0 : 미리보기 금지, 1 : 미리보기 가능", example = "1")
+        private int preview;
+
+        @ApiModelProperty(value = "재생시간", example = "1")
+        private LocalTime playTime;
+
+        @ApiModelProperty(value = "업로드 날짜", example = "")
+        private LocalDateTime uploadDay;
+
+        @ApiModelProperty(value = "순서", example = "1")
+        private int sequence;
+
+        @ApiModelProperty(value = "비디오 파일", example = "~.mp4")
+        private String path;
+
+        public ViewResponseDTO(Video video) {
+            this.id = video.getId();
+            this.name = video.getName();
+            this.description = video.getDescription();
+            this.preview = video.getPreview();
+            this.playTime = video.getPlayTime();
+            this.uploadDay = video.getUploadDate();
+            this.sequence = video.getSequence();
+        }
     }
 
     private int videoId; // 사용자에게 고유하게 부여되는 값
