@@ -41,7 +41,7 @@ public class ProfileService {
 
     private final LectureProgressRepository lectureProgressRepository;
 
-    @Value("${file.path.badge}")
+    @Value("${file.path.lecture.badge}")
     private String badgePath;
 
 
@@ -130,7 +130,7 @@ public class ProfileService {
             }
 
             //badge가져오는 부분
-            String badgeUrl = "";
+            String badgeUrl = "";//state가0이면 ""로 출력
             if (lectureProgress.getState() == 1) { // 강의 수강이 완료된 경우
                 //뱃지는 해당강좌 다 수료할경우 그 강좌 id를 이름으로 함
                 int badgeId = lectureProgress.getPayLecture().getLecture().getId();
@@ -140,7 +140,7 @@ public class ProfileService {
                 File badgeFile = null;
 
                 //badgePath경로에 저장된 이미지가 png,jpg둘중 어떤거여도 상관없이 그 타입에 맞게 저장됨(동적으로)
-                //c:eumCoding/badge/1.png or 1.jpg
+                //c:eumCoding/lecture/badge/1.png or 1.jpg
                 for (String ext : extensions) {
                     String fileName = badgeId + "." + ext;
                     File tempFile = new File(badgePath, fileName);
@@ -153,14 +153,18 @@ public class ProfileService {
 
                 if (badgeFile != null) {
                     //실제 파일의 MIME 타입이 png 또는 jpg인지 확인
-                    String mimeType = Files.probeContentType(badgeFile.toPath());
-                    if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
-                        badgeUrl = badgePath + "/" + badgeId + "." + fileExtension;
-                    } else {
-                        throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
+                    try {
+                        String mimeType = Files.probeContentType(badgeFile.toPath());
+                        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
+                            badgeUrl = badgePath + "/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
+                        } else {
+                            throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException("뱃지 파일을 읽는 중 오류가 발생했습니다.", e);
                     }
                 } else {
-                    throw new FileNotFoundException("뱃지 파일이 존재하지 않습니다.");
+                    badgeUrl = "뱃지 발급 중입니다."; // 강의는 다들어서 state가1인데,뱃지 파일이 없는 경우
                 }
             }
 
