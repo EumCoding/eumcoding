@@ -1,6 +1,8 @@
 package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.Answer;
+import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,7 +33,16 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     Section findBySectionId(@Param("id") int id);
 
     // lecture의 모든 section 가져오기
-    @Query(value = "SELECT id, time_taken, name FROM section WHERE lecture_id = :lectureId ORDER BY sequence", nativeQuery = true)
-    List<Object[]> findListByLecture(@Param("lectureId") int lectureId);
+    List<Section> findAllByLecture(Lecture lecture);
+
+    /*
+    * SectionId와 강사에 맞는 Section 가져오기
+    */
+    Section findByIdAndLectureMember(int id, Member member);
+
+    /*
+     * Lecture, sequence에 맞는 Section 가져오기
+     */
+    Section findByLectureAndSequence(Lecture lecture, int sequence);
 
 }

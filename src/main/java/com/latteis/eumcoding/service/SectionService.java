@@ -1,12 +1,15 @@
 package com.latteis.eumcoding.service;
 
+import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.LectureDTO;
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.SectionDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Section;
-import com.latteis.eumcoding.model.Video;
 import com.latteis.eumcoding.persistence.LectureRepository;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.SectionRepository;
 import com.latteis.eumcoding.persistence.VideoRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ public class SectionService {
     private final LectureRepository lectureRepository;
 
     private final VideoRepository videoRepository;
+
+    private final MemberRepository memberRepository;
 
     // 섹션 추가
     public void addSection(int memberId, SectionDTO.AddRequestDTO addRequestDTO) {
@@ -102,43 +107,104 @@ public class SectionService {
 
     }
 
+
+
     // 섹션 리스트 가져오기
     public List<SectionDTO.ListResponseDTO> getSectionList(LectureDTO.IdRequestDTO idRequestDTO) {
 
-        try {
+        // lecture 가져오기
+        Lecture lecture = lectureRepository.findById(idRequestDTO.getId());
+        Preconditions.checkNotNull(lecture, "등록된 강의가 없습니다. (강의 ID : %s)", idRequestDTO.getId());
 
-            // 해당 Lecture에 있는 모든 Section 가져옴
-            List<Object[]> sectionObjects = sectionRepository.findListByLecture(idRequestDTO.getId());
-            // 섹션 DTO 리스트 생성
-            List<SectionDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
-            // 섹션 반복문
-            for (Object[] object : sectionObjects) {
-                // SectionDTO에 object 저장
-                SectionDTO.ListResponseDTO listResponseDTO = new SectionDTO.ListResponseDTO(object);
-                // VideoDTOList 생성
-                List<VideoDTO.SectionListDTO> videoDTOList = new ArrayList<>();
-                // 해당 section에 있는 모든 Video 가져옴
-                List<Object[]> videoObjects = videoRepository.getSectionList((int)object[0]);
-                // 비디오 반복문
-                for (Object[] videoObject : videoObjects) {
-                    // videoDTO에 해당 object 저장
-                    VideoDTO.SectionListDTO videoDTO = new VideoDTO.SectionListDTO(videoObject);
-                    // videoList에 저장
-                    videoDTOList.add(videoDTO);
-                }
-                // SectionDTO에 videoList 저장
-                listResponseDTO.setVideoDTOList(videoDTOList);
-                // SectionDTOList에 SectionDTO 저장
-                listResponseDTOList.add(listResponseDTO);
+        // 해당 Lecture에 있는 모든 Section 가져옴
+        List<Section> sectionObjects = sectionRepository.findAllByLecture(lecture);
+        // 섹션 DTO 리스트 생성
+        List<SectionDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
+        // 섹션 반복문
+        for (Section section : sectionObjects) {
+            // SectionDTO에 object 저장
+            SectionDTO.ListResponseDTO listResponseDTO = new SectionDTO.ListResponseDTO(section);
+            // VideoDTOList 생성
+            List<VideoDTO.SectionListDTO> videoDTOList = new ArrayList<>();
+            // 해당 section에 있는 모든 Video 가져옴
+            List<Object[]> videoObjects = videoRepository.getSectionList(section.getId());
+            // 비디오 반복문
+            for (Object[] videoObject : videoObjects) {
+                // videoDTO에 해당 object 저장
+                VideoDTO.SectionListDTO videoDTO = new VideoDTO.SectionListDTO(videoObject);
+                // videoList에 저장
+                videoDTOList.add(videoDTO);
             }
-
-            // sectionDTOList 반환
-            return listResponseDTOList;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("SectionService.getSectionList() : 에러 발생");
+            // SectionDTO에 videoList 저장
+            listResponseDTO.setVideoDTOList(videoDTOList);
+            // SectionDTOList에 SectionDTO 저장
+            listResponseDTOList.add(listResponseDTO);
         }
+
+        // sectionDTOList 반환
+        return listResponseDTOList;
+
+    }
+
+    // 섹션 순서 앞으로 이동
+    public void updateSequenceUp(int memberId, SectionDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // Section 가져오기
+        Section section = sectionRepository.findByIdAndLectureMember(idRequestDTO.getId(), member);
+        Preconditions.checkNotNull(section, "등록된 섹션이 아닙니다. (section ID : %s)", idRequestDTO.getId());
+
+        // 강사 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 해당 섹션의 앞 순서 섹션 가져오기
+        Section frontSection = sectionRepository.findByLectureAndSequence(section.getLecture(), section.getSequence() - 1);
+        Preconditions.checkNotNull(frontSection, "앞 순서 섹션이 없습니다. (section ID : %s)", idRequestDTO.getId());
+
+        // 순서 + 1
+        frontSection.setSequence(frontSection.getSequence() + 1);
+        // 저장
+        sectionRepository.save(frontSection);
+
+        // 기존 섹션 순서 - 1
+        section.setSequence(section.getSequence() - 1);
+        // 저장
+        sectionRepository.save(section);
+
+    }
+
+    /*
+    * 섹션 순서 뒤로 이동
+    */
+    public void updateSequenceDown(int memberId, SectionDTO.IdRequestDTO idRequestDTO) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // Section 가져오기
+        Section section = sectionRepository.findByIdAndLectureMember(idRequestDTO.getId(), member);
+        Preconditions.checkNotNull(section, "등록된 섹션이 아닙니다. (section ID : %s)", idRequestDTO.getId());
+
+        // 강사 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 해당 섹션의 앞 순서 섹션 가져오기
+        Section backSection = sectionRepository.findByLectureAndSequence(section.getLecture(), section.getSequence() + 1);
+        Preconditions.checkNotNull(backSection, "뒷 순서 섹션이 없습니다. (section ID : %s)", idRequestDTO.getId());
+
+        // 순서 - 1
+        backSection.setSequence(backSection.getSequence() - 1);
+        // 저장
+        sectionRepository.save(backSection);
+
+        // 기존 섹션 순서 - 1
+        section.setSequence(section.getSequence() + 1);
+        // 저장
+        sectionRepository.save(section);
 
     }
 
