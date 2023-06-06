@@ -39,7 +39,7 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "JOIN LectureProgress lp ON pl.id = lp.payLecture.id " +
             "JOIN VideoProgress vp ON lp.id = vp.lectureProgress.id " +
             "WHERE m.id = :memberId AND m.state = 1")
-    Page<Payment> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
+    Page<VideoProgress> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
 
 
 }

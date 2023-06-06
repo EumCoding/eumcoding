@@ -39,7 +39,7 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
             "JOIN Lecture l ON pl.lecture.id = l.id " +
             "WHERE m.id = :memberId AND m.state = 1 " +
             "ORDER BY l.name")
-    Page<Payment> findAllByMemberIdAndStateOrderByName(@Param("memberId") int memberId, Pageable pageable);
+    Page<LectureProgress> findAllByMemberIdAndStateOrderByName(@Param("memberId") int memberId, Pageable pageable);
 
 
 }

@@ -43,31 +43,22 @@ public class MyLectureListService {
 
     private final LectureProgressRepository lectureProgressRepository;
 
-    public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int sort) {
+    private final MemberRepository memberRepository;
+
+
+
+
+    public List<MyLectureListDTO> getMyLectureList(int memberId, int page) {
+
+        Member member = memberRepository.findByIdAndRole(memberId, 0);
 
         // 각 MyLectureListDTO에 대해 정렬을 수행합니다.
         Sort.Direction direction = Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(direction));
 
         Page<Payment> paymentsPage;
-        List<Payment> payments = null;
-        switch (sort) {
-            case 0: // 결제일순
-                Pageable sortedByPayDay = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("payDay").descending());
-                paymentsPage = paymentRepository.findAllByMemberIdAndState(memberId, sortedByPayDay);
-                payments = paymentsPage.getContent();
-                break;
-            case 1: // 마지막 학습일순
-                Pageable sortedByLastView = PageRequest.of(page - 1, 10, Sort.by("lastView"));
-                paymentsPage = videoProgressRepository.findAllByMemberIdAndState(memberId, sortedByLastView);
-                payments = paymentsPage.getContent();
-                break;
-            case 2: // 강의명순(가나다순)
-                Pageable sortedByName =  PageRequest.of(page - 1, 10, Sort.by("lectureName"));
-                paymentsPage = lectureProgressRepository.findAllByMemberIdAndStateOrderByName(memberId, sortedByName);
-                payments = paymentsPage.getContent();
-                break;
-        }
+        List<Payment> payments = paymentRepository.findByMemberIdPayment(member.getId());
+
 
 
         // 각 Payment에 연결된 PayLecture 목록을 가져옴
@@ -172,7 +163,6 @@ public class MyLectureListService {
             if (averageRating == null) averageRating = 0;
 
             MyLectureListDTO myLectureListDTO = MyLectureListDTO.builder()
-                    .memberId(memberId)
                     .lectureId(lecture.getId())
                     .teacherId(lecture.getMember().getId())
                     .score(averageRating)
