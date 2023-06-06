@@ -31,7 +31,6 @@ public class CurriculumService {
 
 
     //특정 회원의 학습 계획 리스트를 반환 각 커리큘럼의 섹션별로 비디오 진행 상황을 확인하고, 그에 따른 진행률을 계산하여 DTO에 담아 반환
-
     public List<MyPlanListDTO> getMyPlanList(int memberId) {
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
         List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
@@ -42,9 +41,8 @@ public class CurriculumService {
         for (Curriculum curriculum : curriculums) {
             List<SectionDTO.SectionDTOList> sectionDTOLists = new ArrayList<>();
 
-            //curriculum.getSection().getLecture().getId() 를 사용해 현재 순환하고 있는 커리큘럼 객체의 섹션에 연결된 강의 ID를 findByLectureId 메서드 인자로 제공
-            //현재 커리큘럼의 강의에 해당하는 모든 섹션을 가져옴
-            List<Section> lectureSections = sectionRepository.findByLectureId(curriculum.getSection().getLecture().getId());
+            //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
+            List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
 
             //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
             for (Section lectureSection : lectureSections) {
@@ -56,22 +54,20 @@ public class CurriculumService {
                 //현재 섹션에 포함된 모든 비디오를 조회
                 List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
 
-                //VideoService 만든 이유가 반복문 안에 쓰면 매번 DB에 접근하게 돼서 섹션 수가 많아지면 느려짐
-                //VideoService에 add 밑에 .save써야함
-                //sectionRepository.save(lectureSection);
-
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
                 int over = CheckOver(lectureSection.getId(), videoProgresses);
-
 
                 for (Video video : sectionVideos) {
                     //해당 회원이 해당 비디오 진행상황 조회
                     Optional<VideoProgress> videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
+                    boolean isLectureCompleted = true; // 강의를 모두 들었는지 표시하는 변수, 처음에는 true로 설정
 
                     if (videoProgress.isPresent()) {
                         updateVideoProgressState(videoProgress.get(), video);
                         if (videoProgress.get().getState() == 1) { //0:수강중 1:수강종료
                             completedVideos++; //완강한 비디오 갯수
+                        }else{
+                            isLectureCompleted = false; // videoProgress의 state가 1이 아니면, 강의를 모두 들지 않았다는 뜻
                         }
                     }
                 }
@@ -94,7 +90,7 @@ public class CurriculumService {
             MyPlanListDTO myPlanListDTO = MyPlanListDTO.builder()
                     .curriculumId(curriculum.getId())
                     .date(curriculum.getCreateDate())
-                    .videoProgress(calculateOverallProgress(sectionDTOLists))
+                    //.videoProgress(calculateOverallProgress(sectionDTOLists))
                     .sectionDTOList(sectionDTOLists)
                     .build();
 
@@ -104,16 +100,17 @@ public class CurriculumService {
         return myPlanList;
     }
 
-    private int calculateOverallProgress(List<SectionDTO.SectionDTOList> sectionDTOList) {
+/* videoProgress를 안쓸거기때문에 필요없는 코드
+  private int calculateOverallProgress(List<SectionDTO.SectionDTOList> sectionDTOList) {
         int totalProgress = 0;
         for (SectionDTO.SectionDTOList section : sectionDTOList) {
             // 섹션에 해당하는 비디오들 진행과정 위에서 progress에 집어넣었음
-            //DB에서 분류가 되어잇음 sectionId 3번 video 1,2존재 1번만 들었으면 진행률 50%
+            //DB에서 분류가 되어잇음 sectionId 3번 video 1,2존재 1번만 state가 1, 즉 다들었으면 진행률 50%
             totalProgress += section.getProgress();
         }
 
         return sectionDTOList.size() == 0 ? 0 : Math.round((float) totalProgress / sectionDTOList.size());
-    }
+    }*/
 
 
 
@@ -128,7 +125,6 @@ public class CurriculumService {
         if (curriculum == null) {
             return 0; // Curriculum이 없는 경우 over는 0
         }
-
 
         // Curriculum에 연결된 모든 비디오를 가져옴
         List<Video> videos = videoRepository.findByCurriculum(curriculum);
@@ -171,7 +167,7 @@ public class CurriculumService {
 
     //video_progress에 state 상태를 해당 조건에 맞게 변경
     //lastView를 기준으로 영상의 10%들으면 수강시작
-    //50% 수강중, 100%수강 완료 0->1->2변경
+    //50% 수강중, 100%수강 완료 0->1변경
     private void updateVideoProgressState(VideoProgress videoProgress, Video video) {
         //비디오의 전체 재생 시간(playTime)과 마지막으로 본 시간(lastView)을 초 단위로 변환 한다.
         //비디오가 얼마나 재생되었는지 백분율로 계산 한다.

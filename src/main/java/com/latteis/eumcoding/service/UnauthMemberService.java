@@ -39,24 +39,24 @@ public class UnauthMemberService {
 
 
     // 새 계정 생성 - 이메일 중복 검사
-    //@RequestParam("profileImgRequest") MultipartFile profileImgRequest 
+    //@RequestParam("profileImgRequest") MultipartFile profileImgRequest
     //swagger에서 테스트 하려면 add매개변수에 집어넣어야함 위에 값을
-    public MemberDTO add(MemberDTO.Sign memberDTO,@RequestParam("profileImgRequest") MultipartFile profileImgRequest ){
+    public MemberDTO add(MemberDTO.Sign memberDTO){
         if(memberDTO == null || memberDTO.getEmail() == null){
-            log.warn("MemberService.add() : memberEntity에 email이 없습니다.");
+            log.warn("UnauthMemberService.add() : memberEntity에 email이 없습니다.");
             throw new RuntimeException("MemberService.add() : member에 email이 없습니다.");
         }
 
         final String email = memberDTO.getEmail();
         if(memberRepository.existsByEmail(email)){
-            log.warn("MemberService.add() : 해당 email이 이미 존재합니다.");
+            log.warn("UnauthMemberService.add() : 해당 email이 이미 존재합니다.");
             throw new RuntimeException("MemberService.add() : 해당 email이 이미 존재합니다.");
         }
         // 닉네임 중복 체크
         boolean check = checkNickname(memberDTO.getNickname());
         if(!check){
-            log.warn("MemberService.add() : 중복되는 닉네임입니다.");
-            throw new RuntimeException("MemberService.add() : 중복되는 닉네임입니다.");
+            log.warn("UnauthMemberService.add() : 중복되는 닉네임입니다.");
+            throw new RuntimeException("UnauthMemberService.add() : 중복되는 닉네임입니다.");
         }
 
         try {
@@ -76,22 +76,19 @@ public class UnauthMemberService {
             int memberId = memberRepository.save(member).getId();
 
             // 이미지가 있는 경우
-         if (memberDTO.checkProfileImgRequestNull()) {
+            if (memberDTO.checkProfileImgRequestNull() && !memberDTO.getProfileImgRequest().isEmpty()) {
 
                 MultipartFile multipartFile = memberDTO.getProfileImgRequest().get(0);
-                String current_date = null;
+
 
                 if (!multipartFile.isEmpty()) {
                     LocalDateTime now = LocalDateTime.now();
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    current_date = now.format(dateTimeFormatter);
+                    String current_date = now.format(dateTimeFormatter);
 
 
                     //String absolutePath = filePath +File.separator + "member";
-                    String absolutePath = "C:" +File.separator + "eum" + File.separator + "member";
-
-
-
+                    String absolutePath = "C:" +File.separator + "smallTour" + File.separator + "member";
                     String path = absolutePath;
                     File file = new File(path);
 
@@ -114,7 +111,7 @@ public class UnauthMemberService {
                             } else if (contentType.contains("image/png")) {
                                 originalFileExtension = ".png";
                             } else {
-                                log.warn("MemberService.add() : 지원하지 않는 이미지 형식입니다.");
+                                log.warn("UnauthMemberService.add() : 지원하지 않는 이미지 형식입니다.");
                                 break;
                             }
                         }
@@ -154,11 +151,10 @@ public class UnauthMemberService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("MemberService.add() : 에러 발생.");
+            throw new RuntimeException("UnauthMemberService.add() : 에러 발생.");
         }
 
     }
-
 
     // 로그인 - 자격증명
     public MemberDTO getByCredentials(final String email, final String password, final PasswordEncoder encoder){

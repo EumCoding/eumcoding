@@ -21,9 +21,13 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Optional<Lecture> findByName(String name);
 
 
-    //lecture entity에 private Membef member로 받아서 쿼리문 저렇게 작성
+    //lecture entity에 private Member member로 받아서 쿼리문 저렇게 작성
     @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
     List<Lecture> findByMemberId(@Param("memberId") int memberId);
+
+    //Pageable을 사용하기 위해 부득이하게 다시 만듬
+    @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
+    List<Lecture> findByMemberIdMyLecture(@Param("memberId") int memberId,Pageable pageable);
 
     //review 테이블 이랑 연결해서 
     //review 테이블에 rating 컬럼을 가져와서
@@ -36,10 +40,29 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Lecture> findTop5ByOrderByCreatedDayDesc();
 
     //강좌 이름 검색
-    List<Lecture> findByNameContaining(String searchKeyword, Pageable paging);
+    @Query("SELECT l FROM Lecture l WHERE l.name like %:name%")
+    List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
+
+    //이름갯수세기
+    @Query("SELECT count(*) FROM Lecture l WHERE l.name like %:name%")
+    int countByName(@Param("name") String name);
+
+    //학년갯수세기
+    @Query("SELECT count(*) FROM Lecture l WHERE l.grade = :grade")
+    int countByGrade(@Param("grade") int grade);
+
+    //선생강의갯수세기
+    @Query("SELECT count(l) FROM Lecture l " +
+            "JOIN Member m ON l.member.id = m.id " +
+            "WHERE m.name like %:name% AND m.role = 1")
+    int countByTeacherName(@Param("name") String name);
+
+
 
     //학년으로 검색
-    List<Lecture> findByGrade(int searchKeyword, Pageable paging);
+    @Query("SELECT l FROM Lecture l WHERE l.grade = :grade")
+    List<Lecture> findByGrade(@Param("grade") int grade, Pageable paging);
+
 
     // 강의 Id로 회원Id 찾기
     @Query(value = "SELECT member_id FROM lecture WHERE id = :id", nativeQuery = true)
