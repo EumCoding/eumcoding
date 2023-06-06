@@ -105,7 +105,7 @@ public class VideoController {
     * 비디오 시청 결과
     */
     @PostMapping(value = "/view/result")
-    @ApiOperation(value = "섹션 순서 앞으로 이동")
+    @ApiOperation(value = "비디오 시청 결과")
     public ResponseEntity<Object> saveViewedResult(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoProgressDTO.ViewedResultRequestDTO viewedResultRequestDTO) {
 
         try {
@@ -121,7 +121,7 @@ public class VideoController {
     * 비디오 순서 앞으로 이동
     */
     @PostMapping(value = "/sequence/up")
-    @ApiOperation(value = "섹션 순서 앞으로 이동")
+    @ApiOperation(value = "비디오 순서 앞으로 이동")
     public ResponseEntity<Object> updateSequenceUp(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
 
         try {
@@ -137,7 +137,7 @@ public class VideoController {
     * 비디오 순서 뒤로 이동
     */
     @PostMapping(value = "/sequence/down")
-    @ApiOperation(value = "섹션 순서 뒤로 이동")
+    @ApiOperation(value = "비디오 순서 뒤로 이동")
     public ResponseEntity<Object> updateSequenceDown(@ApiIgnore Authentication authentication, @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
 
         try {
