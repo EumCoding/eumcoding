@@ -57,6 +57,21 @@ public class VideoService {
         return file;
     }
 
+    /*
+    * 비디오 정보 가져오기
+    */
+    public VideoDTO.ViewResponseDTO getVideoInfo(VideoDTO.IdRequestDTO idRequestDTO) {
+
+        // 비디오 정보 가져오기
+        Video video = videoRepository.findById(idRequestDTO.getId());
+        Preconditions.checkNotNull(video, "등록된 비디오가 없습니다. (비디오 ID : %s)", idRequestDTO.getId());
+
+        VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
+        viewResponseDTO.setPath("http://localhost:8081/eumCodingImgs/lecture/video/file/" + video.getPath());
+
+        return viewResponseDTO;
+
+    }
 
     // 동영상 업로드
     public void uploadVideo(int memberId, VideoDTO.UploadRequestDTO uploadRequestDTO, List<MultipartFile> videoFile, List<MultipartFile> thumb) throws IOException {
