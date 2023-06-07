@@ -2,6 +2,7 @@ package com.latteis.eumcoding.dto;
 
 import com.latteis.eumcoding.model.LectureProgress;
 import com.latteis.eumcoding.model.Video;
+import com.latteis.eumcoding.model.VideoProgress;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,31 @@ public class VideoProgressDTO {
         @ApiModelProperty(value = "마지막 영상 위치", example = "")
         private LocalTime lastView;
 
+    }
+
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 시청 결과 응답 DTO")
+    public static class ViewedResultResponseDTO {
+
+        @ApiModelProperty(value = "수강 상태", example = "1")
+        private int state;
+
+        @ApiModelProperty(value = "마지막 영상 위치", example = "")
+        private LocalTime lastView;
+
+        @ApiModelProperty(value = "수강 시작일", example = "")
+        private LocalDateTime startDay;
+
+        @ApiModelProperty(value = "수강 종료일", example = "")
+        private LocalDateTime endDay;
+
+        public ViewedResultResponseDTO(VideoProgress videoProgress) {
+            this.state = videoProgress.getState();
+            this.lastView = videoProgress.getLastView();
+            this.startDay = videoProgress.getStartDay();
+            this.endDay = videoProgress.getEndDay();
+        }
     }
 
     private int videoProgressId; // 사용자에게 고유하게 부여되는 값
