@@ -43,7 +43,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
      * Lecture에 맞는 리뷰 갯수 가져오기
      */
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lecture = :lecture")
-    double avgRating(@Param("lecture") Lecture lecture);
+    String avgRating(@Param("lecture") Lecture lecture);
 
 }
 
