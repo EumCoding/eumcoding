@@ -1,27 +1,77 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.Video;
+import com.latteis.eumcoding.model.VideoTestLog;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class VideoTestLogDTO {
-    private int videoTestLogId; // 사용자에게 고유하게 부여되는 값
 
-    private int videoTestId;
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 테스트 로그 ID 요청 DTO")
+    public static class IdRequestDTO {
 
-    private int memberId;
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 테스트 로그 ID", example = "1")
+        private int id;
 
-    private String subAnswer; // 제출한 답변
+    }
+
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 테스트 로그 추가 요청 DTO")
+    public static class AddRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 문제 ID", example = "1")
+        private int videoTestId;
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "답변", example = "답변입니다")
+        private String subAnswer;
+
+    }
+
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 테스트 로그 가져오기 요청 DTO")
+    public static class InfoRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 문제 ID", example = "1")
+        private int videoTestId;
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "가져올 테스트 로그의 작성자 ID", example = "1")
+        private int memberId;
+
+    }
+
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 테스트 로그 응답 DTO")
+    public static class ResponseDTO {
+
+        @ApiModelProperty(value = "동영상 테스트 로그 ID", example = "1")
+        private int id;
+
+        @ApiModelProperty(value = "답변", example = "답변입니다")
+        private String subAnswer;
+
+        public ResponseDTO(VideoTestLog videoTestLog) {
+            this.id = videoTestLog.getId();
+            this.subAnswer = videoTestLog.getSubAnswer();
+        }
+    }
+
 }

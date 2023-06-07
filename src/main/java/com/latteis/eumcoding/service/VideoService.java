@@ -84,6 +84,11 @@ public class VideoService {
         PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);
         Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
 
+        // 비디오 시청 기록 가져와서 추가
+        VideoProgress videoProgress = videoProgressRepository.findByMemberAndVideo(member, video);
+        VideoProgressDTO.ViewedResultResponseDTO viewedResultResponseDTO = (videoProgress == null) ? null : new VideoProgressDTO.ViewedResultResponseDTO(videoProgress);
+        viewResponseDTO.setViewedResultResponseDTO(viewedResultResponseDTO);
+
         // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록과 비디오 기록 생성
         LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
         if (payLecture != null && lectureProgress == null) {

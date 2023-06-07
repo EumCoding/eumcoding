@@ -166,9 +166,14 @@ public class VideoTestService {
 
             // dto에 담기
             VideoTestDTO.ListResponseDTO listResponseDTO = new VideoTestDTO.ListResponseDTO(videoTest);
-            // 동영상 객관식 문제 보기 리스트 가져와서 videoTestDTO에 담기
-            List<VideoTestMultipleListDTO.ListResponseDTO> multipleList = videoTestMultipleListService.getList(memberId, videoTest);
-            listResponseDTO.setVideoTestMultipleListDTOs(multipleList);
+
+            // 테스트 타입이 객관식이라면
+            if (videoTest.getType() == VideoTestDTO.VideoTestType.MULTIPLE_CHOICE) {
+                // 동영상 객관식 문제 보기 리스트 가져와서 videoTestDTO에 담기
+                List<VideoTestMultipleListDTO.ListResponseDTO> multipleList = videoTestMultipleListService.getList(memberId, videoTest);
+                listResponseDTO.setVideoTestMultipleListDTOs(multipleList);
+            }
+
             // 문제 답안 가져와서 videoTestDTO에 담기
             VideoTestAnswerDTO.ResponseDTO videoTestAnswerDTO = videoTestAnswerService.getAnswer(memberId, videoTest);
             listResponseDTO.setTestAnswerDTO(videoTestAnswerDTO);

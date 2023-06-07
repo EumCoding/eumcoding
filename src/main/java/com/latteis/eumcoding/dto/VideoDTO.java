@@ -151,6 +151,8 @@ public class VideoDTO {
         @ApiModelProperty(value = "비디오 파일", example = "~.mp4")
         private String path;
 
+        private VideoProgressDTO.ViewedResultResponseDTO viewedResultResponseDTO;
+
         public ViewResponseDTO(Video video) {
             this.id = video.getId();
             this.name = video.getName();
