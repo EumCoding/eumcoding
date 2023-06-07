@@ -3,6 +3,8 @@ package com.latteis.eumcoding.service;
 import com.latteis.eumcoding.dto.SearchDTO;
 import com.latteis.eumcoding.dto.SearchGradeDTO;
 import com.latteis.eumcoding.dto.SearchTeacherDTO;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 
@@ -28,7 +30,30 @@ public class SearchService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
 
+
+    //application.properties
+    //server.domain=http://localhost
+    private final Environment env;
+
+    @Value("${file.path}")
+    private String filePath;
+
+    @Value("${file.path.lecture.image}")
+    private String lecturePath;
+
+
+
+
     public SearchDTO searchLectures(String name, Pageable pageable) {
+
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
+
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("값을 입력하세요");
@@ -52,10 +77,10 @@ public class SearchService {
             SearchDTO.contentsDTO searchLecture = SearchDTO.contentsDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(lecture.getThumb())
+                    .lectureThumb(filePathLecture + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(member.getProfile())
+                    .teacherProfileImage(filePathMember + member.getProfile())
                     .price(lecture.getPrice())
                     .rating(averageRating != null ? Math.round(averageRating) : 0)
                     .build();
@@ -70,6 +95,15 @@ public class SearchService {
 
     //선생님 이름 입력했을경우, 해당 선생님이 등록한 강좌 모두 나오게
     public SearchTeacherDTO searchTeacher(String name, Pageable pageable) {
+
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
+
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         boolean teacherFound = false;
 
@@ -90,15 +124,15 @@ public class SearchService {
                 List<Lecture> resultLectures = lectureRepository.findByMemberId(member.getId());
                 for (Lecture lecture : resultLectures) {
                     Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
-                    Member TeacherMember = memberRepository.findById(lecture.getMember().getId()).orElse(null);
+                    Member teacherMember = memberRepository.findById(lecture.getMember().getId()).orElse(null);
 
                     SearchTeacherDTO.contentsDTO searchLecture = SearchTeacherDTO.contentsDTO.builder()
                             .lectureId(lecture.getId())
                             .lectureName(lecture.getName())
-                            .lectureThumb(lecture.getThumb())
-                            .teacherId(TeacherMember.getId())
-                            .teacherName(TeacherMember.getName())
-                            .teacherProfileImage(TeacherMember.getProfile())
+                            .lectureThumb(filePathLecture + lecture.getThumb())
+                            .teacherId(teacherMember.getId())
+                            .teacherName(teacherMember.getName())
+                            .teacherProfileImage(filePathMember + teacherMember.getProfile())
                             .price(lecture.getPrice())
                             .rating(averageRating != null ? Math.round(averageRating) : 0)
                             .build();
@@ -117,6 +151,15 @@ public class SearchService {
 
         //학년으로 검색햇을경우 해당 학년에 맞는 강좌가 쭈르륵 나와야함
         public SearchGradeDTO searchGrade(int grade, Pageable pageable){
+
+            // 메소드 내부에서 사용
+            String domain = env.getProperty("server.domain");
+            String port = env.getProperty("server.port");
+
+            String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+            String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
+
             Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
 
             if (grade < 1 || grade > 6) { //잘못된 학년 값 입력
@@ -143,10 +186,10 @@ public class SearchService {
                 SearchGradeDTO.contentsDTO searchGrade = SearchGradeDTO.contentsDTO.builder()
                         .lectureId(lecture.getId())
                         .lectureName(lecture.getName())
-                        .lectureThumb(lecture.getThumb())
+                        .lectureThumb(filePathLecture + lecture.getThumb())
                         .teacherId(member.getId())
                         .teacherName(member.getName())
-                        .teacherProfileImage(member.getProfile())
+                        .teacherProfileImage(filePathMember + member.getProfile())
                         .price(lecture.getPrice())
                         .rating(averageRating != null ? Math.round(averageRating) : 0)
                         .grade(lecture.getGrade())

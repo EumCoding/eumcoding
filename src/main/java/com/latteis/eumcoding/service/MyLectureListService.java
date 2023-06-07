@@ -10,6 +10,8 @@ import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,10 +49,23 @@ public class MyLectureListService {
 
     private final MemberRepository memberRepository;
 
+    //application.properties
+    //server.domain=http://localhost
+    private final Environment env;
+
+    @Value("${file.path.lecture.image}")
+    private String lecturePath;
+
 
 
 
     public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int size, int sort) {
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
         Member member = memberRepository.findByIdAndRole(memberId, 0);
 
         Sort sortObj;
@@ -121,7 +136,7 @@ public class MyLectureListService {
                     .progress(progress)
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
-                    .thumb(lecture.getThumb())
+                    .thumb(filePathLecture + lecture.getThumb())
                     .payDay(payDay)
                     .build();
 
