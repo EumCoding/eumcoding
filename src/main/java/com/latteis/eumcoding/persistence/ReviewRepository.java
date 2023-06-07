@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,17 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "GROUP BY r.id " +
             "ORDER BY r.created_day DESC ", nativeQuery = true)
     Page<Object[]> getMyReviewList(@Param("memberId") int memberId, Pageable pageable);
+
+    /*
+     * Lecture에 맞는 리뷰 갯수 가져오기
+     */
+    long countByLecture(Lecture lecture);
+
+    /*
+     * Lecture에 맞는 리뷰 갯수 가져오기
+     */
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lecture = :lecture")
+    double avgRating(@Param("lecture") Lecture lecture);
 
 }
 
