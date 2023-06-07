@@ -9,6 +9,8 @@ import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,8 +28,29 @@ public class MainService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
 
+    //application.properties
+    //server.domain=http://localhost
+    private final Environment env;
+
+
+    @Value("${file.path}")
+    private String filePath;
+
+    @Value("${file.path.lecture.image}")
+    private String lecturePath;
+
+
     //인기강좌 5개 불러오기
     public List<MainPopularLectureDTO> getPopularLectures() {
+
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/");
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
+
         List<Lecture> lectures = lectureRepository.findAll();
         List<MainPopularLectureDTO> popularLectures = new ArrayList<>();
 
@@ -44,10 +67,10 @@ public class MainService {
             MainPopularLectureDTO popularLecture = MainPopularLectureDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(lecture.getThumb())
+                    .lectureThumb(filePathLecture + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(member.getProfile())
+                    .teacherProfileImage(filePathMember + member.getProfile())
                     .rank(averageRating != null ? Math.round(averageRating) : 0)
                     .build();
 
@@ -71,7 +94,17 @@ public class MainService {
         return popularLectures.stream().limit(5).collect(Collectors.toList());
     }
 
+    //신규강좌 불러오기 createdDay기준
     public List<MainNewLectureDTO> getNewLectures() {
+
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
+
+
         List<Lecture> lectures = lectureRepository.findTop5ByOrderByCreatedDayDesc();
         List<MainNewLectureDTO> newLectures = new ArrayList<>();
 
@@ -81,10 +114,10 @@ public class MainService {
             MainNewLectureDTO newLecture = MainNewLectureDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(lecture.getThumb())
+                    .lectureThumb(filePathLecture + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(member.getProfile())
+                    .teacherProfileImage(filePathMember + member.getProfile())
                     .build();
 
             newLectures.add(newLecture);

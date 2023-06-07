@@ -8,6 +8,7 @@ import com.latteis.eumcoding.model.VideoProgress;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,12 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
 
+    //application.properties
+    //server.domain=http://localhost
+    private final Environment env;
+
+
+
     @Value("${file.path}")
     private String filePath;
 
@@ -49,6 +56,12 @@ public class MemberService {
         try{
             //Optional<Member> member = memberRepository.findById(memberDTO.getId());
             Member member = memberRepository.findByMemberId(memberDTO.getId());
+
+            // 메소드 내부에서 사용
+            String domain = env.getProperty("server.domain");
+            String port = env.getProperty("server.port");
+
+            String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
 
 
             MemberDTO responseMemberDTO = MemberDTO.builder()
@@ -66,7 +79,7 @@ public class MemberService {
 
             //이미지가 있으면
             if (member.getProfile() != null) {
-                responseMemberDTO.setProfile(filePath + member.getProfile());
+                responseMemberDTO.setProfile(filePathMember + member.getProfile());
             }
 
 

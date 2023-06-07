@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LectureProgressRepository extends JpaRepository<LectureProgress, Integer> {
     @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId")
@@ -43,8 +44,10 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
 
 
     //ProfileService에 Student부분
-    @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.lecture l JOIN pl.payment p JOIN p.member m WHERE pl = :payLecture")
-    LectureProgress findByPayLecture(@Param("payLecture") PayLecture payLecture);
+
+    @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.payment.member.role = 0 AND lp.payLecture.payment.member.state = 1 AND lp.payLecture.payment.state = 1 AND lp.payLecture = :payLecture")
+    Optional<LectureProgress> findByPayLecture(@Param("payLecture") PayLecture payLecture);
+
 
     /*
      * Member, Lecture에 맞는 Entity 가져오기

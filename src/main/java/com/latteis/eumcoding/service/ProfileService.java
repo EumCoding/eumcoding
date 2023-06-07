@@ -15,6 +15,7 @@ import com.latteis.eumcoding.persistence.PayLectureRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -41,8 +42,18 @@ public class ProfileService {
 
     private final LectureProgressRepository lectureProgressRepository;
 
+    //application.properties
+    //server.domain=http://localhost
+    private final Environment env;
+
     @Value("${file.path.lecture.badge}")
     private String badgePath;
+
+    @Value("${file.path}")
+    private String filePath;
+
+    @Value("${file.path.lecture.image}")
+    private String lecturePath;
 
 
 
@@ -50,6 +61,12 @@ public class ProfileService {
 
         Member member = memberRepository.findByIdAndRole(memberId, 1);
 
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
 
         if (member == null) {
             throw new NoSuchElementException("해당 선생님 프로필이 없습니다.");
@@ -68,7 +85,7 @@ public class ProfileService {
                     .description(lecture.getDescription())
                     .createdDay(lecture.getCreatedDay())
                     .grade(lecture.getGrade())
-                    .thumb(lecture.getThumb())
+                    .thumb(filePathLecture + lecture.getThumb())//ex)http://localhost:8089/C:/eumcoding/lecture/imagenull
                     .price(lecture.getPrice())
                     .state(lecture.getState())
                     .badge(lecture.getBadge())
@@ -87,7 +104,7 @@ public class ProfileService {
         TeacherProfileDTO teacherProfileDTO = TeacherProfileDTO.builder()
                     .memberId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(member.getProfile())
+                    .teacherProfileImage(filePathMember + member.getProfile()) //ex)http://localhost:8089/C:/eumcoding/member11.png
                     .teacherId(member.getId())
                     .totalLecture(lectureDTOList.size())
                     .totalStudent(totalStudent)
@@ -103,6 +120,14 @@ public class ProfileService {
     //학생 정보 입력시 해당 학생이 어느 강의를 듣고 있는지 정보
     public List<MemberDTO.StudentProfileDTO> getStudentProfile(int memberId) throws IOException {
         Optional<Member> memberOpt = memberRepository.findById(memberId);
+
+        // 메소드 내부에서 사용
+        String domain = env.getProperty("server.domain");
+        String port = env.getProperty("server.port");
+
+        String filePathBadge = domain + ":" + port + "/" + badgePath.replace("\\", "/");
+        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
+
 
         if (!memberOpt.isPresent()) {
             throw new NoSuchElementException("해당 학생 정보가 없습니다.");
@@ -123,50 +148,55 @@ public class ProfileService {
 
         for (PayLecture payLecture : payLectures) {
 
-            LectureProgress lectureProgress = lectureProgressRepository.findByPayLecture(payLecture);
+            Optional<LectureProgress> optionalLectureProgress = lectureProgressRepository.findByPayLecture(payLecture);
 
-            if (lectureProgress == null) {
-                throw new NoSuchElementException("해당 학생은 강의를 듣고 있지 않습니다.");
-            }
 
-            //badge가져오는 부분
-            String badgeUrl = "";//state가0이면 ""로 출력
-            if (lectureProgress.getState() == 1) { // 강의 수강이 완료된 경우
-                //뱃지는 해당강좌 다 수료할경우 그 강좌 id를 이름으로 함
-                int badgeId = lectureProgress.getPayLecture().getLecture().getId();
-                
-                String[] extensions = {"png", "jpg"};
-                String fileExtension = "";
-                File badgeFile = null;
+            String badgeUrl = ""; //state가0이면 ""로 출력
 
-                //badgePath경로에 저장된 이미지가 png,jpg둘중 어떤거여도 상관없이 그 타입에 맞게 저장됨(동적으로)
-                //c:eumCoding/lecture/badge/1.png or 1.jpg
-                for (String ext : extensions) {
-                    String fileName = badgeId + "." + ext;
-                    File tempFile = new File(badgePath, fileName);
-                    if (tempFile.exists()) {
-                        badgeFile = tempFile;
-                        fileExtension = ext;
-                        break;
-                    }
-                }
+            if (optionalLectureProgress.isPresent()) {
+                LectureProgress lectureProgress = optionalLectureProgress.get();
 
-                if (badgeFile != null) {
-                    //실제 파일의 MIME 타입이 png 또는 jpg인지 확인
-                    try {
-                        String mimeType = Files.probeContentType(badgeFile.toPath());
-                        if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
-                            badgeUrl = badgePath + "/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
-                        } else {
-                            throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
+                if (lectureProgress.getState() == 1) { // 강의 수강이 완료된 경우
+                    //뱃지는 해당강좌 다 수료할경우 그 강좌 id를 이름으로 함
+                    int badgeId = lectureProgress.getPayLecture().getLecture().getId();
+
+                    String[] extensions = {"png", "jpg"};
+                    String fileExtension = "";
+                    File badgeFile = null;
+
+                    //badgePath경로에 저장된 이미지가 png,jpg둘중 어떤거여도 상관없이 그 타입에 맞게 저장됨(동적으로)
+                    //c:eumCoding/lecture/badge/1.png or 1.jpg
+                    for (String ext : extensions) {
+                        String fileName = badgeId + "." + ext;
+                        File tempFile = new File(badgePath, fileName);
+                        if (tempFile.exists()) {
+                            badgeFile = tempFile;
+                            fileExtension = ext;
+                            break;
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException("뱃지 파일을 읽는 중 오류가 발생했습니다.", e);
                     }
-                } else {
-                    badgeUrl = "뱃지 발급 중입니다."; // 강의는 다들어서 state가1인데,뱃지 파일이 없는 경우
+
+                    if (badgeFile != null) {
+                        //실제 파일의 MIME 타입이 png 또는 jpg인지 확인
+                        try {
+                            String mimeType = Files.probeContentType(badgeFile.toPath());
+                            if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
+                                //http://localhost8089/경로/lectureId.png
+                                badgeUrl = filePathBadge + "/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
+                            } else {
+                                throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException("뱃지 파일을 읽는 중 오류가 발생했습니다.", e);
+                        }
+                    } else {
+                        badgeUrl = "뱃지 발급 중입니다."; // 강의는 다들어서 state가1인데,뱃지 파일이 없는 경우
+                    }
                 }
+            } else {
+                badgeUrl = "아직 강의를 시작하지 않았습니다."; // 강의를 시작하지 않은 경우
             }
+
 
             MemberDTO.Badge badge = MemberDTO.Badge.builder()
                     .url(badgeUrl)
@@ -176,7 +206,7 @@ public class ProfileService {
             MemberDTO.StudentProfileDTO profile = MemberDTO.StudentProfileDTO.builder()
                     .memberId(payLecture.getPayment().getMember().getId())
                     .nickname(payLecture.getPayment().getMember().getNickname())
-                    .profileImage(payLecture.getPayment().getMember().getProfile())
+                    .profileImage(filePathMember + payLecture.getPayment().getMember().getProfile())
                     .grade(payLecture.getLecture().getGrade())
                     .badge(Arrays.asList(badge))
                     .build();
@@ -187,11 +217,11 @@ public class ProfileService {
         return profiles;
     }
 
-
     //강의를 결제한 학생 수 구하기
     public int getTotalStudentsByLectureId(int lectureId) {
         List<PayLecture> paymentLectures = payLectureRepository.findByLectureIdAndState(lectureId, 1);
         return paymentLectures.size();
     }
+
 
 }
