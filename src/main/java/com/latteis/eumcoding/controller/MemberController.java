@@ -1,9 +1,6 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.dto.MyLectureListDTO;
-import com.latteis.eumcoding.dto.MyPlanListDTO;
-import com.latteis.eumcoding.dto.ResponseDTO;
+import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.model.Curriculum;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
@@ -216,4 +213,14 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+    @PostMapping("/search")
+    public List<SearchMylectureDTO> searchMyLecture(@ApiIgnore Authentication authentication,
+                                                    @RequestParam int page,
+                                                    @RequestParam int sort,
+                                                    @RequestParam int size,
+                                                    @RequestParam String keyword) {
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        return myLectureListService.getSearchMyLecture(memberId, page, sort, size, keyword);
+    }
+
 }
