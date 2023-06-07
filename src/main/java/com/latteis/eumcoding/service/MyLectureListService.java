@@ -133,22 +133,17 @@ public class MyLectureListService {
 
 
     public List<SearchMylectureDTO> getSearchMyLecture(int memberId, int page, int sort, int size, String keyword) {
-        Sort sortObj;
+        Page<Lecture> lecturePage = null;
         switch (sort) {
             case 0:
-                sortObj = Sort.by(Sort.Direction.ASC, "name");
+                lecturePage = lectureRepository.findByName(keyword, memberId, PageRequest.of(page - 1, size));
                 break;
-            /*case 1:
-                sortObj = Sort.by(Sort.Direction.DESC, "payDay");
-                break;*/
+            case 1:
+                lecturePage = lectureRepository.findByPayDayDesc(keyword, memberId, PageRequest.of(page - 1, size));
+                break;
             default:
-                sortObj = Sort.unsorted();
+                break;
         }
-
-        Pageable pageable = PageRequest.of(page - 1, size, sortObj);
-
-        //강의 검색 (강의 이름에 keyword가 포함된 강의들)
-        Page<Lecture> lecturePage = lectureRepository.findByName(keyword, memberId,pageable);
 
         //검색된 강의들을 SearchMylectureDTO로 변환
         List<SearchMylectureDTO> searchMylectureDTOList = new ArrayList<>();
@@ -160,12 +155,13 @@ public class MyLectureListService {
             int completedVideos = videoCounts[1];
             int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
 
+
             // 평점 계산
             Integer score = lectureRepository.findAverageRatingByLectureId(lecture.getId());
             if (score == null) score = 0;
 
             // SearchMylectureDTO 객체 생성
-            SearchMylectureDTO dto = SearchMylectureDTO.builder()
+            SearchMylectureDTO searchMylectureDTO = SearchMylectureDTO.builder()
                     .lectureId(lecture.getId())
                     .score(score)
                     .teacherId(lecture.getMember().getId())
@@ -174,7 +170,7 @@ public class MyLectureListService {
                     .progress(progress)
                     .build();
 
-            searchMylectureDTOList.add(dto);
+            searchMylectureDTOList.add(searchMylectureDTO);
         }
 
         return searchMylectureDTOList;
@@ -226,6 +222,7 @@ public class MyLectureListService {
             // 만약 모든 videoProgress의 state가 1이면, 해당 lectureProgress의 state를 1로 변경
             if (isLectureCompleted) {
                 lectureProgress.setState(1);
+                lectureProgress.setEndDay(LocalDateTime.now());
                 lectureProgressRepository.save(lectureProgress); // DB에 변경 사항 저장
             }
         }

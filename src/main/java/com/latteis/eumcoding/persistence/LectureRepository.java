@@ -105,7 +105,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Object[]> getStatsLectureList(@Param("memberId") int memberId);
 
     //결제 이력이 있는 강의에 대해서만 검색결과 나오도록
-    @Query("SELECT l FROM Lecture l,PayLecture pl,Payment p WHERE pl.lecture.id = l.id AND pl.payment.id = p.id AND p.member.id = :memberId AND p.state = 1 AND p.member.role = 0 AND l.name LIKE %:keyword%")
+    @Query("SELECT l FROM Lecture l,PayLecture pl,Payment p WHERE pl.lecture.id = l.id AND pl.payment.id = p.id AND p.member.id = :memberId AND p.state = 1 AND p.member.role = 0 AND l.name LIKE %:keyword% ORDER BY l.name desc")
     Page<Lecture> findByName(@Param("keyword") String keyword,@Param("memberId") int memberId, Pageable pageable);
+
+    @Query("SELECT l FROM Lecture l JOIN PayLecture pl ON l.id = pl.lecture.id JOIN Payment p ON pl.payment.id = p.id WHERE p.member.id = :memberId AND p.state = 1 AND l.name LIKE %:keyword% ORDER BY p.payDay desc")
+    Page<Lecture> findByPayDayDesc(@Param("keyword") String keyword,@Param("memberId") int memberId, Pageable pageable);
+
 
 }
