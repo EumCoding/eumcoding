@@ -38,6 +38,10 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
     @Query("SELECT pl FROM PayLecture pl WHERE pl.payment.member = :member AND pl.lecture = :lecture AND pl.payment.state = :state")
     PayLecture findByMemberAndLectureAndState(@Param("member") Member member, @Param("lecture") Lecture lecture, @Param("state") int state);
 
+    /*
+     * Lecuter, state에 맞는 엔티티 수 가져오기
+     */
+    long countByLectureAndPaymentState(Lecture lecture, int state);
 
     @Query("SELECT pl FROM PayLecture pl JOIN pl.payment p WHERE p.id = :paymentId")
     List<PayLecture> findByPaymentId(@Param("paymentId") int paymentId);
