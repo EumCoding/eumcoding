@@ -366,8 +366,14 @@ public class LectureService {
         viewResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
         viewResponseDTO.setBadge("http://localhost:8081/eumCodingImgs/lecture/badge/" + lecture.getBadge());
         viewResponseDTO.setImage("http://localhost:8081/eumCodingImgs/lecture/image/" + lecture.getImage());
+
         // 평점 저장
-        viewResponseDTO.setScore(String.format("%.1f", reviewRepository.avgRating(lecture)));
+        if (reviewRepository.avgRating(lecture) != null){
+            viewResponseDTO.setScore(reviewRepository.avgRating(lecture).substring(0, 3));
+        }
+        else {
+            viewResponseDTO.setScore("0");
+        }
         // 리뷰수 저장
         viewResponseDTO.setTotalReview((int) reviewRepository.countByLecture(lecture));
         // 학생 수 저장
