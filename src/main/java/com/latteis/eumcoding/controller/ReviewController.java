@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.service.ReviewService;
 import io.swagger.annotations.Api;
@@ -74,10 +75,10 @@ public class ReviewController {
     // 리뷰 목록
     @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "리뷰 목록")
-    public ResponseEntity<List<ReviewDTO.ListResponseDTO>> getReviewList(@PageableDefault(size = 10) Pageable pageable) {
+    public ResponseEntity<List<ReviewDTO.ListResponseDTO>> getReviewList(@PageableDefault(size = 10) Pageable pageable, @Valid LectureDTO.IdRequestDTO idRequestDTO) {
 
         try {
-            List<ReviewDTO.ListResponseDTO> listResponseDTOList = reviewService.getReviewList(pageable);
+            List<ReviewDTO.ListResponseDTO> listResponseDTOList = reviewService.getReviewList(pageable, idRequestDTO);
             return ResponseEntity.ok().body(listResponseDTOList);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

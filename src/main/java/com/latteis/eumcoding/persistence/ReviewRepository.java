@@ -21,10 +21,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     // 내가 작성한 리스트
     @Query(value = "SELECT r.id, r.member_id, m.nickname, r.content, r.rating, r.created_day, COUNT(ir.review_id) as heart " +
             "FROM review r left join interest_review ir on r.id = ir.review_id, member m " +
-            "WHERE m.id = r.member_id " +
+            "WHERE m.id = r.member_id AND r.lecture_id = :lectureId " +
             "GROUP BY r.id " +
             "ORDER BY r.created_day DESC ", nativeQuery = true)
-    Page<Object[]> getReviewList(Pageable pageable);
+    Page<Object[]> getReviewList(Pageable pageable, @Param("lectureId") int lectureId);
 
     // 내가 작성한 리스트
     @Query(value = "SELECT r.id, r.content, r.rating, r.created_day, COUNT(ir.review_id) as heart " +
