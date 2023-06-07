@@ -21,4 +21,5 @@ public class SearchMylectureDTO {
     private int progress;
     private String teacherName;
     private String lectureName;
+
 }
