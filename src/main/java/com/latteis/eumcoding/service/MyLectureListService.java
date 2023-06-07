@@ -145,10 +145,10 @@ public class MyLectureListService {
                 sortObj = Sort.unsorted();
         }
 
-        Pageable pageable = PageRequest.of(page, size, sortObj);
+        Pageable pageable = PageRequest.of(page - 1, size, sortObj);
 
         //강의 검색 (강의 이름에 keyword가 포함된 강의들)
-        Page<Lecture> lecturePage = lectureRepository.findByName(keyword, pageable);
+        Page<Lecture> lecturePage = lectureRepository.findByName(keyword, memberId,pageable);
 
         //검색된 강의들을 SearchMylectureDTO로 변환
         List<SearchMylectureDTO> searchMylectureDTOList = new ArrayList<>();
@@ -252,7 +252,6 @@ public class MyLectureListService {
                 }
             }
         }
-
         return new int[] { totalVideos, completedVideos };
     }
 }

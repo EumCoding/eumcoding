@@ -104,7 +104,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query(value = "SELECT l.id, l.name, l.price, l.createdDay, l.thumb FROM Lecture l WHERE l.member.id = :memberId")
     List<Object[]> getStatsLectureList(@Param("memberId") int memberId);
 
-    @Query("SELECT l FROM Lecture l WHERE l.name LIKE %:keyword%")
-    Page<Lecture> findByName(@Param("keyword") String keyword, Pageable pageable);
+    //결제 이력이 있는 강의에 대해서만 검색결과 나오도록
+    @Query("SELECT l FROM Lecture l,PayLecture pl,Payment p WHERE pl.lecture.id = l.id AND pl.payment.id = p.id AND p.member.id = :memberId AND p.state = 1 AND p.member.role = 0 AND l.name LIKE %:keyword%")
+    Page<Lecture> findByName(@Param("keyword") String keyword,@Param("memberId") int memberId, Pageable pageable);
 
 }
