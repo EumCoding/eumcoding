@@ -109,17 +109,14 @@ public class VideoTestMultipleListService {
     // 객관식 문제 보기 리스트 가져오기
     public List<VideoTestMultipleListDTO.ListResponseDTO> getList(int memberId, VideoTest videoTest) {
 
-        // 해당 문제의 보기 리스트 가져오기
-        List<VideoTestMultipleList> videoTestMultipleLists = videoTestMultipleListRepository.findAllByVideoTestOrderBySequence(videoTest);
-        Preconditions.checkNotNull(videoTestMultipleLists, "해당 문제에 등록된 보기가 없습니다. (동영상 문제 ID : %s)", videoTest.getId());
+        Preconditions.checkNotNull(videoTest, "등록된 문제가 아닙니다. (문제 ID : %s)", memberId);
 
         // 등록된 회원인지 검사
         Member member = memberRepository.findByMemberId(memberId);
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 본인 체크
-        int lectureUploader = videoTest.getVideo().getSection().getLecture().getMember().getId();
-        Preconditions.checkArgument(memberId == lectureUploader, "해당 강의의 소유자가 아닙니다. (강의 ID: %s, 강의 작성자 ID: %s, 현재 회원 ID: %s)", videoTest.getVideo().getSection().getLecture().getId(), lectureUploader, memberId);
+        // 해당 문제의 보기 리스트 가져오기
+        List<VideoTestMultipleList> videoTestMultipleLists = videoTestMultipleListRepository.findAllByVideoTestOrderBySequence(videoTest);
 
         // 반환할 dto list 생성
          List<VideoTestMultipleListDTO.ListResponseDTO> listResponseDTOs = new ArrayList<>();

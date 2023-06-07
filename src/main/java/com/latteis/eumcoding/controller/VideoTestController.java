@@ -80,12 +80,8 @@ public class VideoTestController {
     public ResponseEntity<List<VideoTestDTO.ListResponseDTO>> getVideoTestList(@ApiIgnore Authentication authentication,
                                                                              @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
 
-        try {
-            List<VideoTestDTO.ListResponseDTO> listResponseDTOList = videoTestService.getTestList(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
-            return ResponseEntity.ok().body(listResponseDTOList);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        List<VideoTestDTO.ListResponseDTO> listResponseDTOList = videoTestService.getTestList(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+        return ResponseEntity.ok().body(listResponseDTOList);
 
     }
 
