@@ -70,19 +70,17 @@ public class VideoTestAnswerService {
     // 답변 응답
     public VideoTestAnswerDTO.ResponseDTO getAnswer(int memberId, VideoTest videoTest) {
 
-        // 문제 답변 정보 가져오기
-        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
-        Preconditions.checkNotNull(videoTestAnswer, "해당 문제에 등록된 답변이 없습니다. (동영상 문제 ID : %s)", videoTest.getId());
+        Preconditions.checkNotNull(videoTest, "등록된 문제가 아닙니다. (문제 ID : %s)", memberId);
 
         // 등록된 회원인지 검사
         Member member = memberRepository.findByMemberId(memberId);
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 본인 체크
-        int lectureUploader = videoTestAnswer.getVideoTest().getVideo().getSection().getLecture().getMember().getId();
-        Preconditions.checkArgument(memberId == lectureUploader, "해당 강의의 소유자가 아닙니다. (강의 ID: %s, 강의 작성자 ID: %s, 현재 회원 ID: %s)", videoTestAnswer.getVideoTest().getVideo().getSection().getLecture().getId(), lectureUploader, memberId);
+        // 문제 답변 정보 가져오기
+        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
 
-        return new VideoTestAnswerDTO.ResponseDTO(videoTestAnswer);
+        VideoTestAnswerDTO.ResponseDTO responseDTO = (videoTestAnswer == null) ? null : new VideoTestAnswerDTO.ResponseDTO(videoTestAnswer);
+        return responseDTO;
 
     }
 }

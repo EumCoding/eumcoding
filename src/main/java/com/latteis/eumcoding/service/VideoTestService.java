@@ -154,10 +154,6 @@ public class VideoTestService {
         Member member = memberRepository.findByMemberId(memberId);
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 본인 체크
-        int lectureUploader = video.getSection().getLecture().getMember().getId();
-        Preconditions.checkArgument(memberId == lectureUploader, "해당 강의의 소유자가 아닙니다. (강의 ID: %s, 강의 작성자 ID: %s, 현재 회원 ID: %s)", video.getSection().getLecture().getId(), lectureUploader, memberId);
-
         // 해당 비디오에 있는 문제 리스트 가져오기
         List<VideoTest> videoTestList = videoTestRepository.findAllByVideoOrderByTestTime(video);
         List<VideoTestDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
