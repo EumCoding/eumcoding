@@ -15,7 +15,8 @@ import javax.persistence.ManyToOne;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MainTestListDTO {
+public class MainTestQuestionDTO {
+
     private int mainTestListId; // 사용자에게 고유하게 부여되는 값
 
     private int mainTestId;

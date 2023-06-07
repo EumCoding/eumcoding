@@ -20,20 +20,12 @@ public class MainTestLog {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_main_test_log",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinColumn(name = "member")
     private Member member;
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "main_test_list_main_test_log",
-            joinColumns = @JoinColumn(name = "main_test_list_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private MainTestList mainTestList;
+    @JoinColumn(name = "main_test_question")
+    private MainTestQuestion mainTestQuestion;
     
     @Column(name = "sub_answer")
     private String snbAnswer; // 제출한 답변 기록
