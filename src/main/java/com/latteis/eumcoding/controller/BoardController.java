@@ -87,7 +87,6 @@ public class BoardController {
     @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "게시판 글 목록 가져오기")
     public ResponseEntity<List<BoardDTO.ListResponseDTO>> getBoardList(@Valid BoardDTO.ListRequestDTO listRequestDTO) {
-        log.info("dddd");
         try {
             List<BoardDTO.ListResponseDTO> listResponseDTOList = boardService.getBoardList(listRequestDTO);
             return ResponseEntity.ok().body(listResponseDTOList);
