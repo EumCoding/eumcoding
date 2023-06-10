@@ -136,6 +136,8 @@ public class VideoTestDTO {
 
         List<VideoTestMultipleListDTO.ListResponseDTO> videoTestMultipleListDTOs;
 
+        List<VideoTestBlockListDTO.BlockResponseDTO> blockResponseDTOList;
+
         VideoTestAnswerDTO.ResponseDTO testAnswerDTO;
 
         public ListResponseDTO(VideoTest videoTest) {
