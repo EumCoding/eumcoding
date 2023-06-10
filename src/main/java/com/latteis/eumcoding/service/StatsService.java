@@ -44,6 +44,7 @@ public class StatsService {
         for (Object[] object : objects) {
             // 강의 정보를 dto에 저장
             StatsDTO.StatsResponseDTO statsResponseDTO = new StatsDTO.StatsResponseDTO(object);
+            statsResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + statsResponseDTO.getThumb());
 
             // 기간을 선택하지 않았다면
             if (startDate == null && endDate == null){
