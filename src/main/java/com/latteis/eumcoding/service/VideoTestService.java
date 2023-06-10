@@ -1,10 +1,7 @@
 package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
-import com.latteis.eumcoding.dto.VideoDTO;
-import com.latteis.eumcoding.dto.VideoTestAnswerDTO;
-import com.latteis.eumcoding.dto.VideoTestDTO;
-import com.latteis.eumcoding.dto.VideoTestMultipleListDTO;
+import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Video;
 import com.latteis.eumcoding.model.VideoTest;
@@ -34,6 +31,8 @@ public class VideoTestService {
     private final VideoTestMultipleListService videoTestMultipleListService;
 
     private final VideoTestAnswerService videoTestAnswerService;
+
+    private final VideoTestBlockListService videoTestBlockListService;
 
     // 동영상 문제 추가
     public void addTest(int memberId, VideoTestDTO.AddRequestDTO addRequestDTO) {
@@ -168,6 +167,11 @@ public class VideoTestService {
                 // 동영상 객관식 문제 보기 리스트 가져와서 videoTestDTO에 담기
                 List<VideoTestMultipleListDTO.ListResponseDTO> multipleList = videoTestMultipleListService.getList(memberId, videoTest);
                 listResponseDTO.setVideoTestMultipleListDTOs(multipleList);
+            }
+            // 블록 코딩이라면
+            else if (videoTest.getType() == VideoTestDTO.VideoTestType.CODE_BLOCK) {
+                List<VideoTestBlockListDTO.BlockResponseDTO> blockResponseDTOs = videoTestBlockListService.getBlockList(memberId, videoTest);
+                listResponseDTO.setBlockResponseDTOList(blockResponseDTOs);
             }
 
             // 문제 답안 가져와서 videoTestDTO에 담기
