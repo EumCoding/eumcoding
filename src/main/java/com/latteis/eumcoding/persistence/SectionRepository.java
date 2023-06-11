@@ -51,4 +51,15 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     * Lecture로 섹션 순서대로 가져오기
     */
     List<Section> findAllByLectureOrderBySequence(Lecture lecture);
+
+
+    /*
+    * 학생이 시청한 기록이 있는 동영상의 섹션만 가져오기
+    */
+    @Query("SELECT s FROM Section s " +
+            "WHERE " +
+                "(SELECT MAX(vp.video.section.sequence) FROM VideoProgress vp " +
+                "WHERE vp.lectureProgress.payLecture.payment.member = :member) >= s.sequence " +
+            "ORDER BY s.sequence")
+    List<Section> getLectureStudentSection(@Param("member") Member member);
 }

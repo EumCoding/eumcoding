@@ -50,4 +50,16 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
      * 받아온 sequence보다 큰 sequence, Section에 맞는 리스트 가져오기
      */
     List<Video> findAllBySectionAndSequenceGreaterThan(Section section, int sequence);
+
+
+    /*
+     * 학생이 시청한 기록이 있는 동영상만 가져오기
+     */
+    @Query("SELECT v FROM Video v " +
+            "WHERE v.section = :section " +
+            "AND " +
+            "(SELECT MAX(vp.video.sequence) FROM VideoProgress vp " +
+            "WHERE vp.lectureProgress.payLecture.payment.member = :member) >= v.sequence " +
+            "ORDER BY v.sequence")
+    List<Video> getLectureStudentVideo(@Param("member") Member member, @Param("section") Section section);
 }

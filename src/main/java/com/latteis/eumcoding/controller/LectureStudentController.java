@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.LectureStudentDTO;
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.service.LectureStudentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,12 +38,21 @@ public class LectureStudentController {
                                                                                   @Valid @RequestBody LectureStudentDTO.ListRequestDTO listRequestDTO,
                                                                                   @PageableDefault(size = 10) Pageable pageable) {
 
-        try {
-            List<LectureStudentDTO.ListResponseDTO> listResponseDTOS = lectureStudentService.getStudentList(Integer.parseInt(authentication.getPrincipal().toString()), listRequestDTO, pageable);
-            return ResponseEntity.ok().body(listResponseDTOS);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        List<LectureStudentDTO.ListResponseDTO> listResponseDTOS = lectureStudentService.getStudentList(Integer.parseInt(authentication.getPrincipal().toString()), listRequestDTO, pageable);
+        return ResponseEntity.ok().body(listResponseDTOS);
+
+    }
+
+    /*
+    * 학생 정보 가져오기
+    */
+    @PostMapping(value = "/info")
+    @ApiOperation(value = "학생 정보 가져오기")
+    public ResponseEntity<LectureStudentDTO.InfoResponseDTO> getStudentInfo(@ApiIgnore Authentication authentication,
+                                                                                  @Valid @RequestBody LectureStudentDTO.InfoRequestDTO infoRequestDTO) {
+
+        LectureStudentDTO.InfoResponseDTO infoResponseDTO = lectureStudentService.getStudentInfo(Integer.parseInt(authentication.getPrincipal().toString()), infoRequestDTO);
+        return ResponseEntity.ok().body(infoResponseDTO);
 
     }
 
