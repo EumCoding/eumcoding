@@ -85,6 +85,10 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query("SELECT m FROM Member m WHERE m.name like %:name% AND m.role = 1")
     List<Member> findByName(@Param("name")String name, Pageable paging);
 
-
+    /*
+    * member로 닉네임 가져오기
+    */
+    @Query("SELECT m.nickname FROM Member m WHERE m = :member")
+    String getNicknameByMember(@Param("member") Member member);
 
 }
