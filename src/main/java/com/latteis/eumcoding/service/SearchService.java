@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,27 +32,34 @@ public class SearchService {
     private final MemberRepository memberRepository;
 
 
-    //application.properties
-    //server.domain=http://localhost
-    private final Environment env;
-
     @Value("${file.path}")
     private String filePath;
 
     @Value("${file.path.lecture.image}")
     private String lecturePath;
 
+    @Value("${server.domain}")
+    private String domain;
 
+    @Value("${server.port}")
+    private String port;
+
+    public File getMemberDirectoryPath() {
+        File file = new File(filePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getlectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
 
 
     public SearchDTO searchLectures(String name, Pageable pageable) {
-
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
 
 
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
@@ -77,10 +85,10 @@ public class SearchService {
             SearchDTO.contentsDTO searchLecture = SearchDTO.contentsDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(filePathLecture + lecture.getThumb())
+                    .lectureThumb(domain + port + "/eumCodingImgs/search/lecture/" + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(filePathMember + member.getProfile())
+                    .teacherProfileImage(domain + port + "/eumCodingImgs/search/member/" + member.getProfile())
                     .price(lecture.getPrice())
                     .rating(averageRating != null ? Math.round(averageRating) : 0)
                     .build();
@@ -95,14 +103,6 @@ public class SearchService {
 
     //선생님 이름 입력했을경우, 해당 선생님이 등록한 강좌 모두 나오게
     public SearchTeacherDTO searchTeacher(String name, Pageable pageable) {
-
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
-
 
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         boolean teacherFound = false;
@@ -129,10 +129,10 @@ public class SearchService {
                     SearchTeacherDTO.contentsDTO searchLecture = SearchTeacherDTO.contentsDTO.builder()
                             .lectureId(lecture.getId())
                             .lectureName(lecture.getName())
-                            .lectureThumb(filePathLecture + lecture.getThumb())
+                            .lectureThumb(domain + port + "/eumCodingImgs/search/lecture/" + lecture.getThumb())
                             .teacherId(teacherMember.getId())
                             .teacherName(teacherMember.getName())
-                            .teacherProfileImage(filePathMember + teacherMember.getProfile())
+                            .teacherProfileImage(domain + port + "/eumCodingImgs/search/member/" + teacherMember.getProfile())
                             .price(lecture.getPrice())
                             .rating(averageRating != null ? Math.round(averageRating) : 0)
                             .build();
@@ -151,14 +151,6 @@ public class SearchService {
 
         //학년으로 검색햇을경우 해당 학년에 맞는 강좌가 쭈르륵 나와야함
         public SearchGradeDTO searchGrade(int grade, Pageable pageable){
-
-            // 메소드 내부에서 사용
-            String domain = env.getProperty("server.domain");
-            String port = env.getProperty("server.port");
-
-            String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-            String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
-
 
             Pageable updatedPageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
 
@@ -186,10 +178,10 @@ public class SearchService {
                 SearchGradeDTO.contentsDTO searchGrade = SearchGradeDTO.contentsDTO.builder()
                         .lectureId(lecture.getId())
                         .lectureName(lecture.getName())
-                        .lectureThumb(filePathLecture + lecture.getThumb())
+                        .lectureThumb(domain + port + "/eumCodingImgs/search/lecture/" + lecture.getThumb())
                         .teacherId(member.getId())
                         .teacherName(member.getName())
-                        .teacherProfileImage(filePathMember + member.getProfile())
+                        .teacherProfileImage(domain + port + "/eumCodingImgs/search/member/" + member.getProfile())
                         .price(lecture.getPrice())
                         .rating(averageRating != null ? Math.round(averageRating) : 0)
                         .grade(lecture.getGrade())
