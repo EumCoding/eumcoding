@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -49,22 +50,26 @@ public class MyLectureListService {
 
     private final MemberRepository memberRepository;
 
-    //application.properties
-    //server.domain=http://localhost
-    private final Environment env;
 
     @Value("${file.path.lecture.image}")
     private String lecturePath;
 
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
+    public File getLectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
 
 
 
     public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int size, int sort) {
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
 
         Member member = memberRepository.findByIdAndRole(memberId, 0);
 
@@ -136,7 +141,7 @@ public class MyLectureListService {
                     .progress(progress)
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
-                    .thumb(filePathLecture + lecture.getThumb())
+                    .thumb(domain + port + "/eumCodingImgs/myLecture/lecture/" + lecture.getThumb())
                     .payDay(payDay)
                     .build();
 
