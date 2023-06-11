@@ -49,6 +49,12 @@ public class VideoService {
     @Value("${ffprobe.location}")
     private String ffprobePath;
 
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
     public File getVideoFileDirectoryPath() {
         File file = new File(videoFilePath);
         file.mkdirs();
@@ -78,7 +84,7 @@ public class VideoService {
 
         // 비디오 경로 추가
         VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
-        viewResponseDTO.setPath("http://localhost:8081/eumCodingImgs/lecture/video/file/" + video.getPath());
+        viewResponseDTO.setPath(domain + port + "/eumCodingImgs/lecture/video/file/" + video.getPath());
 
         // 구매한 이력이 있거나 미리보기 허용인지 검사
         PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);

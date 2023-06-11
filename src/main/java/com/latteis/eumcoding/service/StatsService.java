@@ -4,6 +4,7 @@ import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +19,13 @@ import java.util.stream.Collectors;
 public class StatsService {
 
     private final LectureRepository lectureRepository;
+
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
 
     // 강의 통계 보기
     public StatsDTO.MainResponseDTO viewStats(int memberId, StatsDTO.DateRequestDTO dateRequestDTO) {
@@ -44,6 +52,7 @@ public class StatsService {
         for (Object[] object : objects) {
             // 강의 정보를 dto에 저장
             StatsDTO.StatsResponseDTO statsResponseDTO = new StatsDTO.StatsResponseDTO(object);
+            statsResponseDTO.setThumb(domain + port + "/eumCodingImgs/lecture/thumb/" + statsResponseDTO.getThumb());
 
             // 기간을 선택하지 않았다면
             if (startDate == null && endDate == null){
