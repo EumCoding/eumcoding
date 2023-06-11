@@ -15,6 +15,7 @@ import com.latteis.eumcoding.persistence.SectionRepository;
 import com.latteis.eumcoding.persistence.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,12 @@ public class SectionService {
     private final VideoService videoService;
 
     private final MemberRepository memberRepository;
+
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
 
     // 섹션 추가
     public void addSection(int memberId, SectionDTO.AddRequestDTO addRequestDTO) {
@@ -135,7 +142,7 @@ public class SectionService {
             for (Video video : videoList) {
                 // videoDTO에 해당 object 저장
                 VideoDTO.SectionListDTO videoDTO = new VideoDTO.SectionListDTO(video);
-                videoDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/video/thumb/" + video.getThumb());
+                videoDTO.setThumb(domain + port + "/eumCodingImgs/lecture/video/thumb/" + video.getThumb());
                 // videoList에 저장
                 videoDTOList.add(videoDTO);
             }
