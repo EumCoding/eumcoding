@@ -1,31 +1,36 @@
 package com.latteis.eumcoding.dto;
 
-import com.latteis.eumcoding.model.MainTest;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.annotations.ApiModel;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
-
+@AllArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class MainTestQuestionDTO {
 
-    private int mainTestListId; // 사용자에게 고유하게 부여되는 값
 
-    private int mainTestId;
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "메인 평가 문제 등록 요청 DTO")
+    public static class AddRequestDTO {
 
-    private int type; // 0:객관식, 1:블록코딩, 2:주관식
 
-    private String question; // 문제
 
-    private int sequence; // 순서. 0부터시작
+    }
 
-    private int score; // 문제의 점수
+    /*
+    * 문제 타입
+    */
+    public static class QuestionType {
+
+        // 객관식
+        public static final int MULTIPLE_CHOICE = 0;
+
+        // 블록코딩
+        public static final int BLOCK_CODING = 1;
+
+        // 주관식
+        public static final int SUBJECTIVE = 2;
+
+    }
 }
