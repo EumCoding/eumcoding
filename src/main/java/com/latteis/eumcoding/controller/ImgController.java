@@ -1,7 +1,6 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.service.LectureService;
-import com.latteis.eumcoding.service.VideoService;
+import com.latteis.eumcoding.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,9 +27,18 @@ import java.nio.file.Paths;
 @RequestMapping("/eumCodingImgs")
 public class ImgController {
 
+
+
     private final LectureService lectureService;
 
     private final VideoService videoService;
+
+    private final MemberService memberService;
+    private final SearchService searchService;
+    private final ProfileService profileService;
+    private final MyLectureListService myLectureListService;
+    private final MainService mainService;
+
 
     @Value("${file.path}")
     private String filePath;
@@ -57,7 +66,7 @@ public class ImgController {
     }
 
     //detail 이미지 url
-    @GetMapping(value = "/member/{fileOriginName}")
+  /*  @GetMapping(value = "/member/{fileOriginName}")
     public ResponseEntity<Resource> getMemberImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String absolutePath = filePath + "member";
@@ -75,7 +84,7 @@ public class ImgController {
         }catch(Exception e){
             throw new Exception();
         }
-    }
+    }*/
 
     //detail 이미지 url
     @GetMapping(value = "/review/{fileOriginName}")
@@ -196,5 +205,195 @@ public class ImgController {
             throw new Exception();
         }
     }
+
+    /* memberService -lsh 서비스*/
+
+    @GetMapping(value = "/member/{fileOriginName}")
+    public ResponseEntity<Resource> getProfileImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = memberService.getMemberDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+
+    /*searchservice*/
+    @GetMapping(value = "/search/member/{fileOriginName}")
+    public ResponseEntity<Resource> getSearchMemberImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = searchService.getMemberDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    @GetMapping(value = "/search/lecture/{fileOriginName}")
+    public ResponseEntity<Resource> getSearchlectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = searchService.getlectureDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    /*profileService*/
+    @GetMapping(value = "/profile/member/{fileOriginName}")
+    public ResponseEntity<Resource> getProfileMemImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = profileService.getMemberDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    @GetMapping(value = "/profile/lecture/{fileOriginName}")
+    public ResponseEntity<Resource> getProfilelectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = profileService.getLectureDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    @GetMapping(value = "/profile/badge/{fileOriginName}")
+    public ResponseEntity<Resource> getProfilelectureBadgeImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = profileService.getLectureBadgeDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    /*MyLectureListService*/
+    @GetMapping(value = "/myLecture/lecture/{fileOriginName}")
+    public ResponseEntity<Resource> getMylectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = myLectureListService.getLectureDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    /*MainService*/
+    @GetMapping(value = "/main/lecture/{fileOriginName}")
+    public ResponseEntity<Resource> getMainLectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = mainService.getLectureDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+    @GetMapping(value = "/main/member/{fileOriginName}")
+    public ResponseEntity<Resource> getMainMemberImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = mainService.getMemberDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
+
+
+
 
 }

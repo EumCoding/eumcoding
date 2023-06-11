@@ -42,18 +42,42 @@ public class ProfileService {
 
     private final LectureProgressRepository lectureProgressRepository;
 
-    //application.properties
-    //server.domain=http://localhost
-    private final Environment env;
-
     @Value("${file.path.lecture.badge}")
     private String badgePath;
+
+    @Value("${file.path.lecture.image}")
+    private String lecturePath;
 
     @Value("${file.path}")
     private String filePath;
 
-    @Value("${file.path.lecture.image}")
-    private String lecturePath;
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
+
+    public File getMemberDirectoryPath() {
+        File file = new File(filePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getLectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getLectureBadgeDirectoryPath() {
+        File file = new File(badgePath);
+        file.mkdirs();
+
+        return file;
+    }
 
 
 
@@ -61,12 +85,6 @@ public class ProfileService {
 
         Member member = memberRepository.findByIdAndRole(memberId, 1);
 
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
 
         if (member == null) {
             throw new NoSuchElementException("해당 선생님 프로필이 없습니다.");
@@ -85,7 +103,7 @@ public class ProfileService {
                     .description(lecture.getDescription())
                     .createdDay(lecture.getCreatedDay())
                     .grade(lecture.getGrade())
-                    .thumb(filePathLecture + lecture.getThumb())//ex)http://localhost:8089/C:/eumcoding/lecture/imagenull
+                    .thumb(domain + port + "/eumCodingImgs/profile/lecture/" + lecture.getThumb())//ex)http://localhost:8089/C:/eumcoding/lecture/imagenull
                     .price(lecture.getPrice())
                     .state(lecture.getState())
                     .badge(lecture.getBadge())
@@ -104,7 +122,7 @@ public class ProfileService {
         TeacherProfileDTO teacherProfileDTO = TeacherProfileDTO.builder()
                     .memberId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(filePathMember + member.getProfile()) //ex)http://localhost:8089/C:/eumcoding/member11.png
+                    .teacherProfileImage(domain + port + "/eumCodingImgs/profile/member/" + member.getProfile()) //ex)http://localhost:8089/C:/eumcoding/member11.png
                     .teacherId(member.getId())
                     .totalLecture(lectureDTOList.size())
                     .totalStudent(totalStudent)
@@ -120,14 +138,6 @@ public class ProfileService {
     //학생 정보 입력시 해당 학생이 어느 강의를 듣고 있는지 정보
     public List<MemberDTO.StudentProfileDTO> getStudentProfile(int memberId) throws IOException {
         Optional<Member> memberOpt = memberRepository.findById(memberId);
-
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathBadge = domain + ":" + port + "/" + badgePath.replace("\\", "/");
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-
 
         if (!memberOpt.isPresent()) {
             throw new NoSuchElementException("해당 학생 정보가 없습니다.");
@@ -182,7 +192,7 @@ public class ProfileService {
                             String mimeType = Files.probeContentType(badgeFile.toPath());
                             if (mimeType.equals("image/png") || mimeType.equals("image/jpeg")) {
                                 //http://localhost8089/경로/lectureId.png
-                                badgeUrl = filePathBadge + "/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
+                                badgeUrl = domain + port + "/eumCodingImgs/profile/badge/" + badgeId + "." + fileExtension; // 실제 뱃지 파일이 있으면 URL 업데이트
                             } else {
                                 throw new IllegalArgumentException("뱃지 파일은 png 또는 jpg 형식이어야 합니다.");
                             }
@@ -206,7 +216,7 @@ public class ProfileService {
             MemberDTO.StudentProfileDTO profile = MemberDTO.StudentProfileDTO.builder()
                     .memberId(payLecture.getPayment().getMember().getId())
                     .nickname(payLecture.getPayment().getMember().getNickname())
-                    .profileImage(filePathMember + payLecture.getPayment().getMember().getProfile())
+                    .profileImage(domain + port + "/eumCodingImgs/profile/member/" + payLecture.getPayment().getMember().getProfile())
                     .grade(payLecture.getLecture().getGrade())
                     .badge(Arrays.asList(badge))
                     .build();

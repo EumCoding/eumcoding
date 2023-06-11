@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,28 +29,35 @@ public class MainService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
 
-    //application.properties
-    //server.domain=http://localhost
-    private final Environment env;
-
-
     @Value("${file.path}")
     private String filePath;
 
     @Value("${file.path.lecture.image}")
     private String lecturePath;
 
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
+    public File getMemberDirectoryPath() {
+        File file = new File(filePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getLectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
+
 
     //인기강좌 5개 불러오기
     public List<MainPopularLectureDTO> getPopularLectures() {
-
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/");
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
-
 
         List<Lecture> lectures = lectureRepository.findAll();
         List<MainPopularLectureDTO> popularLectures = new ArrayList<>();
@@ -67,10 +75,10 @@ public class MainService {
             MainPopularLectureDTO popularLecture = MainPopularLectureDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(filePathLecture + lecture.getThumb())
+                    .lectureThumb(domain + port + "/eumCodingImgs/main/lecture/" + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(filePathMember + member.getProfile())
+                    .teacherProfileImage(domain + port + "/eumCodingImgs/main/member/" + member.getProfile())
                     .rank(averageRating != null ? Math.round(averageRating) : 0)
                     .build();
 
@@ -97,14 +105,6 @@ public class MainService {
     //신규강좌 불러오기 createdDay기준
     public List<MainNewLectureDTO> getNewLectures() {
 
-        // 메소드 내부에서 사용
-        String domain = env.getProperty("server.domain");
-        String port = env.getProperty("server.port");
-
-        String filePathMember = domain + ":" + port + "/" + filePath.replace("\\", "/") + "/";
-        String filePathLecture = domain + ":" + port + "/" + lecturePath.replace("\\", "/");
-
-
         List<Lecture> lectures = lectureRepository.findTop5ByOrderByCreatedDayDesc();
         List<MainNewLectureDTO> newLectures = new ArrayList<>();
 
@@ -114,10 +114,10 @@ public class MainService {
             MainNewLectureDTO newLecture = MainNewLectureDTO.builder()
                     .lectureId(lecture.getId())
                     .lectureName(lecture.getName())
-                    .lectureThumb(filePathLecture + lecture.getThumb())
+                    .lectureThumb(domain + port + "/eumCodingImgs/main/lecture/" + lecture.getThumb())
                     .teacherId(member.getId())
                     .teacherName(member.getName())
-                    .teacherProfileImage(filePathMember + member.getProfile())
+                    .teacherProfileImage(domain + port + "/eumCodingImgs/main/member/" + member.getProfile())
                     .build();
 
             newLectures.add(newLecture);
