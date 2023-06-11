@@ -51,6 +51,12 @@ public class LectureService {
     @Value("${file.path.lecture.badge}")
     private String badgeFilePath;
 
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
     public File getImageDirectoryPath() {
         File file = new File(imageFilePath);
         file.mkdirs();
@@ -320,7 +326,7 @@ public class LectureService {
         List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
         for (Lecture lecture : lectureList) {
             LectureDTO.MyListResponseDTO myListResponseDTO = new LectureDTO.MyListResponseDTO(lecture);
-            myListResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
+            myListResponseDTO.setThumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
             myListResponseDTOList.add(myListResponseDTO);
         }
         return myListResponseDTOList;
@@ -363,9 +369,9 @@ public class LectureService {
 
         LectureDTO.ViewResponseDTO viewResponseDTO = new LectureDTO.ViewResponseDTO(lecture);
         // 강의 정보에 들어가는 이미지들 저장
-        viewResponseDTO.setThumb("http://localhost:8081/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
-        viewResponseDTO.setBadge("http://localhost:8081/eumCodingImgs/lecture/badge/" + lecture.getBadge());
-        viewResponseDTO.setImage("http://localhost:8081/eumCodingImgs/lecture/image/" + lecture.getImage());
+        viewResponseDTO.setThumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb());
+        viewResponseDTO.setBadge(domain + port + "/eumCodingImgs/lecture/badge/" + lecture.getBadge());
+        viewResponseDTO.setImage(domain + port + "/eumCodingImgs/lecture/image/" + lecture.getImage());
 
         // 평점 저장
         if (reviewRepository.avgRating(lecture) != null){
