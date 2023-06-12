@@ -35,7 +35,7 @@ public class SearchService {
     @Value("${file.path}")
     private String filePath;
 
-    @Value("${file.path.lecture.image}")
+    @Value("${file.path.lecture.thumb}")
     private String lecturePath;
 
     @Value("${server.domain}")

@@ -38,6 +38,7 @@ public class ImgController {
     private final ProfileService profileService;
     private final MyLectureListService myLectureListService;
     private final MainService mainService;
+    private final BasketService basketService;
 
 
     @Value("${file.path}")
@@ -393,6 +394,26 @@ public class ImgController {
         }
     }
 
+    /*basket 이미지 */
+    @GetMapping(value = "/basket/{fileOriginName}")
+    public ResponseEntity<Resource> getBasketLectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        try{
+            String path = basketService.getLectureDirectoryPath().getPath();
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            System.out.println("fileName: " + fileName);
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
 
 
 

@@ -10,12 +10,14 @@ import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.util.*;
 
 
@@ -27,6 +29,22 @@ public class BasketService {
     private final MemberRepository memberRepository;
     private final BasketRepository basketRepository;
 
+
+    @Value("${file.path.lecture.thumb}")
+    private String lecturePath;
+
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
+    public File getLectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
 
     @Transactional
     public BasketDTO addBasket(int memberId, BasketDTO.BasketAddDTO basketAddDTO) {
@@ -98,7 +116,7 @@ public class BasketService {
                 .lectureName(basket.getLecture().getName())
                 .price(basket.getLecture().getPrice())
                 .teacherName(basket.getLecture().getMember().getName())
-                .thumb(basket.getLecture().getThumb())
+                .thumb(domain + port + "/eumCodingImgs/basket/" + basket.getLecture().getThumb())
                 .build();
     }
 }
