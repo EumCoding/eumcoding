@@ -13,7 +13,7 @@ public class InterestReviewDTO {
 
     private int id;
 
-    private int memberId;
+    private int memberd;
 
     private int reviewId;
 }
