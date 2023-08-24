@@ -3,37 +3,19 @@ package com.latteis.eumcoding.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.latteis.eumcoding.dto.MemberDTO;
 
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.KakaoMemberService;
-import com.latteis.eumcoding.service.MemberService;
+
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.security.core.userdetails.User;
+
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -41,14 +23,57 @@ import java.util.UUID;
 @RequestMapping("/unauth")
 public class KaKaoController {
 
+    @Value("${kakao.clientId}")
+    private String CLIENT_ID;
+
+    @Value("${kakao.redirectUri}")
+    private String REDIRECT_URI;
 
     private final KakaoMemberService kakaoMemberService;
 
+    private final TokenProvider tokenProvider;
+
     // 카카오 로그인
+/*
     @GetMapping("/auth/kakao/callback")
     public MemberDTO kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
         System.out.println("콜백");
         return kakaoMemberService.kakaoLogin(code, response);
+    }
+*/
+    @ApiOperation(value = "")
+    @GetMapping("/kakao/accesstoken")
+    public String getKakaoAccessToken(@RequestParam String code) {
+
+        System.out.println("code : " + code);
+        return kakaoMemberService.getKakaoAccessToken(code);
+    }
+
+
+    //사용자 정보
+    @GetMapping("/user")
+    @ApiOperation(value = "Get Kakao User Info", notes = "Get user info from Kakao using an Access Token.")
+    public ResponseEntity<String> getKakaoUserInfo(@RequestParam("token") String token, HttpServletResponse response) {
+        String userEmail = kakaoMemberService.createKakaoUser(token, response);
+        return ResponseEntity.ok("User Info Fetched Successfully.");
+    }
+
+
+    @PostMapping("/createUser")
+    @ApiOperation("카카오 계정과 일반 계정 연동")
+    public ResponseEntity<String> createKakaoUser(@RequestParam String token, HttpServletResponse response) {
+        String userEmail = kakaoMemberService.createKakaoUser(token, response);
+        return ResponseEntity.ok("카카오 계정과 일반 계정이 연동되었습니다.");
+    }
+
+
+    // 카카오 로그인
+    @GetMapping("/auth/kakao/callback")
+    public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        System.out.println("콜백");
+        String jwtToken = kakaoMemberService.kakaoLogin(code, response);
+        System.out.println("jwt :" + jwtToken);
+        return ResponseEntity.ok(jwtToken); // JWT 토큰을 반환합니다.
     }
 
 
