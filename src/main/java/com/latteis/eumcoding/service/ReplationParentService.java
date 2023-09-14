@@ -1,0 +1,141 @@
+package com.latteis.eumcoding.service;
+
+import com.latteis.eumcoding.dto.*;
+import com.latteis.eumcoding.model.*;
+import com.latteis.eumcoding.persistence.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.nio.channels.IllegalChannelGroupException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ReplationParentService {
+
+
+    private final MemberRepository memberRepository;
+
+    private final RelationParentRepository relationParentRepository;
+
+    private final EmailNumberRepository emailNumberRepository;
+
+    private final EmailNumberService emailNumberService; // 이메일 전송 서비스
+
+    private final CurriculumService curriculumService;
+
+    private final CurriculumRepository curriculumRepository;
+
+
+    public void requestChildVerification(String childEmail, int parentId) {
+        Member parent = memberRepository.findByIdAndRole(parentId, 3);
+        if (parent == null) {
+            throw new IllegalArgumentException("학부모 계정으로만 이용 가능합니다.");
+        }
+
+        Member child = memberRepository.findByEmailAndRole(childEmail, 0);
+        if (child == null) {
+            throw new IllegalArgumentException("해당 이메일의 학생이 존재하지 않습니다.");
+        }
+
+        emailNumberService.sendVerificationNumber(child.getId(), child.getEmail());
+
+    }
+
+    public void verifyChildWithNumber(int verificationNumber, int childId, int parentId) {
+        Optional<EmailNumber> emailNumberOpt = emailNumberRepository.findByVerificationNumberAndMemberId(verificationNumber,childId);
+        EmailNumber emailNumber = emailNumberOpt.orElseThrow(() -> new IllegalArgumentException("잘못된 인증 번호입니다."));
+
+
+        if (emailNumber == null || emailNumber.getExpired() == 1 ) {
+            throw new IllegalArgumentException("잘못된 인증 번호이거나 만료된 번호입니다.");
+        }
+
+
+        Member child = memberRepository.findByIdAndRole(childId, 0);
+        Member parent = memberRepository.findByIdAndRole(parentId, 3);
+
+        if (parent == null) {
+            throw new IllegalArgumentException("학부모 아이디가 잘못되었습니다.");
+        }
+
+        //replationParent 테이블 memberId 는 유니크 설정했음
+        Optional<ReplationParent> existingRelation = relationParentRepository.findByMemberId(child.getId());
+        if(existingRelation.isPresent()){
+            throw new IllegalArgumentException("이미 인증된 계정입니다.");
+        }
+
+        ReplationParent relation = new ReplationParent();
+        relation.setChild(child);
+        relation.setParent(parent);
+        relationParentRepository.save(relation);
+
+
+
+        emailNumber.setNumberToUsed();
+        emailNumberRepository.save(emailNumber);
+    }
+
+    
+    //권한 획득 시 자녀 정보가져옴
+    public Member getChildByParent(int parentId,int childId) {
+        //부모 id를 기반으로 자녀 목록 가져옴
+        Optional<ReplationParent> relations = relationParentRepository.findByParentIdChildId(parentId,childId);
+        ReplationParent replationParent = relations.orElseThrow(() -> new IllegalArgumentException("자녀가 아닙니다."));
+
+        return replationParent.getChild();
+    }
+
+
+    //자녀 커리큘럼 수정권한 메서드
+    public void updatechildCurriculumEditPermission(int parentId, int childId,int edit){
+
+        // 1. 로그인한 계정이 학부모 계정인지 확인. (적절한 로직 추가 필요)
+        if(!isParentAccount(parentId)) {
+            throw new IllegalArgumentException("학부모 계정만 권한이 있습니다.");
+        }
+
+        // 2. 자녀 계정으로 edit를 요청한 경우 예외 처리
+        if(parentId == childId) {
+            throw new IllegalArgumentException("자녀 계정으로는 권한이 없습니다.");
+        }
+
+        //부모 자녀 관계 확인
+        Optional<ReplationParent> relations = relationParentRepository.findByParentIdChildId(parentId,childId);
+        ReplationParent replationParent = relations.orElseThrow(() -> new IllegalArgumentException("자녀가 아닙니다"));
+
+        //자녀의 커리큘럼 조회
+        List<Curriculum> curriculums = curriculumRepository.findByMemberId(childId);
+
+        // edit 권한 체크
+        if (edit != 0 && edit != 1 && isParentAccount(parentId)) {
+            throw new IllegalArgumentException("edit 값은 0 혹은 1만 가능합니다. 부모계정만 수정 가능합니다.");
+        }
+
+        for(Curriculum curriculum : curriculums){
+            curriculum.setEdit(edit);
+            curriculumRepository.save(curriculum);
+        }
+    }
+
+    private boolean isParentAccount(int parentId) {
+        Optional<ReplationParent> replation = relationParentRepository.findByParentId(parentId);
+        ReplationParent replationParent = replation.orElseThrow(() -> new IllegalArgumentException("학부모가 아닙니다"));
+
+        return replation.isPresent();
+    }
+
+}
