@@ -15,8 +15,9 @@ public interface EmailNumberRepository extends JpaRepository<EmailNumber, Intege
     // 만료되지 않았으며 현재보다 이후에 만료되는 토큰정보를 가져옴
     Optional<EmailNumber> findByEmailNumberIdAndExpirationDateAfterAndExpired(int emailNumberId, LocalDateTime now, boolean expired);
 
-    @Query(value = "SELECT * FROM email_number WHERE email_number_id = :emailNumberId AND member_id = :memberId", nativeQuery = true)
-    Optional<EmailNumber> findByVerificationNumberAndMemberId(@Param("emailNumberId") int emailNumberId,@Param("memberId") int memberId);
+    @Query(value = "SELECT e FROM EmailNumber e JOIN Member m ON e.memberId = m.id WHERE e.emailNumberId = :emailNumberId AND m.email = :memberEmail")
+    Optional<EmailNumber> findByVerificationNumberAndMemberEmail(@Param("emailNumberId") int emailNumberId,@Param("memberEmail") String memberEmail);
+
 
     @Query(value = "SELECT * FROM email_number WHERE member_id = :memberId", nativeQuery = true)
     Optional<EmailNumber> findByMemberId(@Param("memberId") int memberId);

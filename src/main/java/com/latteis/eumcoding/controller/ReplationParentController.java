@@ -47,26 +47,19 @@ public class ReplationParentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
     @PostMapping("/verify")
     public ResponseEntity<?> verifyChildWithNumber(@ApiIgnore Authentication authentication, @RequestParam int verificationNumber,
-                                                   @RequestParam int childId) {
+                                                   @RequestParam String childEmail) {
         try {
             int parentId = Integer.parseInt(authentication.getPrincipal().toString());
-            if(parentId != childId){
-                replationParentService.verifyChildWithNumber(verificationNumber, childId,parentId);
-                return ResponseEntity.ok("자녀 인증이 성공적으로 이루어졌습니다.");
-            }else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("부모 계정과 자녀 계정이 동일할 수 없습니다.");
-            }
-
+            replationParentService.verifyChildWithNumber(verificationNumber, childEmail,parentId);
+            return ResponseEntity.ok("자녀 인증이 성공적으로 이루어졌습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
     //인증이 성공적으로 되면 자녀 커리큘럼 확인가능
     @GetMapping("/children/curriculum")
     public ResponseEntity<?> getChildrenCurriculum(@ApiIgnore Authentication authentication,
