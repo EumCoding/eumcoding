@@ -179,10 +179,11 @@ public class CurriculumService {
     }
 
     //내 커리큘럼 timetaken 수정하는 메서드
-    public Curriculum updateTimeTaken(int curriculumId, int newTimeTaken) {
+    public Curriculum updateTimeTaken(int memberId, int curriculumId, int newTimeTaken) {
+
         //커리큘럼 id로 커리큘럼 찾기
-        Curriculum curriculum = curriculumRepository.findById(curriculumId)
-                .orElseThrow(() -> new RuntimeException("없는 커리큘럼 입니다. 확인해주세요"));
+        Curriculum curriculum = curriculumRepository.findByCurriculumId(memberId,curriculumId)
+                .orElseThrow(() -> new RuntimeException("회원님의 커리큘럼이 없거나, 타 계정 커리큘럼에 접근해 권한이없습니다.."));
 
         if (curriculum.getEdit() == 1) {
             //timetaken업데이트
