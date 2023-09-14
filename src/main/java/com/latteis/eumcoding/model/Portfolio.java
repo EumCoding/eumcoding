@@ -20,11 +20,7 @@ public class Portfolio {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinTable(
-            name = "member_portfolio",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(name = "path")

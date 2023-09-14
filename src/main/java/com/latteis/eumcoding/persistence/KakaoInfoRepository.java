@@ -17,7 +17,14 @@ public interface KakaoInfoRepository extends JpaRepository<KakaoInfo, Integer> {
 
 
     @Query(value = "SELECT * FROM KakaoInfo WHERE kakao_email = :kakaoEmail", nativeQuery = true)
-    KakaoInfo findByKakaoEmailAndEmail(@Param("kakaoEmail") String kakaoEmail);
+    KakaoInfo findByKakaoEmail(@Param("kakaoEmail") String kakaoEmail);
 
+    @Query(value = "SELECT * FROM KakaoInfo WHERE kakao_user_id = :kakaoUserId", nativeQuery = true)
+    KakaoInfo findByKakaoUserId(@Param("kakaoUserId") String kakaoUserId);
 
+    @Query(value = "SELECT * FROM KakaoInfo WHERE access_token_expires = :accessTokenExpires", nativeQuery = true)
+    KakaoInfo findByRefreshToken(@Param("accessTokenExpires")String accessTokenExpires);
+
+    @Query(value = "SELECT * FROM KakaoInfo WHERE kakao_access_token = :kakaoAccessToken", nativeQuery = true)
+    KakaoInfo findByKakaoAccessToken(@Param("kakaoAccessToken")String kakaoAccessToken);
 }

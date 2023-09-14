@@ -91,4 +91,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query("SELECT m.nickname FROM Member m WHERE m = :member")
     String getNicknameByMember(@Param("member") Member member);
 
+
+    @Query(value = "SELECT * FROM member m  WHERE m.email = :email AND m.role = :role",nativeQuery = true)
+    Member findByEmailAndRole(@Param("email") String email,@Param("role") int role);
+
 }

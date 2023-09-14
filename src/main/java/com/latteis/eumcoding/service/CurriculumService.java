@@ -27,6 +27,8 @@ public class CurriculumService {
     private final VideoRepository videoRepository;
     private final LectureProgressRepository lectureProgressRepository;
     private final SectionRepository sectionRepository;
+    private final LectureRepository lectureRepository;
+    private final MemberRepository memberRepository;
 
 
 
@@ -55,7 +57,7 @@ public class CurriculumService {
                 List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
 
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
-                int over = CheckOver(lectureSection.getId(), videoProgresses);
+                int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
 
                 for (Video video : sectionVideos) {
                     //해당 회원이 해당 비디오 진행상황 조회
@@ -73,6 +75,8 @@ public class CurriculumService {
                 }
 
                 int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
+                // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
+                updateLectureProgressState(memberId, lectureSection.getLecture().getId());
 
                 SectionDTO.SectionDTOList sectionDTO = SectionDTO.SectionDTOList.builder()
                         .sectionId(lectureSection.getId())
@@ -100,26 +104,12 @@ public class CurriculumService {
         return myPlanList;
     }
 
-/* videoProgress를 안쓸거기때문에 필요없는 코드
-  private int calculateOverallProgress(List<SectionDTO.SectionDTOList> sectionDTOList) {
-        int totalProgress = 0;
-        for (SectionDTO.SectionDTOList section : sectionDTOList) {
-            // 섹션에 해당하는 비디오들 진행과정 위에서 progress에 집어넣었음
-            //DB에서 분류가 되어잇음 sectionId 3번 video 1,2존재 1번만 state가 1, 즉 다들었으면 진행률 50%
-            totalProgress += section.getProgress();
-        }
-
-        return sectionDTOList.size() == 0 ? 0 : Math.round((float) totalProgress / sectionDTOList.size());
-    }*/
-
-
-
     //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1
     //videoProgress에 state는 last_View를 가지고 Video에 playTime이랑 일치할 경우 state는 1로 바뀌도록
     //밑에 메서드에 표시해놨음  updateVideoProgressState
-    private int CheckOver(int sectionId, List<VideoProgress> videoProgresses) {
+    private int CheckOver(int sectionId,int memberId, List<VideoProgress> videoProgresses) {
         //section_id로 curriculum찾기
-        Curriculum curriculum = curriculumRepository.findBySectionId(sectionId);
+        Curriculum curriculum = curriculumRepository.findBySectionId(sectionId,memberId);
         //curriculum에 section_id에 설정되지 않은 섹션 아이디는 일단은 over 0으로 할거임
         //즉 설정하지 않은 것에 대해선 다 0으로 기간지나지않음으로 처리
         if (curriculum == null) {
@@ -150,6 +140,7 @@ public class CurriculumService {
         int curriculumTimeTakenInMinutes = curriculum.getTimeTaken() * 24 * 60;
 
         //섹션에 포함된 모든 비디오가 다 state가 1이아니면 over 1
+        //1:실패 0:성공
         if(!allVideosCompleted)
         {
             return 1;
@@ -179,6 +170,7 @@ public class CurriculumService {
         //
         if (playedPercentage >= 100) {
             videoProgress.setState(1); // 수강 종료
+
         } else {
             videoProgress.setState(0); // 수강 전
         }
@@ -187,15 +179,49 @@ public class CurriculumService {
     }
 
     //내 커리큘럼 timetaken 수정하는 메서드
-    public Curriculum updateTimeTaken(int curriculumId, int newTimeTaken){
+    public Curriculum updateTimeTaken(int curriculumId, int newTimeTaken) {
         //커리큘럼 id로 커리큘럼 찾기
         Curriculum curriculum = curriculumRepository.findById(curriculumId)
-        .orElseThrow(()-> new RuntimeException("없는 커리큘럼 입니다. 확인해주세요"));
+                .orElseThrow(() -> new RuntimeException("없는 커리큘럼 입니다. 확인해주세요"));
 
-        //timetaken업데이트
-        curriculum.setTimeTaken(newTimeTaken);
+        if (curriculum.getEdit() == 1) {
+            //timetaken업데이트
+            curriculum.setTimeTaken(newTimeTaken);
+            //변경사항 저장하고 업데이트된 커리큘럼 반환
+            return curriculumRepository.save(curriculum);
+        } else{
+            throw new RuntimeException("커리큘럼을 수정할 수 없습니다.");
+        }
+    }
 
-        //변경사항 저장하고 업데이트된 커리큘럼 반환
-        return curriculumRepository.save(curriculum);
+
+    public void updateLectureProgressState(int memberId, int lectureId) {
+        // Member와 Lecture 객체를 가져옵니다.
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException("없는 회원입니다."));
+        Lecture lecture = lectureRepository.findById(lectureId);
+
+        // 해당 회원의 해당 Lecture의 LectureProgress를 가져옴
+        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, lecture);
+
+        // 해당 Lecture에 포함된 모든 Section의 Video들의 진행 상황을 체크
+        List<Section> sections = sectionRepository.findByLectureId(lectureId);
+        boolean allVideosCompleted = true;
+        for (Section section : sections) {
+            List<Video> videos = videoRepository.findBySectionId(section.getId());
+            for (Video video : videos) {
+                Optional<VideoProgress> videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
+                if (videoProgress.get().getState() != 1) {
+                    allVideosCompleted = false;
+                    break;
+                }
+            }
+            if (!allVideosCompleted) break;
+        }
+
+        // 모든 Video들이 완료되면 LectureProgress state를 1로 업데이트
+        if (allVideosCompleted) {
+            lectureProgress.setState(1);
+            lectureProgressRepository.save(lectureProgress);
+        }
     }
 }

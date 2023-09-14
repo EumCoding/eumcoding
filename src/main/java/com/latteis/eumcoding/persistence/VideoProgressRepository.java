@@ -12,6 +12,8 @@ import java.util.Optional;
 
 public interface VideoProgressRepository extends JpaRepository<VideoProgress, Integer> {
 
+
+
 /*    @Query("SELECT vp FROM VideoProgress vp WHERE vp.lectureProgress.payLecture.payment.member.id = :memberId AND vp.video.id = :videoId")
     VideoProgress findByMemberIdAndVideoId(@Param("memberId") int memberId, @Param("videoId") int videoId);*/
 
@@ -43,5 +45,6 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     * Video, Member에 맞는 videoProgress 가져오기
     */
     VideoProgress findByVideoAndLectureProgress(Video video, LectureProgress lectureProgress);
+
 }
 

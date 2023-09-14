@@ -17,8 +17,6 @@ import javax.persistence.ManyToOne;
 @AllArgsConstructor
 public class PortfolioDTO {
     private int portfolioId; // 사용자에게 고유하게 부여되는 값
-
     private int memberId;
-
     private String path; // 포트폴리오 파일이 들어가는 경로
 }

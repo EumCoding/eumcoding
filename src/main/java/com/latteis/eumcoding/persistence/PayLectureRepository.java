@@ -50,5 +50,4 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
     @Query("SELECT pl FROM PayLecture pl WHERE pl.payment.member.id = :memberId AND pl.payment.state = 1")
     List<PayLecture> findLecturesByStudentId(@Param("memberId") int memberId);
 
-
 }

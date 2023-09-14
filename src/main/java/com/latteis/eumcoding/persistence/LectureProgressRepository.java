@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LectureProgressRepository extends JpaRepository<LectureProgress, Integer> {
+
+
+
     @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId")
     List<LectureProgress> findByMemberId(@Param("memberId") int memberId);
 
