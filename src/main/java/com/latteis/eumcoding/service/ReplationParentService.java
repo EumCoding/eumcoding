@@ -49,42 +49,50 @@ public class ReplationParentService {
     public void requestChildVerification(int parentId, String childEmail) {
         Member parent = memberRepository.findByIdAndRole(parentId, 3);
         if (parent == null) {
+            log.info("학부모 계정으로만 이용 가능합니다.");
             throw new IllegalArgumentException("학부모 계정으로만 이용 가능합니다.");
         }
 
         Member child = memberRepository.findByEmailAndRole(childEmail, 0);
         if (child == null) {
+            log.info("해당 이메일의 학생이 존재하지 않습니다.");
             throw new IllegalArgumentException("해당 이메일의 학생이 존재하지 않습니다.");
         }
         Optional<ReplationParent> existingRelation = relationParentRepository.findByChildId(child.getId());
 
         if(existingRelation.isPresent()){
+            log.info("이미 인증된 계정입니다.");
             throw new IllegalArgumentException("이미 인증된 계정입니다.");
         }
         //인증번호전송
         emailNumberService.sendVerificationNumber(child.getId(), child.getEmail());
     }
 
-    public void verifyChildWithNumber(int verificationNumber, int childId, int parentId) {
-        Optional<EmailNumber> emailNumberOpt = emailNumberRepository.findByVerificationNumberAndMemberId(verificationNumber,childId);
-        EmailNumber emailNumber = emailNumberOpt.orElseThrow(() -> new IllegalArgumentException("잘못된 인증 번호입니다."));
-
+    public void verifyChildWithNumber(int verificationNumber, String childEmail, int parentId) {
+        Optional<EmailNumber> emailNumberOpt = emailNumberRepository.findByVerificationNumberAndMemberEmail(verificationNumber,childEmail);
+        EmailNumber emailNumber = emailNumberOpt.orElseThrow(() ->{
+            log.info("잘못된 인증 번호입니다.");
+            return new IllegalArgumentException("잘못된 인증 번호입니다.");
+        });
 
         if (emailNumber == null || emailNumber.getExpired() == 1 ) {
             throw new IllegalArgumentException("잘못된 인증 번호이거나 만료된 번호입니다.");
         }
 
 
-        Member child = memberRepository.findByIdAndRole(childId, 0);
+        Member child = memberRepository.findByEmailAndRole(childEmail, 0);
         Member parent = memberRepository.findByIdAndRole(parentId, 3);
 
         if (parent == null) {
+            log.info("학부모 아이디가 잘못되었습니다.");
             throw new IllegalArgumentException("학부모 아이디가 잘못되었습니다.");
+
         }
 
         //replationParent 테이블 memberId 는 유니크 설정했음
         Optional<ReplationParent> existingRelation = relationParentRepository.findByMemberId(child.getId());
         if(existingRelation.isPresent()){
+            log.info("이미 인증된 계정입니다.");
             throw new IllegalArgumentException("이미 인증된 계정입니다.");
         }
 
@@ -115,11 +123,13 @@ public class ReplationParentService {
 
         // 1. 로그인한 계정이 학부모 계정인지 확인.
         if(!isParentAccount(parentId)) {
+            log.info("학부모 계정만 권한이 있습니다.");
             throw new IllegalArgumentException("학부모 계정만 권한이 있습니다.");
         }
 
         // 2. 자녀 계정으로 edit를 요청한 경우 예외 처리
         if(parentId == childId) {
+            log.info("자녀 계정으로는 권한이 없습니다.");
             throw new IllegalArgumentException("자녀 계정으로는 권한이 없습니다.");
         }
 
@@ -132,6 +142,7 @@ public class ReplationParentService {
 
         // edit 권한 체크
         if (edit != 0 && edit != 1 && isParentAccount(parentId)) {
+            log.info("edit 값은 0 혹은 1만 가능합니다. 부모계정만 수정 가능합니다.");
             throw new IllegalArgumentException("edit 값은 0 혹은 1만 가능합니다. 부모계정만 수정 가능합니다.");
         }
 
