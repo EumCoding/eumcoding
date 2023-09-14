@@ -3,7 +3,9 @@ package com.latteis.eumcoding.service;
 
 
 import com.latteis.eumcoding.model.EmailToken;
+import com.latteis.eumcoding.model.KakaoInfo;
 import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.persistence.KakaoInfoRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,6 @@ import java.util.Optional;
 public class EmailService {
     private final EmailTokenService emailTokenService;
     private final MemberRepository memberRepository;
-    
 
     @Transactional
     public boolean verifyEmail(String token) throws Exception{
@@ -37,5 +38,6 @@ public class EmailService {
             throw new RuntimeException("token error");
         }
     }
+
 }
 

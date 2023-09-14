@@ -13,6 +13,10 @@ import java.util.Optional;
 
 public interface SectionRepository extends JpaRepository<Section, Integer> {
 
+    // Lecture를 기준으로 모든 Section을 찾는 쿼리
+    @Query("SELECT s FROM Section s WHERE s.lecture = :lecture")
+    List<Section> findByLecture(@Param("lecture") Lecture lecture);
+
 
     List<Section> findByLectureId(int lectureId);
 

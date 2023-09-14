@@ -26,7 +26,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
 	//oauth2
-//	implementation 'net.bramp.ffmpeg:ffprobe:0.10.3'
 	implementation("net.bramp.ffmpeg:ffmpeg:0.7.0")
 
 

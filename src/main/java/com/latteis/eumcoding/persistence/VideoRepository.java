@@ -12,6 +12,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface VideoRepository extends JpaRepository<Video, Integer> {
+
+
+
+
+
     Long countBySectionId(int sectionId);
 
     Video findById(int videoId);

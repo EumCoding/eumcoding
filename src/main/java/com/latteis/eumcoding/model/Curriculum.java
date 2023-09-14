@@ -37,4 +37,10 @@ public class Curriculum {
     @Column(name="create_date")
     private LocalDate createDate;
 
+    @Column(name="score")
+    private int score;
+
+    @Column(name="edit")
+    private int edit;
+
 }

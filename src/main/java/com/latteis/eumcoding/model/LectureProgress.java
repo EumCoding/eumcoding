@@ -21,7 +21,6 @@ public class LectureProgress {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-
     @ManyToOne
     @JoinColumn(name = "pay_lecture_id")
     private PayLecture payLecture;
@@ -34,10 +33,5 @@ public class LectureProgress {
 
     @Column(name = "end_day")
     private LocalDateTime endDay;
-
-
-    //video_progress 랑 일대다관계 , 양방향 맵핑을 위해 1인쪽에 OneToMany 어노테이션 붙임
-    //@OneToMany(mappedBy = "lectureProgress")
-    //private List<VideoProgress> videoProgresses;
 
 }

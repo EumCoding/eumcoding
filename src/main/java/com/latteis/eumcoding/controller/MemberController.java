@@ -2,11 +2,13 @@ package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.model.Curriculum;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.CurriculumService;
 import com.latteis.eumcoding.service.MemberService;
 import com.latteis.eumcoding.service.MyLectureListService;
+import com.latteis.eumcoding.service.ReplationParentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -34,6 +38,8 @@ public class MemberController {
     private final CurriculumService curriculumService;
 
     private final MyLectureListService myLectureListService;
+
+    private final ReplationParentService replationParentService;
 
 
 
@@ -222,5 +228,19 @@ public class MemberController {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         return myLectureListService.getSearchMyLecture(memberId, page, sort, size, keyword);
     }
+    
+    @ApiOperation(value = "선생계정마이페이지")
+    @GetMapping("/mypage")
+    public ResponseEntity<TeacherMyPageDTO> getTeacherMyPage(@ApiIgnore Authentication authentication) {
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        TeacherMyPageDTO teacherMyPageDTO = memberService.TeacherMyPage(memberId);
+        return new ResponseEntity<>(teacherMyPageDTO, HttpStatus.OK);
+    }
+
+
+
+
+
+
 
 }

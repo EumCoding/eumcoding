@@ -315,6 +315,39 @@ public class LectureDTO {
 
     }
 
+    // 강사가 올린 강좌 정보모음
+    // 강좌별 학생들의평균진도율 + 평균성적 + 강좌별 판매 정렬 + 판매률(횟수)+평점
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @ApiModel(value = "강사가 올린 강좌 정보모음")
+    public static class coursesDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int lectureId;
+
+        private String lectureName;
+
+/*        private String lectureDescription;
+
+        private int lecturePrice;*/
+
+        private LocalDateTime createdDay;
+
+        private float avgScore;// 평균성적
+
+        private int reviewCount;
+
+        private float avgProgress;
+
+        private int saleCount;//판매율(횟수)
+
+        private float avgReviewScore; // 평균 평점
+
+    }
+
 
     private int id; // 사용자에게 고유하게 부여되는 값
 
