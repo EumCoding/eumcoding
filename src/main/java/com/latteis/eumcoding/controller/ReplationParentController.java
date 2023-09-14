@@ -39,7 +39,7 @@ public class ReplationParentController {
     public ResponseEntity<?> requestChildVerification(@ApiIgnore Authentication authentication, @RequestParam String childEmail) {
         try {
             int parentId = Integer.parseInt(authentication.getPrincipal().toString());
-            replationParentService.requestChildVerification(childEmail, parentId);
+            replationParentService.requestChildVerification(parentId,childEmail);
             return ResponseEntity.ok("자녀 인증 요청이 성공적으로 이루어졌습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

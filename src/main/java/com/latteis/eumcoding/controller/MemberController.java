@@ -200,7 +200,8 @@ public class MemberController {
             return new ResponseEntity<>("로그인을 해주세요",HttpStatus.UNAUTHORIZED);
         }
         try{
-            Curriculum updateCurriculum = curriculumService.updateTimeTaken(curriculumId,newTimeTaken);
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            curriculumService.updateTimeTaken(memberId,curriculumId,newTimeTaken);
             return new ResponseEntity<>("timeTaken 변경에 성공했습니다.",HttpStatus.OK);
 
         }catch(RuntimeException e){

@@ -35,8 +35,6 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     Member findByMemberId(@Param("id") int id);
 
 
-
-
     // 아이디로 비밀번호 가져오기
     @Query(value = "SELECT password FROM member WHERE id = :id", nativeQuery = true)
     String findPasswordByMemberId(@Param("id") int id);

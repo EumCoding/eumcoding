@@ -39,8 +39,14 @@ public class ReplationParentService {
 
     private final CurriculumRepository curriculumRepository;
 
+    /*
+    1.인증번호를 보내면 emailNumber테이블에 값이 저장
+    2.인증이 성공적으로 되면 replationParents테이블에 값저장
+    3.2번이 되면, 인증번호를 요청해도 이미 인증된 계쩡입니다. 라는 예외처리를 해야함
+    4.단, 2번이 안되면 1번이 반복적으로 이루어져야함. 
+    */
 
-    public void requestChildVerification(String childEmail, int parentId) {
+    public void requestChildVerification(int parentId, String childEmail) {
         Member parent = memberRepository.findByIdAndRole(parentId, 3);
         if (parent == null) {
             throw new IllegalArgumentException("학부모 계정으로만 이용 가능합니다.");
@@ -50,9 +56,13 @@ public class ReplationParentService {
         if (child == null) {
             throw new IllegalArgumentException("해당 이메일의 학생이 존재하지 않습니다.");
         }
+        Optional<ReplationParent> existingRelation = relationParentRepository.findByChildId(child.getId());
 
+        if(existingRelation.isPresent()){
+            throw new IllegalArgumentException("이미 인증된 계정입니다.");
+        }
+        //인증번호전송
         emailNumberService.sendVerificationNumber(child.getId(), child.getEmail());
-
     }
 
     public void verifyChildWithNumber(int verificationNumber, int childId, int parentId) {
@@ -103,7 +113,7 @@ public class ReplationParentService {
     //자녀 커리큘럼 수정권한 메서드
     public void updatechildCurriculumEditPermission(int parentId, int childId,int edit){
 
-        // 1. 로그인한 계정이 학부모 계정인지 확인. (적절한 로직 추가 필요)
+        // 1. 로그인한 계정이 학부모 계정인지 확인.
         if(!isParentAccount(parentId)) {
             throw new IllegalArgumentException("학부모 계정만 권한이 있습니다.");
         }
@@ -131,11 +141,9 @@ public class ReplationParentService {
         }
     }
 
+    //학부모 계정(member.role=3)인지 확인하는 메서드
     private boolean isParentAccount(int parentId) {
-        Optional<ReplationParent> replation = relationParentRepository.findByParentId(parentId);
-        ReplationParent replationParent = replation.orElseThrow(() -> new IllegalArgumentException("학부모가 아닙니다"));
-
-        return replation.isPresent();
+        return relationParentRepository.findByParentId(parentId).isPresent();
     }
 
 }
