@@ -1,9 +1,7 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.model.Answer;
 import com.latteis.eumcoding.model.VideoTest;
 import com.latteis.eumcoding.model.VideoTestBlockList;
-import org.apache.catalina.LifecycleState;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

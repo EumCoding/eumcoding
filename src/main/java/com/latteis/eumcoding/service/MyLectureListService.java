@@ -71,7 +71,7 @@ public class MyLectureListService {
 
     public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int size, int sort) {
 
-        Member member = memberRepository.findByIdAndRole(memberId, 0);
+        Member member = memberRepository.findByMemberId(memberId);
 
         Sort sortObj;
         switch (sort) {
@@ -121,8 +121,7 @@ public class MyLectureListService {
                 }
             }
 
-            // 비디오와 강의 진행 상태 업데이트
-            boolean isLectureCompleted = updateVideoAndLectureProgresses(memberId, lecture);
+
 
             // 전체 비디오 수와 완료된 비디오 수 계산
             int[] videoCounts = countTotalAndCompletedVideos(memberId, lecture);
@@ -196,59 +195,7 @@ public class MyLectureListService {
         return searchMylectureDTOList;
     }
     
-    
-    
 
-
-    
-    //공통메서드로 뺌. progress계산하는거랑 비디오 다들으면 lectureProgress가 0->1로 바뀌게하는 코드
-    private boolean updateVideoAndLectureProgresses(int memberId, Lecture lecture) {
-        boolean isLectureCompleted = true;
-
-        List<LectureProgress> lectureProgresses = lectureProgressRepository.findByMemberIdAndLectureId(memberId, lecture.getId());
-        for (LectureProgress lectureProgress : lectureProgresses) {
-            List<VideoProgress> videoProgresses = videoProgressRepository.findByLectureProgressId(lectureProgress.getId());
-            for (VideoProgress videoProgress : videoProgresses) {
-
-                // Video의 전체 재생 시간과 VideoProgress의 lastView를 비교하여 state 업데이트
-                Video video = videoProgress.getVideo();
-                if (video != null) {
-                    long playTimeSeconds = ChronoUnit.SECONDS.between(LocalTime.MIDNIGHT, video.getPlayTime());
-                    long lastViewSeconds = ChronoUnit.SECONDS.between(LocalTime.MIDNIGHT, videoProgress.getLastView());
-                    if (lastViewSeconds >= playTimeSeconds) {
-                        videoProgress.setState(1); // 수강 완료
-                    } else {
-                        videoProgress.setState(0); // 수강 중
-                        isLectureCompleted = false; // 만약 이 VideoProgress가 완료되지 않았다면, 전체 강의를 완료하지 않은 것으로 표시
-                    }
-                    videoProgressRepository.save(videoProgress);
-                }
-
-                // videoProgress의 상태가 1이 아니면 강의를 완료하지 않은 것으로 간주
-                if (videoProgress.getState() != 1) {
-                    isLectureCompleted = false;
-                    break;
-                }
-            }
-
-            // 만약 어떤 비디오 진행 상태가 완료되지 않았다면,
-            // 이 강의 진행 상태도 완료되지 않았다고 간주하므로 break;
-            if (!isLectureCompleted) {
-                lectureProgress.setState(0); // 강의 진행 상태를 미완료로 변경
-                lectureProgressRepository.save(lectureProgress);
-                break;
-            }
-
-            // 만약 모든 videoProgress의 state가 1이면, 해당 lectureProgress의 state를 1로 변경
-            if (isLectureCompleted) {
-                lectureProgress.setState(1);
-                lectureProgress.setEndDay(LocalDateTime.now());
-                lectureProgressRepository.save(lectureProgress); // DB에 변경 사항 저장
-            }
-        }
-
-        return isLectureCompleted;
-    }
 
     private int[] countTotalAndCompletedVideos(int memberId, Lecture lecture) {
         int totalVideos = 0;

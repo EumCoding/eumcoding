@@ -3,10 +3,7 @@ package com.latteis.eumcoding.service;
 import com.latteis.eumcoding.dto.QuestionDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Question;
-import com.latteis.eumcoding.persistence.AnswerRepository;
-import com.latteis.eumcoding.persistence.LectureRepository;
-import com.latteis.eumcoding.persistence.MemberRepository;
-import com.latteis.eumcoding.persistence.QuestionRepository;
+import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +26,8 @@ public class QuestionListService {
     private final QuestionRepository questionRepository;
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
-    private final AnswerRepository answerRepository;
+    private final QuestionCommentRepository questionCommentRepository;
+
 
     //이상하게 이건 Pageable pageable을 사용하면 page정보들이 다 넘어와서
     //page,size를 사용하기로함
@@ -45,7 +43,7 @@ public class QuestionListService {
         // 내가 쓴 질문 글 불러올때 start,end는 LocalDate타입. 하지만 DB에는 createdDay가 LocalDateTime형식이라
         // 둘의 타입이 다르기때문에 맞춰주는 용도
         // 안그러면 repository에 LocalDateTime으로 해놔야하는데 지금 이 메서드에서도.
-        // 이러면 검색할때 start = 2023-05-1223:33:33 이런식으로 검색해야함
+        // 이러면 검색할때 start = 2023-05-12 23:33:33 이런식으로 검색해야함
         LocalDateTime startDateTime = start.atStartOfDay();
         LocalDateTime endDateTime = end.plusDays(1).atStartOfDay();
 
@@ -58,13 +56,13 @@ public class QuestionListService {
 
         List<QuestionDTO.MyQuestionListDTO> myQuestionListDTOS = questionsPage.getContent().stream().map(question -> {
             // 해당 질문에 대한 답변 유무 확인
-            int answerStatus = answerRepository.existsByQuestion(question.getId()) ? 1 : 0;
+            int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
 
             return QuestionDTO.MyQuestionListDTO.builder()
                     .nickname(question.getMember().getNickname())
                     .qnaId(question.getId())
                     .title(question.getTitle())
-                    .answer(answerStatus)
+                    .answer(questionCommentStatus)
                     .date(question.getCreatedDay())
                     .lectureId(question.getLecture().getId())
                     .lectureName(question.getLecture().getName())
@@ -89,13 +87,13 @@ public class QuestionListService {
 
         List<QuestionDTO.QnAQuestionListDTO> questionList = questionPage.getContent().stream().map(question ->{
                     // 해당 질문에 대한 답변 유무 확인
-                int answerStatus = answerRepository.existsByQuestion(question.getId()) ? 1 : 0;
+                int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
 
                 return QuestionDTO.QnAQuestionListDTO.builder()
                         .qnaId(question.getId())
                         .memberId(question.getMember().getId())
                         .lectureId(question.getLecture().getId())
-                        .answer(answerStatus)
+                        .answer(questionCommentStatus)
                         .title(question.getTitle())
                         .date(question.getCreatedDay())
                         .lectureName(question.getLecture().getName())

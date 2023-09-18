@@ -1,10 +1,8 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.model.Answer;
 import com.latteis.eumcoding.model.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,7 +23,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     List<Payment> findByMemberIdPayment(@Param("memberId") int memberId);
 
 
-    @Query("SELECT p FROM Payment p JOIN Member m ON p.member.id = m.id WHERE m.id = :memberId AND m.state = 1 AND m.role=0")
+    @Query("SELECT p FROM Payment p JOIN Member m ON p.member.id = m.id WHERE m.id = :memberId AND m.state = 1 ")
     Page<Payment> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
 
 }

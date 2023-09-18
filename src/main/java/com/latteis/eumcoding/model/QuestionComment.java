@@ -20,13 +20,13 @@ public class QuestionComment {
     @Column(name = "id")
     private int id; // 사용자에게 고유하게 부여되는 값
 
-    @Column(name = "question_id")
-    @JoinColumn(name = "id")
-    private int questionId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "question_id")
+    private Question question;
 
-    @Column(name = "member_id")
-    @JoinColumn(name = "id")
-    private int memberId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "content")
     private String content;
@@ -38,7 +38,7 @@ public class QuestionComment {
     private LocalDateTime createdDay; // 생성된 날짜
 
     @Column(name = "step")
-    private int step; // 생성된 날짜
+    private int step; // 댓글 깊이, 대댓글
     @Column(name = "group_num")
-    private int groupNum; // 생성된 날짜
+    private int groupNum; // 어떤 댓글에 대한 건지 번호, 루트번호
 }

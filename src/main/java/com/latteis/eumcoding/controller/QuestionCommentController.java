@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.AnswerDTO;
+import com.latteis.eumcoding.dto.BoardCommentDTO;
 import com.latteis.eumcoding.dto.QuestionCommentDTO;
 import com.latteis.eumcoding.service.QuestionCommentService;
 import io.swagger.annotations.Api;
@@ -8,15 +9,17 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,23 +33,63 @@ public class QuestionCommentController {
     private final QuestionCommentService questionCommentService;
     @ApiOperation(value = "질문에 대한 답변", notes = "강사만 답변을 작성할 수 있습니다.")
     @PostMapping("/write")
-    public ResponseEntity<AnswerDTO.AnswerWriteDTO> writeComment(@ApiIgnore Authentication authentication,
-                                                                 AnswerDTO.AnswerWriteDTO answerWriteDTO) {
+    public ResponseEntity<QuestionCommentDTO.WriteRequestDTO> writeComment(@ApiIgnore Authentication authentication,
+                                                                 QuestionCommentDTO.WriteRequestDTO writeRequestDTO) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        AnswerDTO.AnswerWriteDTO writeComment = questionCommentService.writeComment(memberId, answerWriteDTO);
+        QuestionCommentDTO.WriteRequestDTO writeComment = questionCommentService.writeComment(memberId, writeRequestDTO);
         return ResponseEntity.ok(writeComment);
     }
-    @ApiOperation(value = "질문에 대한 답변 수정", notes = "강사만 자신의 답변을 수정할 수 있습니다.")
+
+    // 대댓글 작성
+    @PostMapping(value = "/write_reply")
+    @ApiOperation(value = "질문 게시판 대댓글 작성")
+    public ResponseEntity<QuestionCommentDTO.WriteReplyRequestDTO> writeReply(@ApiIgnore Authentication authentication, @Valid @RequestBody  QuestionCommentDTO.WriteReplyRequestDTO writeReplyRequestDTO) {
+
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            QuestionCommentDTO.WriteReplyRequestDTO writeReplyComment = questionCommentService.writeReply(memberId, writeReplyRequestDTO);
+            return ResponseEntity.ok(writeReplyComment);
+    }
+
+   @ApiOperation(value = "질문에 대한 답변 수정", notes = "강사만 자신의 답변을 수정할 수 있습니다.")
     @PostMapping("/update")
-    public ResponseEntity<AnswerDTO.AnswerUpdateDTO> updateComment(@ApiIgnore Authentication authentication,
-                                                                  int answerId, AnswerDTO.AnswerUpdateDTO answerUpdateDTO) {
+    public ResponseEntity<QuestionCommentDTO.updateRequestDTO> updateComment(@ApiIgnore Authentication authentication,
+                                                                  int questionCommentId, QuestionCommentDTO.updateRequestDTO questionCommentUpdateDTO) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        AnswerDTO.AnswerUpdateDTO updateComment = questionCommentService.updateComment(memberId, answerId, answerUpdateDTO);
+       QuestionCommentDTO.updateRequestDTO updateComment = questionCommentService.updateComment(memberId, questionCommentId, questionCommentUpdateDTO);
         return ResponseEntity.ok(updateComment);
     }
 
+    // 게시판 댓글 삭제
+    @PostMapping(value = "/delete")
+    @ApiOperation(value = "게시판 댓글 삭제")
+    public ResponseEntity<Object> deleteComment(@ApiIgnore Authentication authentication, @Valid @RequestBody QuestionCommentDTO.deleteRequestDTO questionCommentUpdateDTO) {
+
+        try {
+            questionCommentService.deleteComment(Integer.parseInt(authentication.getPrincipal().toString()), questionCommentUpdateDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 내가 작성한 게시판 댓글 목록
+    @PostMapping(value = "/my_list")
+    @ApiOperation(value = "내가 쓴 게시판 댓글 리스트 가져오기")
+    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getMyCommentList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            List<QuestionCommentDTO.QnACommentListDTO> myListResponseDTOS = questionCommentService.getMyCommentList(Integer.parseInt(authentication.getPrincipal().toString()), pageable);
+            return ResponseEntity.ok().body(myListResponseDTOS);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+/*
     @ApiOperation(value = "질문에 대한 답변 삭제", notes = "강사만 자신의 답변을 삭제할 수 있습니다.")
     @PostMapping("/delete")
     public ResponseEntity<AnswerDTO.AnswerDeleteDTO> deleteComment(@ApiIgnore Authentication authentication,
@@ -70,5 +113,5 @@ public class QuestionCommentController {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         List<QuestionCommentDTO.QnAAnswerListDTO> qnaAnswerList = questionCommentService.getQnAAnswerList(memberId, start, end, page, size);
         return ResponseEntity.ok(qnaAnswerList);
-    }
+    }*/
 }
