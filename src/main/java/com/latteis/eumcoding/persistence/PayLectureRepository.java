@@ -18,6 +18,7 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
     @Query("SELECT p1 FROM PayLecture p1 JOIN p1.payment p JOIN p1.lecture l WHERE l.id = :lectureId AND p.state = :state")
     List<PayLecture> findByLectureIdAndState(@Param("lectureId")int lectureId, @Param("state") int state);
 
+
     //해당 회원이 강의를 결제했는지 확인
     //이걸 이용해서 질문게시판에 질문을 남길 떄 회원이 결제한 강의에 대해서만 질문을 남길 수 있게 조건을 달기 위해 사용
     @Query("SELECT p FROM PayLecture p WHERE p.payment.member.id = :memberId AND p.payment.member.role = 0 AND p.payment.state = 1 AND p.lecture.id = :lectureId")

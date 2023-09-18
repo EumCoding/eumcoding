@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,10 @@ public class PaymentService {
     private final PayLectureRepository payLectureRepository;
 
     private final BasketRepository basketRepository;
+
+    private final SectionRepository sectionRepository;
+
+    private final CurriculumRepository curriculumRepository;
 
     @Transactional
     public void completePayment(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
@@ -79,6 +84,19 @@ public class PaymentService {
 
         // PayLecture 저장
         payLectureRepository.save(payLecture);
+
+        //Curriculum에 해당 lecture에 속한 section들 저장
+        List<Section> sections = sectionRepository.findAllByLecture(payLecture.getLecture());
+        for(Section section : sections){
+            Curriculum curriculum = new Curriculum();
+            curriculum.setSection(section);
+            curriculum.setMember(member);
+            curriculum.setTimeTaken(10);
+            curriculum.setScore(0);
+            curriculum.setCreateDate(LocalDate.now());
+            curriculum.setEdit(0);
+            curriculumRepository.save(curriculum);
+        }
     }
 
 

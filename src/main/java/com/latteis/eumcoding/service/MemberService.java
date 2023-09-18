@@ -47,6 +47,7 @@ public class MemberService {
 
     private final CurriculumService curriculumService;
 
+    private final MyLectureListService myLectureListService;
 
     @Value("${file.path}")
     private String filePath;
@@ -337,13 +338,19 @@ public class MemberService {
 
         try {
             Member member = memberRepository.findByIdAndRole(memberId, 1);
+            if (member == null) {
+                throw new RuntimeException("강사가 아닙니다.");
+            }
+
             Portfolio portfolio = portfolioRepository.findByMemberId(memberId);
 
             List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
 
-            List<LectureDTO.coursesDTO> coursesList = lectureList.stream()
-                    .map(this::convertCoursesDTO)
-                    .collect(Collectors.toList());
+            List<LectureDTO.coursesDTO> coursesList = new ArrayList<>();
+            for (Lecture lecture : lectureList) {
+                LectureDTO.coursesDTO dto = convertCoursesDTO(lecture);
+                coursesList.add(dto);
+            }
 
             TeacherMyPageDTO teacherMyPageDTO = TeacherMyPageDTO.builder()
                     .memberId(member.getId())
@@ -358,6 +365,7 @@ public class MemberService {
                     .resume(portfolio.getPath())
                     .portfolioPath(portfolio.getPath())
                     .courses(coursesList)
+                    //.questions()
                     .build();
 
             return teacherMyPageDTO;
@@ -375,6 +383,7 @@ public class MemberService {
         float avgerageScore = getAverageScoreForLecture(lecture.getId());
         float avgReviewScore = getAvgReviewScoreForLecture(lecture.getId());
         int reviewCount = getReviewCountForLecture(lecture.getId());
+        int getCountPaymentLecture = getCountPaymentLecture(lecture.getId());
 
         return LectureDTO.coursesDTO.builder()
                 .lectureId(lecture.getId())
@@ -384,12 +393,16 @@ public class MemberService {
                 .avgReviewScore(avgReviewScore)
                 .reviewCount(reviewCount)
                 .avgProgress(getAverageLectureProgress(lecture.getId()))         //강좌당 평균 진도율
-                //.saleCount()           //강좌 판매율
+                .saleCount(getCountPaymentLecture)           //강좌 판매율,paymentLecture테이블을 이용해서 구하자
                 .build();
     }
 
     
 
+    private int getCountPaymentLecture(int lectureId){
+        Optional<Integer> count = memberRepository.getCountPaymentLecture(lectureId);
+        return count.orElseThrow(() -> new RuntimeException("강좌를 구매한 회원이 없습니다."));
+    }
 
 
     private float getAvgReviewScoreForLecture(int lectureId) {
@@ -424,11 +437,6 @@ public class MemberService {
     }
 
 
-    public List<MyPlanListDTO> getMyPlanList(int memberId) {
-        return curriculumService.getMyPlanList(memberId);
-    }
-
-
     //평균 진도율
     public float getAverageLectureProgress(int lectureId) {
         // 1. 해당 강의를 구매한 모든 학생들의 ID를 찾는다.
@@ -441,19 +449,22 @@ public class MemberService {
             int memberId = payLecture.getPayment().getMember().getId();
 
             // 2. 각 학생에 대한 강의 진도율을 계산한다.
-            List<MyPlanListDTO> planList = getMyPlanList(memberId);
+            List<MyLectureListDTO> lectureList  = myLectureListService.getMyLectureList(memberId,1,100,0);;
 
-            for (MyPlanListDTO myPlan : planList) {
-                for (SectionDTO.SectionDTOList section : myPlan.getSectionDTOList()) {
-                    if (section.getLectureId() == lectureId) {
-                        studentProgressList.add(section.getProgress());
+            for (MyLectureListDTO myLecture : lectureList) {
+                    if (myLecture.getLectureId() == lectureId) {
+                        studentProgressList.add(myLecture.getProgress());
                     }
                 }
-            }
         }
 
         // 3. 평균 진도율을 계산한다.
-        int totalProgress = studentProgressList.stream().mapToInt(Integer::intValue).sum();
+        //int totalProgress = studentProgressList.stream().mapToInt(Integer::intValue).sum();
+
+        int totalProgress = 0;
+        for (int progress : studentProgressList) {
+            totalProgress += progress;
+        }
 
         return studentProgressList.isEmpty() ? 0 : (float) totalProgress / studentProgressList.size();
     }

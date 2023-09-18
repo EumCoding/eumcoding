@@ -1,6 +1,5 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.model.Answer;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Section;
@@ -66,4 +65,8 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
                 "WHERE vp.lectureProgress.payLecture.payment.member = :member) >= s.sequence " +
             "ORDER BY s.sequence")
     List<Section> getLectureStudentSection(@Param("member") Member member);
+
+
+    @Query("SELECT s FROM Section s JOIN s.lecture l WHERE l IN (SELECT pl.lecture FROM PayLecture pl WHERE pl.lecture =:lecture)")
+    List<Section> findAllByLecture(@Param("lecture") Lecture lecture);
 }

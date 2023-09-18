@@ -78,6 +78,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     Member findByIdAndRole(@Param("memberId") int memberId,@Param("role") int role);
 
 
+
+
     //선생 이름 검색, 이름은 동명이인 존재 가능
     //nickname 달라야죠
     @Query("SELECT m FROM Member m WHERE m.name like %:name% AND m.role = 1")
@@ -92,5 +94,18 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     @Query(value = "SELECT * FROM member m  WHERE m.email = :email AND m.role = :role",nativeQuery = true)
     Member findByEmailAndRole(@Param("email") String email,@Param("role") int role);
+
+
+    //해당 강좌를 구매한 member수
+    @Query(value = "SELECT count(DISTINCT m.id) " +  // 공백 추가
+            "FROM member m " +                       // 공백 추가
+            "JOIN payment p ON m.id = p.member_id " +
+            "JOIN pay_lecture pl ON pl.payment_id = p.id " + // 공백 추가
+            "JOIN lecture l ON pl.lecture_id = l.id " + // 공백 추가
+            "WHERE l.id = :lectureId", nativeQuery = true)
+    Optional<Integer> getCountPaymentLecture(@Param("lectureId") int lectureId);
+
+
+
 
 }

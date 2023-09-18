@@ -31,7 +31,6 @@ public class CurriculumService {
     private final MemberRepository memberRepository;
 
 
-
     //특정 회원의 학습 계획 리스트를 반환 각 커리큘럼의 섹션별로 비디오 진행 상황을 확인하고, 그에 따른 진행률을 계산하여 DTO에 담아 반환
     public List<MyPlanListDTO> getMyPlanList(int memberId) {
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
@@ -60,18 +59,25 @@ public class CurriculumService {
                 int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
 
                 for (Video video : sectionVideos) {
-                    //해당 회원이 해당 비디오 진행상황 조회
-                    Optional<VideoProgress> videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
-                    boolean isLectureCompleted = true; // 강의를 모두 들었는지 표시하는 변수, 처음에는 true로 설정
 
-                    if (videoProgress.isPresent()) {
-                        updateVideoProgressState(videoProgress.get(), video);
-                        if (videoProgress.get().getState() == 1) { //0:수강중 1:수강종료
-                            completedVideos++; //완강한 비디오 갯수
-                        }else{
-                            isLectureCompleted = false; // videoProgress의 state가 1이 아니면, 강의를 모두 들지 않았다는 뜻
+                    //해당 회원의 비디오 진행상황 조회
+                    List<VideoProgress> videoProgress = videoProgressRepository.findVideoByLectureIdAndMemberId(lectureSection.getLecture().getId(), memberId);
+
+                    boolean isCompleted = false;
+
+                    for (VideoProgress vp : videoProgress) {
+                        updateVideoProgressState(vp, video);
+
+                        if (vp.getState() == 1) { //1:수강종료
+                            isCompleted = true;
+                            break; // 하나라도 완료 상태면 더 이상 체크할 필요 없으므로 loop를 종료
                         }
                     }
+
+                    if (isCompleted) {
+                        completedVideos++; //완강한 비디오 갯수
+                    }
+
                 }
 
                 int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
@@ -157,7 +163,6 @@ public class CurriculumService {
 
 
     //video_progress에 state 상태를 해당 조건에 맞게 변경
-    //lastView를 기준으로 영상의 10%들으면 수강시작
     //50% 수강중, 100%수강 완료 0->1변경
     private void updateVideoProgressState(VideoProgress videoProgress, Video video) {
         //비디오의 전체 재생 시간(playTime)과 마지막으로 본 시간(lastView)을 초 단위로 변환 한다.
@@ -203,19 +208,35 @@ public class CurriculumService {
 
         // 해당 회원의 해당 Lecture의 LectureProgress를 가져옴
         LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, lecture);
+        if(lectureProgress == null){
+            throw new RuntimeException("해당 강의의 진행 상황을 찾을 수 없습니다.");
+        }
 
         // 해당 Lecture에 포함된 모든 Section의 Video들의 진행 상황을 체크
         List<Section> sections = sectionRepository.findByLectureId(lectureId);
         boolean allVideosCompleted = true;
         for (Section section : sections) {
             List<Video> videos = videoRepository.findBySectionId(section.getId());
+
+            // 섹션의 시작에서 VideoProgress 리스트를 가져옴
+            List<VideoProgress> videoProgresses = videoProgressRepository.findVideoByLectureIdAndMemberId(lectureId, memberId);
+
             for (Video video : videos) {
-                Optional<VideoProgress> videoProgress = videoProgressRepository.findByMemberIdAndVideoId(memberId, video.getId());
-                if (videoProgress.get().getState() != 1) {
+                boolean currentVideoCompleted = false;
+
+                for (VideoProgress vp : videoProgresses) {
+                    if (vp.getVideo().getId() == video.getId() && vp.getState() == 1) {
+                        currentVideoCompleted = true;
+                        break;
+                    }
+                }
+
+                if (!currentVideoCompleted) {
                     allVideosCompleted = false;
                     break;
                 }
             }
+
             if (!allVideosCompleted) break;
         }
 
