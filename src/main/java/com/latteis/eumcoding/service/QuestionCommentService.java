@@ -48,11 +48,11 @@ public class QuestionCommentService {
             throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
         }
 
-        // 질문에 대한 답이 있는지 체크
+/*        // 질문에 대한 답이 있는지 체크
         boolean completeAnswer = questionCommentRepository.existsByQuestion(question.getId());
         if (completeAnswer) {
             throw new IllegalStateException("답변을 하였습니다.");
-        }
+        }*/
 
 
          QuestionComment questionComment= QuestionComment.builder()
@@ -88,11 +88,13 @@ public class QuestionCommentService {
             throw new IllegalArgumentException("작성자 및 강사 외에는 댓글을 달 수 없습니다.");
         }
 
+/*
         // 질문에 대한 답이 있는지 체크
         boolean completeAnswer = questionCommentRepository.existsByQuestion(question.getId());
         if (completeAnswer) {
             throw new IllegalStateException("강사가 답변을 한 질문입니다.");
         }
+*/
 
 
         QuestionComment questionComment= QuestionComment.builder()

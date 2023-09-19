@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
@@ -48,8 +49,13 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     String avgRating(@Param("lecture") Lecture lecture);
 
 
-    //과목별 리뷰 갯수
-    @Query("SELECT r FROM Review r WHERE r.lecture.id = :lectureId AND r.member.role = 0")
-    List<Review> findByLectureId(int lectureId);
+
+    //두 개 결과 반환 할떈 Object[] 사용
+    // 과목별 리뷰 갯수 및 평점 합계
+    @Query("SELECT avg(r.rating) as totalRating FROM Review r WHERE r.lecture.id = :lectureId AND r.member.role = 0")
+    Optional<Float> findByReviewsByLectureId(int lectureId);
+
+    @Query("SELECT count(distinct r) FROM Review r WHERE r.lecture.id = :lectureId AND r.member.role = 0")
+    Optional<Integer> findByReviewsCount(int lectureId);
 }
 

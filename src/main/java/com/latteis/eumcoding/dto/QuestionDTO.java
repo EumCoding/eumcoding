@@ -41,6 +41,19 @@ public class QuestionDTO {
 
     private String imgResponse;
 
+
+    //질문 갯수
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class countQuestionDTO{
+        private int count; //질문 숫자
+        private int lectureId;
+        //private String title;
+    }
+
+
     
     //질문작성, /lecture/question/write
     @Data
@@ -110,7 +123,7 @@ public class QuestionDTO {
         private int qnaId;
         private int memberId;
         private int lectureId;
-        private int answer;
+        private int answer; //답변 여부 1:했다. 0:안했다
         private String title;
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")

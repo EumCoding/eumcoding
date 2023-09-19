@@ -28,11 +28,7 @@ dependencies {
 	//oauth2
 	implementation("net.bramp.ffmpeg:ffmpeg:0.7.0")
 
-
 	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.0.8'
-
-
-
 
 	compileOnly 'org.projectlombok:lombok'
 	//runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

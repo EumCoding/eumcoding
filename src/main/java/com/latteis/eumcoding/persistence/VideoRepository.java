@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VideoRepository extends JpaRepository<Video, Integer> {
 
@@ -20,6 +21,22 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     Long countBySectionId(int sectionId);
 
     Video findById(int videoId);
+
+
+
+    //DB에서 각 멤버의 완료된 강좌 갯수 구함
+    @Query(value = "SELECT " +
+            "count(DISTINCT v.id) AS total, " +
+            "count(DISTINCT CASE WHEN p.member_id = :memberId THEN vp.id ELSE NULL END) AS completed " +
+            "FROM video v " +
+            "LEFT JOIN video_progress vp ON vp.video_id = v.id " +
+            "LEFT JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
+            "LEFT JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+            "LEFT JOIN payment p ON pl.payment_id = p.id AND p.member_id = :memberId " +
+            "WHERE v.section_id = :sectionId",
+            nativeQuery = true)
+    List<Object[]> findTotalAndCompletedVideosForSection(@Param("memberId") int memberId, @Param("sectionId") int sectionId);
+
 
 
     List<Video> findBySectionId(int sectionId);

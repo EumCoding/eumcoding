@@ -30,6 +30,10 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
     @Query("SELECT q FROM Question q WHERE q.lecture.id =:lectureId")
     Page<Question> findByLectureId(@Param("lectureId") int lectureId, Pageable pageable);
 
+    //과목에대해서 질문이 몇개있는지 카운팅
+    @Query("SELECT count(distinct q.id) FROM Question q WHERE q.lecture.id =:lectureId")
+    Optional<Integer> countQuestionId(@Param("lectureId") int lectureId);
+
 
 
 }

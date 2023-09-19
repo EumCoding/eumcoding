@@ -20,13 +20,11 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.File;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -194,10 +192,11 @@ public class MyLectureListService {
 
         return searchMylectureDTOList;
     }
-    
 
 
-    private int[] countTotalAndCompletedVideos(int memberId, Lecture lecture) {
+
+/*  DB에서 완료된 강좌, 총 강좌갯수 구한게아니라, 해당 메서드에서 이루어짐, 그래서 아래 메서드로 변경(DB에서 계산하고 가져오는식으로)
+private int[] countTotalAndCompletedVideos(int memberId, Lecture lecture) {
         int totalVideos = 0;
         int completedVideos = 0;
 
@@ -217,5 +216,38 @@ public class MyLectureListService {
             }
         }
         return new int[] { totalVideos, completedVideos };
+    }*/
+
+    //DB에서 해당 과목에 속하는 섹션들의 비디오들의 총 갯수(total), 다들은 비디오 갯수(completed)를 구함
+    //만약 나중에 이거 문제생기면 위에 코드상에서 계산한걸로 사용
+    private int[] countTotalAndCompletedVideos(int memberId, Lecture lecture) {
+        int totalVideos = 0;
+        int completedVideos = 0;
+
+        List<Section> sections = sectionRepository.findByLectureId(lecture.getId());
+
+        for (Section section : sections) {
+            List<Object[]> videoCounts  = videoRepository.findTotalAndCompletedVideosForSection(memberId, section.getId());
+            if (!videoCounts.isEmpty()) {
+                Object[] counts = videoCounts.get(0);
+                totalVideos += toInt(counts[0]);
+                completedVideos += toInt(counts[1]);
+            }
+        }
+        return new int[] { totalVideos, completedVideos };
     }
+
+    //형변환 에러방지
+    private int toInt(Object obj) {
+        if (obj instanceof BigInteger) {
+            return ((BigInteger) obj).intValue();
+        } else if (obj instanceof Long) {
+            return ((Long) obj).intValue();
+        } else if (obj instanceof Integer) {
+            return (Integer) obj;
+        } else {
+            throw new IllegalArgumentException("Unsupported number type: " + obj.getClass().getName());
+        }
+    }
+
 }
