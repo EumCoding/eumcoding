@@ -15,7 +15,7 @@ import java.util.List;
 
 @Repository
 public interface QuestionCommentRepository extends JpaRepository<QuestionComment, Integer> {
-    @Query("SELECT COUNT(q) > 0 FROM Question q WHERE q.id = :questionId AND q.member.role = 1")
+    @Query("SELECT COUNT(qc) > 0 FROM QuestionComment qc WHERE qc.question.id = :questionId AND qc.member.role = 1")
     boolean existsByQuestion(@Param("questionId") int questionId);
 
     @Query("SELECT q FROM QuestionComment q WHERE q.member = :member AND q.createdDay BETWEEN :start AND :end")

@@ -32,6 +32,6 @@ public class TeacherMyPageDTO {
     //강좌별 학생들의평균진도율 + 평균성적 + 강좌별 판매 정렬 + 판매률(횟수)+평점
     private List<LectureDTO.coursesDTO> courses;
     //내 강좌 질문 현황
-    private List<QuestionDTO> questions;
+    //private List<QuestionDTO.countQuestionDTO> questions;
 
 }

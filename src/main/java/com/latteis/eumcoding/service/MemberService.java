@@ -49,6 +49,8 @@ public class MemberService {
 
     private final MyLectureListService myLectureListService;
 
+    private final QuestionRepository questionRepository;
+
     @Value("${file.path}")
     private String filePath;
 
@@ -352,6 +354,12 @@ public class MemberService {
                 coursesList.add(dto);
             }
 
+       /*     List<QuestionDTO.countQuestionDTO> questionList = new ArrayList<>();
+            for (Lecture lecture : lectureList) {
+                QuestionDTO.countQuestionDTO dto = converQuestionDTO(lecture);
+                questionList.add(dto);
+            }*/
+
             TeacherMyPageDTO teacherMyPageDTO = TeacherMyPageDTO.builder()
                     .memberId(member.getId())
                     .nickname(member.getNickname())
@@ -365,7 +373,6 @@ public class MemberService {
                     .resume(portfolio.getPath())
                     .portfolioPath(portfolio.getPath())
                     .courses(coursesList)
-                    //.questions()
                     .build();
 
             return teacherMyPageDTO;
@@ -378,6 +385,28 @@ public class MemberService {
     }
 
 
+    /*
+    //해당 과목에 대한 질문들 총 갯수
+    public int getCountQuestionList(int lectureId) {
+
+        Optional<Integer> question = questionRepository.countQuestionId(lectureId);
+        return question.orElseThrow(() -> new RuntimeException("강좌에 대한 질문이 없습니다."));
+    }
+
+
+질문관련 코드인데 안써서 일단 주석처리
+    private QuestionDTO.countQuestionDTO converQuestionDTO(Lecture lecture){
+
+        int countQuestionId = getCountQuestionList(lecture.getId());
+
+        return QuestionDTO.countQuestionDTO.builder()
+                .lectureId(lecture.getId())
+                .count(countQuestionId)
+                .build();
+    }*/
+
+
+    //강좌별 학생들의평균진도율 + 평균성적 + 강좌별 판매 정렬 + 판매률(횟수)+평점
     private LectureDTO.coursesDTO convertCoursesDTO(Lecture lecture){
 
         float avgerageScore = getAverageScoreForLecture(lecture.getId());
@@ -397,8 +426,6 @@ public class MemberService {
                 .build();
     }
 
-    
-
     private int getCountPaymentLecture(int lectureId){
         Optional<Integer> count = memberRepository.getCountPaymentLecture(lectureId);
         return count.orElseThrow(() -> new RuntimeException("강좌를 구매한 회원이 없습니다."));
@@ -406,34 +433,28 @@ public class MemberService {
 
 
     private float getAvgReviewScoreForLecture(int lectureId) {
-        List<Review> reviews = reviewRepository.findByLectureId(lectureId);
-        if (reviews.isEmpty()) {
+        Optional<Float> result = reviewRepository.findByReviewsByLectureId(lectureId);
+
+        if (!result.isPresent()) {
             return 0; // 리뷰가 없을 경우 0을 반환
         }
 
-        float totalReviewScore = 0;
-        for(Review review : reviews){
-            totalReviewScore += review.getRating();
-        }
-        return totalReviewScore / reviews.size();
-
+        return result.orElse(0.0f);
     }
 
     private int getReviewCountForLecture(int lectureId) {
-        List<Review> reviews = reviewRepository.findByLectureId(lectureId);
-        return reviews.size();
+        Optional<Integer> reviews = reviewRepository.findByReviewsCount(lectureId);
+        return reviews.orElseThrow(() -> new RuntimeException("과목에 대한 리뷰가 없습니다."));
     }
 
     //과목별 평균 점수
     private float getAverageScoreForLecture(int lectureId) {
-        List<Curriculum> curriculums = curriculumRepository.findByLectureId(lectureId);
-        if(curriculums.isEmpty()) return 0;
 
-        float totalScore = 0;
-        for(Curriculum curriculum : curriculums){
-            totalScore += curriculum.getScore();
-        }
-        return totalScore;
+        Optional<Float> result = curriculumRepository.findByAVGLectureScore(lectureId);
+
+        if(!result.isPresent()) return 0;
+
+        return result.orElseThrow(() -> new RuntimeException("과목에 대한 점수가없습니다."));
     }
 
 
@@ -457,10 +478,6 @@ public class MemberService {
                     }
                 }
         }
-
-        // 3. 평균 진도율을 계산한다.
-        //int totalProgress = studentProgressList.stream().mapToInt(Integer::intValue).sum();
-
         int totalProgress = 0;
         for (int progress : studentProgressList) {
             totalProgress += progress;
