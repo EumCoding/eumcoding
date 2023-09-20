@@ -25,6 +25,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
 
     //DB에서 각 멤버의 완료된 강좌 갯수 구함
+    //2개이상 쿼리 결과를 받을때 object[]사용
     @Query(value = "SELECT " +
             "count(DISTINCT v.id) AS total, " +
             "count(DISTINCT CASE WHEN p.member_id = :memberId THEN vp.id ELSE NULL END) AS completed " +

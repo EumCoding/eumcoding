@@ -99,12 +99,12 @@ public class PaymentService {
         }
     }
 
-
-    public List<PaymentDTO> getMyPayments(int memberId, Pageable pageable) {
+    //내 결제 목록
+    public List<PaymentDTO> getMyPayments(int memberId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
         int pageNumber = pageable.getPageNumber() > 0 ? pageable.getPageNumber() - 1 : 0;
         PageRequest modifiedPageable = PageRequest.of(pageNumber, pageable.getPageSize(), pageable.getSort());
 
-        Page<Payment> payments = paymentRepository.findByMemberId(memberId, modifiedPageable);
+        Page<Payment> payments = paymentRepository.findByMemberId(memberId,startDate,endDate, modifiedPageable);
 
         List<PaymentDTO> paymentDTOs = new ArrayList<>();
 
