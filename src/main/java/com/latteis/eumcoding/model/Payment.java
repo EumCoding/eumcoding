@@ -1,9 +1,11 @@
 package com.latteis.eumcoding.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -25,6 +27,8 @@ public class Payment {
     @JoinColumn(name = "member_id")
     private Member member;
 
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "pay_day")
     private LocalDateTime payDay; // 결제일
 

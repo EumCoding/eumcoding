@@ -1,31 +1,28 @@
 package com.latteis.eumcoding.service;
 
 
-import com.latteis.eumcoding.dto.LectureDTO;
+
 import com.latteis.eumcoding.dto.MyLectureListDTO;
 import com.latteis.eumcoding.dto.SearchMylectureDTO;
-import com.latteis.eumcoding.dto.payment.PaymentDTO;
-import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
+
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
+
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 
 @Slf4j
