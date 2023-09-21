@@ -43,7 +43,7 @@ public class EmailNumberService {
             // 이메일 전송
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(childEmail);
-            mailMessage.setSubject("자녀 연동 인증 번호");
+            mailMessage.setSubject("인증 번호");
             mailMessage.setText("인증 번호: " + verificationNumber);
             mailMessage.setFrom(from + "@naver.com");
             emailSenderService.sendEmail(mailMessage);

@@ -4,8 +4,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
 import com.latteis.eumcoding.dto.KakaoInfoDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
+import com.latteis.eumcoding.model.EmailNumber;
 import com.latteis.eumcoding.model.KakaoInfo;
 import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.persistence.EmailNumberRepository;
 import com.latteis.eumcoding.persistence.KakaoInfoRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.JwtAuthenticationFilter;
@@ -17,10 +19,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -36,6 +40,8 @@ public class KakaoMemberService {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final MemberRepository memberRepository;
     private final KakaoInfoRepository kakaoInfoRepository;
+    private final EmailNumberRepository emailNumberRepository;
+    private final EmailNumberService emailNumberService;
 
 
     private final PasswordEncoder passwordEncoder;
@@ -155,8 +161,30 @@ public class KakaoMemberService {
 
         return newAccessToken;
     }
+
+    //이메일인증 메서드
+
+    public boolean verifyEmailNumber(int memberId, int number){
+        Optional<EmailNumber> emailNumberOpt = emailNumberRepository.findByMemberId(memberId);
+
+        if(!emailNumberOpt.isPresent()){
+            return false;
+        }
+
+        EmailNumber emailNumber = emailNumberOpt.get();
+
+        //인증번호 일치 + 만료여부
+        if(emailNumber.getEmailNumberId() == number && LocalDateTime.now().isBefore(emailNumber.getExpirationDate())){
+            emailNumber.setNumberToUsed();
+            return true;
+        }
+
+
+        return false;
+    }
+
     //연동을 하기 위해 일반 계정 로그인을 해야 함
-    public String createKakaoUser(String code,Integer memberId, HttpServletResponse response){
+    public String requestKakaoAccountLink(String code,Integer memberId,HttpServletResponse response){
 
         String reqURL = "https://kapi.kakao.com/v2/user/me";
         KakaoInfoDTO kakaoInfoDTO = getKakaoAccessToken(code);
@@ -203,24 +231,13 @@ public class KakaoMemberService {
             System.out.println("id : " + id);
             System.out.println("email : " + kakaoEmail);
 
+            emailNumberService.sendVerificationNumber(memberId, kakaoEmail);
 
             Member member = memberRepository.findById(memberId).orElse(null);
             if (member == null) {
                 throw new RuntimeException("일반 계정 id가 없습니다.");
             }
 
-            //이미 연동된 카카오 계정인지 확인
-            KakaoInfo existingKakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-            if(existingKakaoInfo != null){
-                System.out.println("이미 연동된 계정입니다.");
-                return "ALREADY_LINKED";
-            }
-            else{
-                System.out.println("값이 없습니다.");
-            }
-            if(!kakaoEmail.equals(member.getEmail())) {
-                throw new RuntimeException("해당 이메일과 일치하는 회원 계정이 없습니다.");
-            }
 
             //String encryptedToken = AESUtil.encrypt(token);
             // 카카오 정보 저장
