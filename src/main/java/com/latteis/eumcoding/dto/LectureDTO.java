@@ -313,6 +313,10 @@ public class LectureDTO {
         @ApiModelProperty(value = "과목당가격", example = "과목당가격")
         private int price;
 
+        @PositiveOrZero(message = "리뷰작성여부")
+        @ApiModelProperty(value = "리뷰작성여부", example = "리뷰작성여부")
+        private String reviewStatus;
+
     }
 
     // 강사가 올린 강좌 정보모음

@@ -2,7 +2,9 @@
 package com.latteis.eumcoding.controller;
 
 
+import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
+import com.latteis.eumcoding.service.EmailNumberService;
 import com.latteis.eumcoding.service.KakaoMemberService;
 
 import com.latteis.eumcoding.service.MemberService;
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -31,6 +34,7 @@ public class KaKaoController {
     private String REDIRECT_URI;
 
     private final KakaoMemberService kakaoMemberService;
+
 
     private final TokenProvider tokenProvider;
     private final MemberService memberService;
@@ -48,15 +52,27 @@ public class KaKaoController {
     }
 
 
+    @GetMapping("/verify")
+    public ResponseEntity<?> viewConfirmEmail(@ApiIgnore Authentication authentication,@RequestParam int number){
+        try {
+            Integer userId = Integer.parseInt(authentication.getPrincipal().toString());
+            boolean result = kakaoMemberService.verifyEmailNumber(userId,number);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("success").build();
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 
     @PostMapping("/createUser")
     @ApiOperation("카카오 계정과 일반 계정 연동")
-    public ResponseEntity<String> createKakaoUser(@RequestParam String code, @ApiIgnore Authentication authentication, HttpServletResponse response) {
+    public ResponseEntity<String> requestKakaoAccountLink(@RequestParam String code, @ApiIgnore Authentication authentication, HttpServletResponse response) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일반계정 로그인을 해야 연동을 할 수 있습니다");
         }
         Integer userId = Integer.parseInt(authentication.getPrincipal().toString());
-        String status = kakaoMemberService.createKakaoUser(code,userId,response);
+        String status = kakaoMemberService.requestKakaoAccountLink(code,userId,response);
         switch(status) {
             case "SUCCESS":
                 return ResponseEntity.ok("카카오 계정과 일반 계정이 연동되었습니다.");

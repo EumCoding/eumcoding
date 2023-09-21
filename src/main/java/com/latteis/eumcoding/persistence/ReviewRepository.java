@@ -57,5 +57,18 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     @Query("SELECT count(distinct r) FROM Review r WHERE r.lecture.id = :lectureId AND r.member.role = 0")
     Optional<Integer> findByReviewsCount(int lectureId);
+
+
+    //구매한 강좌에 대한 리뷰 작성 여부
+    //1작성 0미작성
+    @Query(value = "SELECT EXISTS (" +
+            "SELECT 1 " +
+            "FROM review r " +
+            "JOIN pay_lecture pl ON r.lecture_id = pl.lecture_id " +
+            "JOIN payment p ON pl.payment_id = p.id AND r.member_id = p.member_id " +
+            "WHERE r.member_id = :memberId AND pl.lecture_id = :lectureId)", nativeQuery = true)
+    Integer existsByPayLectureIdAndMemberId(@Param("memberId") int memberId, @Param("lectureId") int lectureId);
+
+
 }
 

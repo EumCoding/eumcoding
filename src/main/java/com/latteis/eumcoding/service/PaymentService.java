@@ -2,6 +2,7 @@ package com.latteis.eumcoding.service;
 
 
 import com.latteis.eumcoding.dto.LectureDTO;
+import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
 import com.latteis.eumcoding.model.*;
@@ -40,6 +41,10 @@ public class PaymentService {
     private final SectionRepository sectionRepository;
 
     private final CurriculumRepository curriculumRepository;
+
+    private final ReviewService reviewService;
+
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public void completePayment(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
@@ -106,6 +111,9 @@ public class PaymentService {
 
         Page<Payment> payments = paymentRepository.findByMemberId(memberId,startDate,endDate, modifiedPageable);
 
+
+
+
         List<PaymentDTO> paymentDTOs = new ArrayList<>();
 
         for (Payment payment : payments) {
@@ -116,15 +124,19 @@ public class PaymentService {
             if(payment.getState() == 1){
                 for (PayLecture payLecture : payLectures) {
                     Lecture lecture = payLecture.getLecture();
+                    Integer existLectureReview = reviewRepository.existsByPayLectureIdAndMemberId(memberId,payLecture.getLecture().getId());
+                    String reviewStatus = existLectureReview == 1 ? "리뷰작성완료" : "리뷰를 작성 해주세요";
 
                     LectureDTO.PayLectureIdNameDTO lectureDTO = LectureDTO.PayLectureIdNameDTO.builder()
                             .id(lecture.getId())
                             .name(lecture.getName())
                             .price(lecture.getPrice())
+                            .reviewStatus(reviewStatus) // Add this
                             .build();
 
                     lectureDTOList.add(lectureDTO);
                 }
+
 
                 PaymentDTO paymentDTO = PaymentDTO.builder()
                         .paymentId(payment.getId())
@@ -168,7 +180,6 @@ public class PaymentService {
            payLectureRepository.delete(payLecture);
         }
     }
-
 
 
 }
