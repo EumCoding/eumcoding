@@ -115,7 +115,7 @@ public class BoardDTO {
         private int page;
 
         @Positive(message = "양수만 가능합니다.")
-        @ApiParam(value = "페이지 번호", example = "5")
+        @ApiParam(value = "페이지 크기", example = "5")
         private int pageSize;
 
     }
