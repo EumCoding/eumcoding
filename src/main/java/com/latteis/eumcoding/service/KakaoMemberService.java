@@ -2,11 +2,11 @@ package com.latteis.eumcoding.service;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
+import com.latteis.eumcoding.config.CrypoUtils;
 import com.latteis.eumcoding.dto.KakaoInfoDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.model.EmailNumber;
-import com.latteis.eumcoding.model.KakaoInfo;
-import com.latteis.eumcoding.model.Member;
+import com.latteis.eumcoding.model.*;
+import com.latteis.eumcoding.persistence.EmailKakaoNumberRepository;
 import com.latteis.eumcoding.persistence.EmailNumberRepository;
 import com.latteis.eumcoding.persistence.KakaoInfoRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
@@ -25,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,6 +43,8 @@ public class KakaoMemberService {
     private final KakaoInfoRepository kakaoInfoRepository;
     private final EmailNumberRepository emailNumberRepository;
     private final EmailNumberService emailNumberService;
+    private final EmailKakaoNumberService emailKakaoNumberService;
+    private final EmailKakaoNumberRepository emailKakaoNumberRepository;
 
 
     private final PasswordEncoder passwordEncoder;
@@ -162,205 +165,198 @@ public class KakaoMemberService {
         return newAccessToken;
     }
 
-    //이메일인증 메서드
-
-    public boolean verifyEmailNumber(int memberId, int number){
-        Optional<EmailNumber> emailNumberOpt = emailNumberRepository.findByMemberId(memberId);
-
-        if(!emailNumberOpt.isPresent()){
-            return false;
-        }
-
-        EmailNumber emailNumber = emailNumberOpt.get();
-
-        //인증번호 일치 + 만료여부
-        if(emailNumber.getEmailNumberId() == number && LocalDateTime.now().isBefore(emailNumber.getExpirationDate())){
-            emailNumber.setNumberToUsed();
-            return true;
-        }
-
-
-        return false;
-    }
 
     //연동을 하기 위해 일반 계정 로그인을 해야 함
-    public String requestKakaoAccountLink(String code,Integer memberId,HttpServletResponse response){
-
+    public String createKakaoAccountLink(String code, Integer memberId, HttpServletResponse response) {
         String reqURL = "https://kapi.kakao.com/v2/user/me";
         KakaoInfoDTO kakaoInfoDTO = getKakaoAccessToken(code);
         String token = kakaoInfoDTO.getAccessToken();
 
 
-        //access_token을 이용하여 사용자 정보 조회
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
-            conn.setRequestProperty("Authorization", "Bearer " + token); //전송할 header 작성, access_token전송
+            conn.setRequestProperty("Authorization", "Bearer " + token);
 
-            //결과 코드가 200이라면 성공
             int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-
-            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
+            String line;
             String result = "";
-
             while ((line = br.readLine()) != null) {
                 result += line;
             }
-            System.out.println("response body : " + result);
 
-            //Gson 라이브러리로 JSON파싱
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(result);
-
-            //id 타입변경해서 나중에 이거 수정할거임
             String id = String.valueOf(element.getAsJsonObject().get("id").getAsInt());
             boolean hasEmail = element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("has_email").getAsBoolean();
 
             String kakaoEmail = "";
-
-            if(hasEmail){
+            if (hasEmail) {
                 kakaoEmail = element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("email").getAsString();
             }
 
-            System.out.println("id : " + id);
-            System.out.println("email : " + kakaoEmail);
+            // 일반 계정의 이메일 주소를 얻습니다. (DB에서 사용자 정보를 가져와서)
+            Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+            String memberEmail = member.getEmail();
+            //token정보 암호화해서 DB에 저장
+            String encryptedToken = CrypoUtils.encrypt(token);
 
-            emailNumberService.sendVerificationNumber(memberId, kakaoEmail);
 
-            Member member = memberRepository.findById(memberId).orElse(null);
-            if (member == null) {
-                throw new RuntimeException("일반 계정 id가 없습니다.");
+            // 카카오 정보 저장
+            KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoUserId(id);
+            if(kakaoInfo == null){
+                kakaoInfo = new KakaoInfo();
+            }else if (kakaoInfo.getAgree() == 1) {
+                // 이미 인증된 계정인 경우
+                return "ALREADY_LINKED";  //
             }
 
 
-            //String encryptedToken = AESUtil.encrypt(token);
-            // 카카오 정보 저장
-            KakaoInfo kakaoInfo = new KakaoInfo();
             kakaoInfo.setKakaoEmail(kakaoEmail);
             kakaoInfo.setKakaoUserId(id);
-            kakaoInfo.setKakaoAccessToken(token);
+            kakaoInfo.setKakaoAccessToken(encryptedToken);
             kakaoInfo.setJoinDay(LocalDateTime.now());
-            kakaoInfo.setAgree(1);
+            kakaoInfo.setMember(member);
             kakaoInfo.setRefreshToken(kakaoInfoDTO.getRefreshToken());
             kakaoInfo.setAccessTokenExpires(kakaoInfoDTO.getExpiresIn());
-            kakaoInfo.setMember(member);
+
+            // KakaoInfo를 DB에 저장
+            kakaoInfoRepository.save(kakaoInfo);
+            emailKakaoNumberService.sendVerificationNumber(memberId, memberEmail);
+
 
             br.close();
             return "SUCCESS";
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
             return "Error: " + e.getMessage();
-
         }
+
         return "ERROR";
     }
 
 
-    //로그인
-    public String LoginKakaoUser(String accessToken, HttpServletResponse response){
+    public void verifyNumber(int verificationNumber, int memberId) {
+        Optional<EmailKakaoNumber> emailNumberOpt = emailKakaoNumberRepository.findByVerificationNumberAndMemberEmail(verificationNumber,memberId);
+        EmailKakaoNumber emailKakaoNumber = emailNumberOpt.orElseThrow(() ->{
+            log.info("잘못된 인증 번호입니다.");
+            return new IllegalArgumentException("잘못된 인증 번호입니다.");
+        });
 
+        if (emailKakaoNumber == null || emailKakaoNumber.getExpired() == 1 ) {
+            throw new IllegalArgumentException("잘못된 인증 번호이거나 만료된 번호입니다.");
+        }
+
+        Optional<KakaoInfo> existing = kakaoInfoRepository.findByMemberId(memberId);
+        if(existing.isPresent()){
+            KakaoInfo kakaoInfo = existing.get();
+            kakaoInfo.setAgree(1); // agree를 1로 설정,일반계정이랑 연동
+
+            kakaoInfoRepository.save(kakaoInfo);  // KakaoInfo 업데이트
+        } else {
+            log.error("KakaoInfo를 찾을 수 없습니다.");
+            throw new IllegalArgumentException("KakaoInfo를 찾을 수 없습니다.");
+        }
+
+        emailKakaoNumber.setNumberToUsed();
+        emailKakaoNumberRepository.save(emailKakaoNumber);
+    }
+
+
+
+    public String kakaoLogin(String code, HttpServletResponse response) {
+        KakaoInfoDTO kakaoInfoDTO = getKakaoAccessToken(code);
+        String accessToken = kakaoInfoDTO.getAccessToken();
+
+        String kakaoEmail;
+        try {
+            kakaoEmail = getKakaoEmailFromToken(accessToken);
+        } catch (AccessTokenExpiredException e) {
+            kakaoEmail = handleExpiredAccessToken(accessToken);
+        } catch (Exception e) {
+            throw new RuntimeException("로그인 중 오류 발생", e);
+        }
+
+        KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
+        if (kakaoInfo == null) {
+            throw new RuntimeException("해당 카카오계정을 찾을 수 없습니다.");
+        }
+
+        Member member = memberRepository.findByEmail(kakaoEmail);
+        if (member == null) {
+            throw new RuntimeException("해당 이메일을 가진 일반 계정을 찾을 수 없습니다.");
+        }
+
+        MemberDTO memberDTO = new MemberDTO(member);
+        String jwtToken = tokenProvider.create(memberDTO);
+        response.addHeader("Authorization", "Bearer " + jwtToken);
+
+        return jwtToken;
+    }
+
+    //accessToken 만료될경우
+    private String handleExpiredAccessToken(String expiredAccessToken) {
+        String kakaoEmail = kakaoInfoRepository.findByKakaoAccessToken(expiredAccessToken).getKakaoEmail();
+        KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
+
+        String newAccessToken = refreshKakaoAccessToken(kakaoInfo.getRefreshToken());
+        kakaoInfo.setKakaoAccessToken(newAccessToken);
+        kakaoInfoRepository.save(kakaoInfo);
+
+        return getKakaoEmailFromToken(newAccessToken);
+    }
+
+    private String getKakaoEmailFromToken(String accessToken) {
         String reqURL = "https://kapi.kakao.com/v2/user/me";
-        String userEmail = null;
-
-        //access_token을 이용하여 사용자 정보 조회
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
-            conn.setRequestProperty("Authorization", "Bearer " + accessToken); //전송할 header 작성, access_token전송
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
 
-            //결과 코드가 200이라면 성공
             int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-
-            // 만료된 액세스 토큰으로 인한 오류 처리
-            if (responseCode == 401) { // 401 Unauthorized
-                String kakaoEmail = kakaoInfoRepository.findByKakaoAccessToken(accessToken).getKakaoEmail();
-                KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-
-                // 토큰 갱신
-                String newAccessToken = refreshKakaoAccessToken(kakaoInfo.getRefreshToken());
-                kakaoInfo.setKakaoAccessToken(newAccessToken); // 갱신된 토큰 저장
-                kakaoInfoRepository.save(kakaoInfo);
-
-                // 다시 API 호출
-                return LoginKakaoUser(newAccessToken, response);
+            if (responseCode == 401) {
+                throw new AccessTokenExpiredException("Access Token is expired.");
             }
 
-            // InputStream을 얻는 부분을 수정
-            InputStream inputStream;
-            if (responseCode == HttpURLConnection.HTTP_OK) { // 200
-                inputStream = conn.getInputStream();
-            } else {
-                inputStream = conn.getErrorStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            String result ="";
+            while((line = br.readLine()) != null){
+                result +=line;
             }
+            br.close();
 
-
-            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line = "";
-            String result = "";
-
-            while ((line = br.readLine()) != null) {
-                result += line;
-            }
-            System.out.println("결과 : " + result);
-            //HttpURLConnection의 에러 스트림 처리
-            if (responseCode == HttpURLConnection.HTTP_OK) { // 200
-                System.out.println("성공 : " + result);
-            } else {
-                // 에러 응답 처리
-                System.out.println("에러: " + result);
-            }
-
-
-            //Gson 라이브러리로 JSON파싱
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(result);
 
-
             boolean hasEmail = element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("has_email").getAsBoolean();
-            String kakaoEmail = "";
-            if(hasEmail){
-                kakaoEmail = element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("email").getAsString();
+            if (hasEmail) {
+                return element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("email").getAsString();
             }
 
-
-            //일반회원 가입 시 햇던 이메일과 카카오에 있는 이메일 비교
-            Member member = memberRepository.findByEmail(kakaoEmail);
-
-            //이미 연동된 카카오 계정인지 확인
-            KakaoInfo existingKakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-            //agree가 1인경우
-            if(existingKakaoInfo != null && existingKakaoInfo.getAgree() == 1) {
-                System.out.println("이미 연동된 계정입니다.");
-                userEmail.equals(kakaoEmail) ;
-
-                // JWT 토큰 생성 및 클라이언트에게 전달
-                MemberDTO memberDTO = new MemberDTO(member);
-                String jwtToken = tokenProvider.create(memberDTO); // 일반 회원의 JWT 토큰 생성
-                kakaoMemberAuthorizationInput(jwtToken, response); // 클라이언트에게 JWT 토큰 전달
-
-            }
-
-            br.close();
+            throw new RuntimeException("이메일 에러");
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("카카오 사용자 정보를 가져오는 중 오류가 발생", e);
         }
-        return userEmail;
     }
 
+
+    public class AccessTokenExpiredException extends RuntimeException {
+        public AccessTokenExpiredException(String message) {
+            super(message);
+        }
+    }
 
 
 
@@ -369,75 +365,7 @@ public class KakaoMemberService {
         response.addHeader("Authorization", "Bearer " + jwtToken); // "Bearer " 추가
     }
 
-    public boolean isLinkedAccount(String kakaoEmail){
-        KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-        return kakaoInfo != null;
-    }
 
-    public String kakaoLogin(String code, HttpServletResponse response) {
-        // 1. Access Token 얻기
-        KakaoInfoDTO kakaoInfoDTO = getKakaoAccessToken(code);
-        String token = kakaoInfoDTO.getAccessToken();
-        System.out.println("accessToken: " + token);
-        String kakaoEmail = "";
-
-        try {
-            // 2. 카카오 사용자 정보를 이용하여 로그인
-            kakaoEmail = LoginKakaoUser(token, response);
-            System.out.println("성공: " + kakaoEmail);
-        } catch (AccessTokenExpiredException e) {
-            // 토큰 만료에 대한 특별한 처리
-            KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-            System.out.println("Token 만료: " + kakaoEmail);
-            if (kakaoInfo == null) {
-                throw new RuntimeException("해당 이메일을 가진 KakaoInfo를 찾을 수 없습니다.");
-            }
-
-            // 3. refreshToken을 이용해 새로운 accessToken 획득
-            token = refreshKakaoAccessToken(kakaoInfo.getRefreshToken());
-
-            // 4. 사용자의 액세스 토큰 정보 업데이트
-            kakaoInfo.setKakaoAccessToken(token);
-            kakaoInfoRepository.save(kakaoInfo);
-
-            // 5. 다시 카카오 사용자 정보를 이용하여 로그인 시도
-            kakaoEmail = LoginKakaoUser(token, response);
-        } catch (Exception e) {
-            // 그 외의 예외 처리
-            System.out.println("로그인 중 오류 발생: " + e.getMessage());
-            throw new RuntimeException("로그인 중 오류 발생", e);
-        }
-
-        // 6. 연동된 계정인지 체크
-        if(!isLinkedAccount(kakaoEmail)) {
-            throw new RuntimeException("이메일이 일반 계정과 연동되지 않았습니다.");
-        }
-
-        KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
-        if (kakaoInfo == null) {
-            throw new RuntimeException("해당 이메일을 가진 KakaoInfo를 찾을 수 없습니다.");
-        }
-
-        Member member = memberRepository.findByEmail(kakaoEmail);
-        if (member == null) {
-            throw new RuntimeException("해당 이메일을 가진 일반 계정을 찾을 수 없습니다.");
-        }
-
-        // 7. JWT 토큰 생성 및 반환
-        MemberDTO memberDTO = new MemberDTO(member);
-        String jwtToken = tokenProvider.create(memberDTO);
-        response.addHeader("Authorization", "Bearer " + jwtToken); // "Bearer " 추가하여 클라이언트에게 JWT 토큰 전달
-
-        return jwtToken;
-    }
-
-
-
-    public class AccessTokenExpiredException extends RuntimeException {
-        public AccessTokenExpiredException(String message) {
-            super(message);
-        }
-    }
 }
 
 

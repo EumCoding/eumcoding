@@ -52,32 +52,38 @@ public class KaKaoController {
     }
 
 
-    @GetMapping("/verify")
-    public ResponseEntity<?> viewConfirmEmail(@ApiIgnore Authentication authentication,@RequestParam int number){
+    @PostMapping("/verify")
+    @ApiOperation("인증번호로 카카오 계정 인증")
+    public ResponseEntity<String> verifyNumberWithKakao(@RequestParam int verificationNumber,
+                                                        @ApiIgnore Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일반계정 로그인을 해야 인증을 할 수 있습니다");
+        }
+
+        Integer parentId = Integer.parseInt(authentication.getPrincipal().toString());
         try {
-            Integer userId = Integer.parseInt(authentication.getPrincipal().toString());
-            boolean result = kakaoMemberService.verifyEmailNumber(userId,number);
-            ResponseDTO responseDTO = ResponseDTO.builder().error("success").build();
-            return ResponseEntity.ok().body(responseDTO);
+            kakaoMemberService.verifyNumber(verificationNumber,parentId);
+            return ResponseEntity.ok("인증이 성공적으로 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류가 발생했습니다. 다시 시도해주세요.");
         }
     }
 
     @PostMapping("/createUser")
     @ApiOperation("카카오 계정과 일반 계정 연동")
-    public ResponseEntity<String> requestKakaoAccountLink(@RequestParam String code, @ApiIgnore Authentication authentication, HttpServletResponse response) {
+    public ResponseEntity<String> createKakaoAccountLink(@RequestParam String code, @ApiIgnore Authentication authentication, HttpServletResponse response) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일반계정 로그인을 해야 연동을 할 수 있습니다");
         }
         Integer userId = Integer.parseInt(authentication.getPrincipal().toString());
-        String status = kakaoMemberService.requestKakaoAccountLink(code,userId,response);
+        String status = kakaoMemberService.createKakaoAccountLink(code,userId,response);
         switch(status) {
             case "SUCCESS":
-                return ResponseEntity.ok("카카오 계정과 일반 계정이 연동되었습니다.");
+                return ResponseEntity.ok("인증번호를 성공적으로 보냈습니다.");
             case "ALREADY_LINKED":
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 연동된 계정입니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 인증이 완료된 계쩡입니다.");
             default:
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류가 발생했습니다. 다시 시도해주세요.");
         }
