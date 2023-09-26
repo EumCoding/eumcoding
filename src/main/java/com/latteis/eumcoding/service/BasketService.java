@@ -2,6 +2,7 @@ package com.latteis.eumcoding.service;
 
 
 import com.latteis.eumcoding.dto.BasketDTO;
+import com.latteis.eumcoding.dto.KakaoPayReadyResponseDTO;
 import com.latteis.eumcoding.model.Basket;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
@@ -28,6 +29,7 @@ public class BasketService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
     private final BasketRepository basketRepository;
+
 
 
     @Value("${file.path.lecture.thumb}")

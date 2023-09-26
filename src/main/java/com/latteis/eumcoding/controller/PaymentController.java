@@ -1,17 +1,17 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.MyPlanListDTO;
-import com.latteis.eumcoding.dto.StatsDTO;
+import com.latteis.eumcoding.dto.KakaoPayApproveResponseDTO;
+import com.latteis.eumcoding.dto.KakaoPayReadyResponseDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
+import com.latteis.eumcoding.persistence.LectureRepository;
+import com.latteis.eumcoding.service.KakaoPayService;
 import com.latteis.eumcoding.service.PaymentService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,7 +22,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -32,6 +31,14 @@ import java.util.NoSuchElementException;
 @RequestMapping("/payment")
 public class PaymentController {
     private final PaymentService paymentService;
+
+
+    private final KakaoPayService kakaoPayService;
+
+
+    private final LectureRepository lectureRepository;
+
+
 
     @ApiOperation(value = "결제 완료", notes = "강의 결제를 완료하고 결제 정보를 등록")
     @PostMapping("/ok")
@@ -82,5 +89,29 @@ public class PaymentController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
+    /**
+     * 결제요청
+     */
+    @PostMapping("/ready")
+    public ResponseEntity<?> readyToKakaoPay(@ApiIgnore Authentication authentication,@RequestBody PaymentOKRequestDTO paymentOKRequestDTO) {
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        kakaoPayService.kakaoPayReady(memberId, paymentOKRequestDTO);
+        return ResponseEntity.ok(kakaoPayService.kakaoPayReady(memberId, paymentOKRequestDTO));
+    }
+
+    /**
+     * 결제 성공
+     */
+    @GetMapping("/success")
+    public ResponseEntity afterPayRequest(@RequestParam("pg_token") String pgToken) {
+
+        KakaoPayApproveResponseDTO kakaoApprove = kakaoPayService.approveResponse(pgToken);
+
+        return new ResponseEntity<>(kakaoApprove, HttpStatus.OK);
+    }
+
+
 
 }

@@ -112,4 +112,5 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Page<Lecture> findByPayDayDesc(@Param("keyword") String keyword,@Param("memberId") int memberId, Pageable pageable);
 
 
+    Lecture findLectureByName(String itemName);
 }

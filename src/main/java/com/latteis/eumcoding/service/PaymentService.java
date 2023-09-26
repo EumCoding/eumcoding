@@ -9,6 +9,7 @@ import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +30,34 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    @Value("${file.path}")
+    private String filePath;
+
+    @Value("${file.path.lecture.thumb}")
+    private String lecturePath;
+
+    @Value("${server.domain}")
+    private String domain;
+
+    @Value("${server.port}")
+    private String port;
+
+    public File getMemberDirectoryPath() {
+        File file = new File(filePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getLectureDirectoryPath() {
+        File file = new File(lecturePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+
     private final LectureRepository lectureRepository;
 
     private final MemberRepository memberRepository;
@@ -71,6 +101,7 @@ public class PaymentService {
         Payment payment = new Payment();
         payment.setMember(member);
         payment.setPayDay(LocalDateTime.now());
+        payment.setThumb(lecture.getThumb());
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
@@ -111,9 +142,6 @@ public class PaymentService {
 
         Page<Payment> payments = paymentRepository.findByMemberId(memberId,startDate,endDate, modifiedPageable);
 
-
-
-
         List<PaymentDTO> paymentDTOs = new ArrayList<>();
 
         for (Payment payment : payments) {
@@ -131,7 +159,8 @@ public class PaymentService {
                             .id(lecture.getId())
                             .name(lecture.getName())
                             .price(lecture.getPrice())
-                            .reviewStatus(reviewStatus) // Add this
+                            .lectureImg(domain + port + "/eumCodingImgs/payment/" + payment.getThumb())
+                            .reviewStatus(reviewStatus)
                             .build();
 
                     lectureDTOList.add(lectureDTO);

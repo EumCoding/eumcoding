@@ -35,4 +35,8 @@ public class Payment {
     @Column(name = "state")
     private int state; // 1:결제성공, 2:결제실패
 
+    @Column(name = "thumb")
+    private String thumb;
+
+
 }
