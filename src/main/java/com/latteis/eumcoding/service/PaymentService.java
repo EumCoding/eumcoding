@@ -2,7 +2,6 @@ package com.latteis.eumcoding.service;
 
 
 import com.latteis.eumcoding.dto.LectureDTO;
-import com.latteis.eumcoding.dto.ReviewDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
 import com.latteis.eumcoding.model.*;
@@ -10,12 +9,10 @@ import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -23,6 +20,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -227,6 +225,7 @@ public class PaymentService {
         for (VideoProgress videoProgress : vp){
             videoProgressRepository.delete(videoProgress);
         }
+
     }
 
     //결제 상태 저장메서드
@@ -241,6 +240,11 @@ public class PaymentService {
             default:
                 throw new IllegalArgumentException("Invalid payment state: " + state);
         }
+    }
+    @Transactional
+    public <T> void deleteEntitiesByMemberId(JpaRepository<T, Integer> repository, int memberId) {
+        List<T> entities = repository.findAllById(Collections.singletonList(memberId));
+        repository.deleteInBatch(entities);
     }
 
 }
