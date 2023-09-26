@@ -1,9 +1,12 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.dto.KakaoPayApproveResponseDTO;
 import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
+import com.latteis.eumcoding.persistence.LectureRepository;
+import com.latteis.eumcoding.service.KakaoPayService;
 import com.latteis.eumcoding.service.PaymentService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,12 @@ import java.util.NoSuchElementException;
 @RequestMapping("/payment")
 public class PaymentController {
     private final PaymentService paymentService;
+
+
+    private final KakaoPayService kakaoPayService;
+
+
+    private final LectureRepository lectureRepository;
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
 
@@ -74,7 +83,7 @@ public class PaymentController {
             return ResponseEntity.ok(paymentDTOs);
         } catch(Exception e) {
             logger.error("Error retrieving payments", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Error retrieving payments"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("결제에러"));
         }
     }
 
@@ -89,6 +98,27 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    /**
+     * 결제요청
+     */
+    @PostMapping("/ready")
+    public ResponseEntity<?> readyToKakaoPay(@ApiIgnore Authentication authentication,@RequestBody PaymentOKRequestDTO paymentOKRequestDTO) {
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        kakaoPayService.kakaoPayReady(memberId, paymentOKRequestDTO);
+        return ResponseEntity.ok(kakaoPayService.kakaoPayReady(memberId, paymentOKRequestDTO));
+    }
+
+    /**
+     * 결제 성공
+     */
+    @GetMapping("/success")
+    public ResponseEntity afterPayRequest(@RequestParam("pg_token") String pgToken) {
+
+        KakaoPayApproveResponseDTO kakaoApprove = kakaoPayService.approveResponse(pgToken);
+
+        return new ResponseEntity<>(kakaoApprove, HttpStatus.OK);
     }
 
     class ErrorResponse {

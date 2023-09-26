@@ -309,6 +309,10 @@ public class LectureDTO {
         @ApiModelProperty(value = "강의이름", example = "코딩강의")
         private String name;
 
+        @Positive(message = "강의이미지")
+        @ApiModelProperty(value = "강의이미지", example = "강의이미지")
+        private String lectureImg;
+
         @PositiveOrZero(message = "가격")
         @ApiModelProperty(value = "과목당가격", example = "과목당가격")
         private int price;
@@ -316,6 +320,7 @@ public class LectureDTO {
         @PositiveOrZero(message = "리뷰작성여부")
         @ApiModelProperty(value = "리뷰작성여부", example = "리뷰작성여부")
         private String reviewStatus;
+
 
     }
 

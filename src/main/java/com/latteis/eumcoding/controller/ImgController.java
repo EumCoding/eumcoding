@@ -39,6 +39,7 @@ public class ImgController {
     private final MyLectureListService myLectureListService;
     private final MainService mainService;
     private final BasketService basketService;
+    private final PaymentService paymentService;
 
 
     @Value("${file.path}")
@@ -416,5 +417,29 @@ public class ImgController {
     }
 
 
+    /*payment 이미지 */
+    @GetMapping(value = "/payment/{fileOriginName}")
+    public ResponseEntity<Resource> getPaymentLectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
+        String path = paymentService.getLectureDirectoryPath().getPath();
+        return common(path,fileName);
+    }
+
+    //공용 이미지 메서드 9월26일 생성
+    public ResponseEntity<Resource> common(String path,String fileName) throws Exception{
+        try{
+            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            if(!resource.exists()){
+                throw new Exception("File not found: " + path + "\\" + fileName);
+
+            }
+            HttpHeaders header = new HttpHeaders();
+            Path filePath = null;
+            filePath = Paths.get(path+fileName);
+            header.add("Content-Type", Files.probeContentType(filePath)); // filePath의 마임타입 체크해서 header에 추가
+            return new ResponseEntity<Resource>(resource, header, HttpStatus.OK);
+        }catch(Exception e){
+            throw new Exception(e.getMessage() + "메세지좀");
+        }
+    }
 
 }
