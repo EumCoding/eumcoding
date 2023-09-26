@@ -5,8 +5,8 @@ import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
-import com.latteis.eumcoding.persistence.LectureRepository;
-import com.latteis.eumcoding.service.KakaoPayService;
+//import com.latteis.eumcoding.persistence.LectureRepository;
+//import com.latteis.eumcoding.service.KakaoPayService;
 import com.latteis.eumcoding.service.PaymentService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +39,11 @@ public class PaymentController {
     private final PaymentService paymentService;
 
 
-    private final KakaoPayService kakaoPayService;
+/*    private final KakaoPayService kakaoPayService;
 
 
-    private final LectureRepository lectureRepository;
+    private final LectureRepository lectureRepository;*/
+
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
 
@@ -100,9 +101,9 @@ public class PaymentController {
         }
     }
 
-    /**
+/*    *//**
      * 결제요청
-     */
+     *//*
     @PostMapping("/ready")
     public ResponseEntity<?> readyToKakaoPay(@ApiIgnore Authentication authentication,@RequestBody PaymentOKRequestDTO paymentOKRequestDTO) {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
@@ -110,16 +111,17 @@ public class PaymentController {
         return ResponseEntity.ok(kakaoPayService.kakaoPayReady(memberId, paymentOKRequestDTO));
     }
 
-    /**
+    *//**
      * 결제 성공
-     */
+     *//*
     @GetMapping("/success")
     public ResponseEntity afterPayRequest(@RequestParam("pg_token") String pgToken) {
 
         KakaoPayApproveResponseDTO kakaoApprove = kakaoPayService.approveResponse(pgToken);
 
         return new ResponseEntity<>(kakaoApprove, HttpStatus.OK);
-    }
+    }*/
+
 
     class ErrorResponse {
         private String message;

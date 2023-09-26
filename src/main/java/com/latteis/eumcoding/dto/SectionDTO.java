@@ -152,4 +152,16 @@ public class SectionDTO {
         private int over;
     }
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SectionIdDTOList {
+        private int sectionId;
+        private int lectureId;
+        private String lectureName;
+        private int progress;
+        private int over;
+    }
+
 }

@@ -26,12 +26,14 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
 
     //결제 하려면 member는 role:0 회원 이어야하고, paymentLecture에있는 강좌는 lecture에 있는 강좌여야한다.
     //강좌의 state는 1이어야한다 이건 service부분에 조건을 걸어놓음
+    //이미 결제된 강좌에대해서 중복 결제 못하게 막기위해 사용
     @Query("SELECT pl FROM PayLecture pl " +
             "JOIN pl.payment p " +
             "JOIN p.member m " +
             "JOIN pl.lecture l " +
             "WHERE m.id = :memberId AND l.id = :lectureId AND m.role = 0")
-    PayLecture findByMemberAndLecture(@Param("memberId") int memberId, @Param("lectureId") int lectureId);
+    List<PayLecture> findByMemberAndLecture(@Param("memberId") int memberId, @Param("lectureId") int lectureId);
+
 
     /*
      * Member, Lecture, state에 맞는 엔티티 가져오기
