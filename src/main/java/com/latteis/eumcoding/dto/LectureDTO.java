@@ -309,6 +309,10 @@ public class LectureDTO {
         @ApiModelProperty(value = "강의이름", example = "코딩강의")
         private String name;
 
+        @Positive(message = "강사이름")
+        @ApiModelProperty(value = "강사이름", example = "강사이름")
+        private String teacherName;
+
         @Positive(message = "강의이미지")
         @ApiModelProperty(value = "강의이미지", example = "강의이미지")
         private String lectureImg;

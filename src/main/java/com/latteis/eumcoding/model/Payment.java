@@ -33,7 +33,7 @@ public class Payment {
     private LocalDateTime payDay; // 결제일
 
     @Column(name = "state")
-    private int state; // 1:결제성공, 2:결제실패
+    private int state; // 0:실패 1:성공 2:취소
 
 
 }

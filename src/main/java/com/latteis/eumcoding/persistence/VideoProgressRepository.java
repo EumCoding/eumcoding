@@ -56,5 +56,13 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     */
     VideoProgress findByVideoAndLectureProgress(Video video, LectureProgress lectureProgress);
 
+    @Query(value = "SELECT * " +
+            "FROM video_progress vp " +
+            "JOIN lecture_progress lp on vp.lecture_progress_id = lp.id " +
+            "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+            "JOIN payment p ON pl.payment_id = p.id " +
+            "JOIN member m on p.member_id = m.id " +
+            "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
+    List<VideoProgress> findByDeleteVideoProgressId(@Param("memberId") int memberId);
 }
 
