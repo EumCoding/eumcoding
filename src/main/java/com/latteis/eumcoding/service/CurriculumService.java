@@ -205,10 +205,13 @@ public class CurriculumService {
         // Member와 Lecture 객체를 가져옵니다.
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException("없는 회원입니다."));
         Lecture lecture = lectureRepository.findById(lectureId);
+        if(lecture == null){
+            throw new RuntimeException("없는 강의입니다.");
+        }
 
         // 해당 회원의 해당 Lecture의 LectureProgress를 가져옴
-        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, lecture);
-        if(lectureProgress == null){
+        List<LectureProgress> lectureProgress = lectureProgressRepository.findByMemberLecture(member, lecture);
+        if(lectureProgress.isEmpty()){
             throw new RuntimeException("해당 강의의 진행 상황을 찾을 수 없습니다.");
         }
 
@@ -242,8 +245,10 @@ public class CurriculumService {
 
         // 모든 Video들이 완료되면 LectureProgress state를 1로 업데이트
         if (allVideosCompleted) {
-            lectureProgress.setState(1);
-            lectureProgressRepository.save(lectureProgress);
+            for(LectureProgress lp : lectureProgress){
+                lp.setState(1);
+                lectureProgressRepository.save(lp);
+            }
         }
     }
 }

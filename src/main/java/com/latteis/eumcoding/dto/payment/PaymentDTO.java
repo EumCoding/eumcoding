@@ -22,6 +22,11 @@ public class PaymentDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime date;
 
+    @ApiParam("결제상태")
+    private int state;
+
+    @ApiParam("결제상태를 한글로 변환")
+    private String stateDescription; // 새로운 필드 추가
 
     @ApiParam("강좌 목록")
     private List<LectureDTO.PayLectureIdNameDTO> lectureDTOList;

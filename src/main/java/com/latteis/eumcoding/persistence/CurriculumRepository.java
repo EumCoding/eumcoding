@@ -35,4 +35,15 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
 
     @Query("SELECT c FROM Curriculum c WHERE c.edit = :edit")
     CurriculumService findByEditId(@Param("edit")int edit);
+
+    @Query(value = "SELECT * " +
+            "FROM curriculum c " +
+            "JOIN section s ON c.section_id = s.id " +
+            "JOIN lecture l ON s.lecture_id = l.id " +
+            "JOIN pay_lecture pl ON pl.lecture_id = l.id " +
+            "JOIN payment p ON pl.payment_id = p.id " +
+            "WHERE p.state IN(0,2)", nativeQuery = true)
+    List<Curriculum> findByDeleteMemberId(@Param("memberId") int memberId);
+
+
 }

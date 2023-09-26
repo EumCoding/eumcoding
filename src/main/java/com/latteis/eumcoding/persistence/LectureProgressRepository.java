@@ -1,9 +1,6 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.model.Lecture;
-import com.latteis.eumcoding.model.LectureProgress;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.PayLecture;
+import com.latteis.eumcoding.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -57,5 +54,18 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
      */
     @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member")
     LectureProgress findByMemberAndLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
+
+    @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member")
+    List<LectureProgress> findByMemberLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
+
+
+    @Query(value = "SELECT * " +
+            "FROM lecture_progress lp " +
+            "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+            "JOIN payment p ON pl.payment_id = p.id " +
+            "JOIN member m on p.member_id = m.id " +
+            "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
+    List<LectureProgress> findByDeleteLectureProgressId(@Param("memberId") int memberId);
+
 
 }

@@ -76,6 +76,10 @@ public class PaymentService {
 
     private final ReviewRepository reviewRepository;
 
+    private final LectureProgressRepository lectureProgressRepository;
+
+    private final VideoProgressRepository videoProgressRepository;
+
     @Transactional
     public void completePayment(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
 
@@ -150,10 +154,8 @@ public class PaymentService {
 
         for (Payment payment : payments) {
             List<PayLecture> payLectures = payLectureRepository.findByPaymentId(payment.getId());
-
             List<LectureDTO.PayLectureIdNameDTO> lectureDTOList = new ArrayList<>();
 
-            if(payment.getState() == 1){
                 for (PayLecture payLecture : payLectures) {
                     Lecture lecture = payLecture.getLecture();
                     Integer existLectureReview = reviewRepository.existsByPayLectureIdAndMemberId(memberId,payLecture.getLecture().getId());
@@ -161,21 +163,21 @@ public class PaymentService {
 
                     LectureDTO.PayLectureIdNameDTO lectureDTO = LectureDTO.PayLectureIdNameDTO.builder()
                             .id(lecture.getId())
-                            .name(lecture.getName())
+                            .name(lecture.getName())//강좌 제목
+                            .teacherName(lecture.getMember().getName()) //강사이름
                             .price(lecture.getPrice())
                             .lectureImg(domain + port + "/eumCodingImgs/payment/" + lecture.getThumb())
                             .reviewStatus(reviewStatus)
                             .build();
 
                     lectureDTOList.add(lectureDTO);
-                }
-
 
                 PaymentDTO paymentDTO = PaymentDTO.builder()
                         .paymentId(payment.getId())
                         .memberId(payment.getMember().getId())
                         .date(payment.getPayDay())
                         .lectureDTOList(lectureDTOList)
+                        .stateDescription(convertStateToKorean(payment.getState()))
                         .build();
 
                 paymentDTOs.add(paymentDTO);
@@ -203,16 +205,42 @@ public class PaymentService {
             throw new Exception("이미 취소되었거나 완료되지 않은 결제입니다.");
         }
 
-        // 결제 상태를 취소로 변경 (0: 취소 상태로 설정)
-        payment.setState(0);
+        // 결제 상태를 취소로 변경 (0: 취소 상태로 설정 -> 0:실패 2:취소)
+        payment.setState(2);
         paymentRepository.save(payment);
 
-        // 관련된 PayLecture도 삭제
-        List<PayLecture> payLectures = payLectureRepository.findByPaymentId(paymentId);
-        for (PayLecture payLecture : payLectures) {
-           payLectureRepository.delete(payLecture);
+        // 관련된 커리큘럼 삭제
+        List<Curriculum> curriculums = curriculumRepository.findByDeleteMemberId(memberId);
+        for (Curriculum curriculum : curriculums) {
+            curriculumRepository.delete(curriculum);
+        }
+
+        //관련된 lectureProgress삭제
+        List<LectureProgress> lectureProgresses = lectureProgressRepository.findByDeleteLectureProgressId(memberId);
+        for (LectureProgress lectureProgress : lectureProgresses){
+            lectureProgressRepository.delete(lectureProgress);
+        }
+
+        //관련된 videoProgress삭제
+
+        List<VideoProgress> vp = videoProgressRepository.findByDeleteVideoProgressId(memberId);
+        for (VideoProgress videoProgress : vp){
+            videoProgressRepository.delete(videoProgress);
         }
     }
 
+    //결제 상태 저장메서드
+    private String convertStateToKorean(int state) {
+        switch (state) {
+            case 0:
+                return "실패";
+            case 1:
+                return "성공";
+            case 2:
+                return "취소";
+            default:
+                throw new IllegalArgumentException("Invalid payment state: " + state);
+        }
+    }
 
 }

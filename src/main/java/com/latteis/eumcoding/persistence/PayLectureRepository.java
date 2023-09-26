@@ -31,7 +31,7 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
             "JOIN pl.payment p " +
             "JOIN p.member m " +
             "JOIN pl.lecture l " +
-            "WHERE m.id = :memberId AND l.id = :lectureId AND m.role = 0")
+            "WHERE m.id = :memberId AND l.id = :lectureId AND m.role = 0 AND p.state = 1")
     List<PayLecture> findByMemberAndLecture(@Param("memberId") int memberId, @Param("lectureId") int lectureId);
 
 
