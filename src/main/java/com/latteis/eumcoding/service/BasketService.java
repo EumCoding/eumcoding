@@ -1,8 +1,6 @@
 package com.latteis.eumcoding.service;
 
-
 import com.latteis.eumcoding.dto.BasketDTO;
-import com.latteis.eumcoding.dto.KakaoPayReadyResponseDTO;
 import com.latteis.eumcoding.model.Basket;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;

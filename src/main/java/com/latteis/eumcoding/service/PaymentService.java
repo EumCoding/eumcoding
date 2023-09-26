@@ -84,6 +84,8 @@ public class PaymentService {
         Basket basket = basketRepository.findByMemberIdAndLectureId(memberId,paymentOKRequestDTO.getLectureId());
         if (basket == null) {
             throw new Exception("해당 강의가 장바구니에 없습니다.");
+        }else {
+            basketRepository.delete(basket);
         }
 
         Lecture lecture = lectureRepository.findById(paymentOKRequestDTO.getLectureId());
@@ -93,7 +95,7 @@ public class PaymentService {
             throw new Exception("등록 되지 않은 강좌입니다.");
         }
 
-        PayLecture existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, paymentOKRequestDTO.getLectureId());
+        List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, paymentOKRequestDTO.getLectureId());
         if (existingPayLecture != null) {
             throw new Exception("이미 결제 완료된 강좌입니다.");
         }
@@ -104,6 +106,9 @@ public class PaymentService {
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
+
+
+
 
         // 만약 Payment가 정상적으로 저장되었으면, 결제 상태를 결제 완료:1로 설정
         if (savedPayment != null) {
