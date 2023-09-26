@@ -101,7 +101,6 @@ public class PaymentService {
         Payment payment = new Payment();
         payment.setMember(member);
         payment.setPayDay(LocalDateTime.now());
-        payment.setThumb(lecture.getThumb());
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
@@ -159,7 +158,7 @@ public class PaymentService {
                             .id(lecture.getId())
                             .name(lecture.getName())
                             .price(lecture.getPrice())
-                            .lectureImg(domain + port + "/eumCodingImgs/payment/" + payment.getThumb())
+                            .lectureImg(domain + port + "/eumCodingImgs/payment/" + lecture.getThumb())
                             .reviewStatus(reviewStatus)
                             .build();
 

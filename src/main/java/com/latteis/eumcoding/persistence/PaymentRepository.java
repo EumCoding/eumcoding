@@ -18,7 +18,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
 
     @Query("SELECT p FROM Payment p WHERE p.member.id = :memberId AND p.payDay BETWEEN :startDate AND :endDate")
-    Page<Payment> findByMemberId(@Param("memberId") int memberId, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate,Pageable pageable);
+    Page<Payment>  findByMemberId(@Param("memberId") int memberId, @Param("startDate")LocalDateTime startDate, @Param("endDate")LocalDateTime endDate,Pageable pageable);
 
     @Query("SELECT p FROM Payment p WHERE p.member.id = :memberId AND p.state = 1")
     List<Payment> findByMemberIdPayment(@Param("memberId") int memberId);
