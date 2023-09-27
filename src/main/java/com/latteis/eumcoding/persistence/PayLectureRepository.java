@@ -46,7 +46,7 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
      */
     long countByLectureAndPaymentState(Lecture lecture, int state);
 
-    @Query("SELECT pl FROM PayLecture pl JOIN pl.payment p WHERE p.id = :paymentId")
+    @Query("SELECT pl FROM PayLecture pl JOIN pl.payment p JOIN pl.lecture l WHERE p.id = :paymentId AND pl.lecture.id = l.id")
     List<PayLecture> findByPaymentId(@Param("paymentId") int paymentId);
 
     //해당 학생이 결제 이력이 있는지 확인
