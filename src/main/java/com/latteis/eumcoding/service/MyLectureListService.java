@@ -100,7 +100,6 @@ public class MyLectureListService {
             if (currentLectureCount >= offset + size) break;
         }
 
-
         // 강의에 대한 정보를 저장할 리스트를 생성
         List<MyLectureListDTO> lectureProgressList = new ArrayList<>();
 
@@ -124,7 +123,7 @@ public class MyLectureListService {
             int completedVideos = videoCounts[1];
             int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
 
-            Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
+            Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());//해당 과목 전체 평균임,각 멤버가준 점수가아니라
             if (averageRating == null) averageRating = 0;
 
             MyLectureListDTO myLectureListDTO = MyLectureListDTO.builder()
