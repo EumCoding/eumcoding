@@ -1,7 +1,12 @@
 package com.latteis.eumcoding.service;
 
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.StatsDTO;
+import com.latteis.eumcoding.exception.ErrorCode;
+import com.latteis.eumcoding.exception.ResponseMessageException;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.LectureRepository;
+import com.latteis.eumcoding.persistence.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +25,8 @@ public class StatsService {
 
     private final LectureRepository lectureRepository;
 
+    private final MemberRepository memberRepository;
+
     @Value("${server.domain}")
     private String domain;
 
@@ -34,10 +41,16 @@ public class StatsService {
         LocalDate startDate = dateRequestDTO.getStartDate();
         LocalDate endDate = dateRequestDTO.getEndDate();
 
+        Member member = memberRepository.findByMemberId(memberId);
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new NumberFormatException("fdf");
+        }
+
         // 시작일과 종료일 중 하나만 선택했다면
         if ((startDate != null && endDate == null) || (startDate == null && endDate != null)){
             log.warn("시작일과 종료일 중 하나만 선택하셨습니다. 시작일과 종료일을 모두 선택하시거나 아무 것도 선택하지 마세요.");
             throw new RuntimeException("시작일과 종료일 중 하나만 선택하셨습니다. 시작일과 종료일을 모두 선택하시거나 아무 것도 선택하지 마세요.");
+//            throw new ResponseMessageException(ErrorCode.TWO_DATE_PRECONDITION_FAILED);
         }
 
         // 전체 판매 수량
