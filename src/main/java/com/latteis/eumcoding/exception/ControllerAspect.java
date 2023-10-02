@@ -1,4 +1,4 @@
-package com.latteis.eumcoding.controller;
+package com.latteis.eumcoding.exception;
 
 import com.latteis.eumcoding.dto.ResponseDTO;
 import lombok.extern.slf4j.Slf4j;
