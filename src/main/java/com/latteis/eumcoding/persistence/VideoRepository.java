@@ -18,7 +18,8 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
 
 
-    Long countBySectionId(int sectionId);
+    @Query(value = "SELECT count(v.id) FROM video v JOIN section s ON v.section_id = s.id WHERE s.id = :sectionId",nativeQuery = true)
+    Long countBySectionId(@Param("sectionId")int sectionId);
 
     Video findById(int videoId);
 
@@ -40,7 +41,8 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
 
 
-    List<Video> findBySectionId(int sectionId);
+    @Query(value = "SELECT * FROM video v JOIN section s ON v.section_id = s.id WHERE s.id = :sectionId",nativeQuery = true)
+    List<Video> findBySectionId(@Param("sectionId")int sectionId);
 
     //Video 테이블에서 sectionId 컬럼 이용 ㅡCurriculum과 관련된 Video를 찾기
     //curriculumService에 CheckOver메서드에  video findByCurriculum 메서드에서는

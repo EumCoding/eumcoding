@@ -156,12 +156,14 @@ public class SectionDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SectionIdDTOList {
+    public static class SectionDTOMessageList {
         private int sectionId;
         private int lectureId;
         private String lectureName;
+        private String sectionName;
         private int progress;
         private int over;
+        private String overMessage;
+        private String checkMessage;
     }
-
 }

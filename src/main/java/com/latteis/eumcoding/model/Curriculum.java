@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -42,5 +43,8 @@ public class Curriculum {
 
     @Column(name="edit")
     private int edit;
+
+    @Column(name="start_day")
+    private LocalDateTime startDay;
 
 }
