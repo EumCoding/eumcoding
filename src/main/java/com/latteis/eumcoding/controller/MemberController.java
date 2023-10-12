@@ -191,6 +191,22 @@ public class MemberController {
         }
     }
 
+    //내 커리큘럼 진행상황 확인하기
+    @GetMapping("/myplan/list/info")
+    public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication) {
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<MyPlanInfoDTO> myPlan = curriculumService.getMyPlanInfo(memberId);
+            //return new ResponseEntity<>(myPlanList, HttpStatus.OK);
+            return ResponseEntity.ok().body(myPlan);
+
+        }catch(Exception e)
+        {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
     //내 커리큘럼 timetaken 업데이트 컨트롤러
     @PostMapping("/myplan/update/{curriculumId}")
     public ResponseEntity<?> myPlanUpdate(@ApiIgnore Authentication authentication

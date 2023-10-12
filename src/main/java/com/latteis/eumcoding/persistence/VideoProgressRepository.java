@@ -15,22 +15,35 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     @Query("SELECT vp FROM VideoProgress vp JOIN vp.lectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId AND vp.video.id = :videoId AND p.state = 1")
     Optional<VideoProgress> findByMemberIdAndVideoId(@Param("memberId") int memberId, @Param("videoId") int videoId);
 
+
     // video 데이터포함, videoPrgoress에 video에대한 vp정보가 없으면 null
-    @Query("SELECT vp " +
+/*    @Query("SELECT vp " +
             "FROM Video v " +
             "LEFT JOIN VideoProgress vp ON v.id = vp.video.id " +
             "JOIN v.section s " +
             "JOIN s.lecture l " +
-            "WHERE l.id = :lectureId " +
-            "AND (:memberId IS NULL OR vp.lectureProgress.payLecture.payment.member.id = :memberId)")
-    List<VideoProgress> findVideoByLectureIdAndMemberId(@Param("lectureId") int lectureId, @Param("memberId") Integer memberId);
+            "WHERE s.id = :sectionId " +
+            "AND (vp.lectureProgress.payLecture.payment.member.id = :memberId)")*/
+    @Query(value = "SELECT vp.* " +
+            "FROM video v " +
+            "LEFT JOIN video_progress vp ON v.id = vp.video_id " +
+            "JOIN section s ON v.section_id = s.id " +
+            "JOIN lecture l ON s.lecture_id = l.id " +
+            "JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
+            "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+            "JOIN payment p ON pl.payment_id = p.id " +
+            "JOIN member m ON p.member_id = m.id " +
+            "WHERE s.id = :sectionId AND m.id = :memberId", nativeQuery = true)
+    List<VideoProgress> findVideoByLectureIdAndMemberId(@Param("sectionId") int sectionId, @Param("memberId") Integer memberId);
 
 
 
-
-
-
-    @Query("SELECT vp FROM VideoProgress vp JOIN vp.lectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId")
+    @Query("SELECT vp FROM VideoProgress vp " +
+            "JOIN vp.lectureProgress lp " +
+            "JOIN lp.payLecture pl " +
+            "JOIN pl.payment p " +
+            "JOIN p.member m " +
+            "WHERE m.id = :memberId ")
     List<VideoProgress> findByMemberId(@Param("memberId") int memberId);
 
     // memeberId와 lectureId에 맞는 videoProgress 개수 가져오기
@@ -41,8 +54,13 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     long countByMemberIdAndLectureId(@Param("memberId") int memberId, @Param("lectureId") int lectureId, @Param("state") int state);
 
 
-    @Query("SELECT vp FROM VideoProgress vp WHERE vp.lectureProgress.id = :lectureProgressId")
-    List<VideoProgress> findByLectureProgressId(@Param("lectureProgressId") int lectureProgressId);
+    @Query(value =
+            "SELECT vp.* FROM video_progress vp " +
+            "RIGHT JOIN video v ON vp.video_id = v.id " +
+            "JOIN section s ON v.section_id = s.id " +
+            "JOIN curriculum c ON c.section_id = s.id " +
+            "WHERE s.id =:sectionId", nativeQuery = true)
+    List<VideoProgress> findBySectionsId(@Param("sectionId") int sectionId);
 
 
     /*
@@ -64,5 +82,7 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "JOIN member m on p.member_id = m.id " +
             "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<VideoProgress> findByDeleteVideoProgressId(@Param("memberId") int memberId);
+
+
 }
 

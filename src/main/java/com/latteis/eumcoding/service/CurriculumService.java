@@ -6,9 +6,11 @@ import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.tool.schema.internal.exec.ScriptTargetOutputToFile;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigInteger;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -58,29 +60,10 @@ public class CurriculumService {
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
                 int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
 
-                for (Video video : sectionVideos) {
-
-                    //해당 회원의 비디오 진행상황 조회
-                    List<VideoProgress> videoProgress = videoProgressRepository.findVideoByLectureIdAndMemberId(lectureSection.getLecture().getId(), memberId);
-
-                    boolean isCompleted = false;
-
-                    for (VideoProgress vp : videoProgress) {
-                        updateVideoProgressState(vp, video);
-
-                        if (vp.getState() == 1) { //1:수강종료
-                            isCompleted = true;
-                            break; // 하나라도 완료 상태면 더 이상 체크할 필요 없으므로 loop를 종료
-                        }
-                    }
-
-                    if (isCompleted) {
-                        completedVideos++; //완강한 비디오 갯수
-                    }
-
-                }
-
-                int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
+                int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
+                int totalVideoss = videoCounts[0];
+                int completedVideoss = videoCounts[1];
+                int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
                 // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
                 updateLectureProgressState(memberId, lectureSection.getLecture().getId());
 
@@ -118,10 +101,18 @@ public class CurriculumService {
         Curriculum curriculum = curriculumRepository.findBySectionId(sectionId,memberId);
         //curriculum에 section_id에 설정되지 않은 섹션 아이디는 일단은 over 0으로 할거임
         //즉 설정하지 않은 것에 대해선 다 0으로 기간지나지않음으로 처리
+
+        List<VideoProgress> vpr = videoProgressRepository.findBySectionsId(sectionId);
+
         if (curriculum == null) {
             return 0; // Curriculum이 없는 경우 over는 0
         }
-
+        //+videoProgress에 해당 video에 대한 들은 기록이없다 이럴경우에도 over 0
+        for(VideoProgress existVp : vpr){
+            if(existVp == null){
+                return 0;
+            }
+        }
         // Curriculum에 연결된 모든 비디오를 가져옴
         List<Video> videos = videoRepository.findByCurriculum(curriculum);
 
@@ -144,6 +135,12 @@ public class CurriculumService {
 
         // Curriculum의 timeTaken을 분으로 변환 (1일 = 24시간 = 1440분)
         int curriculumTimeTakenInMinutes = curriculum.getTimeTaken() * 24 * 60;
+
+        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음
+        //videoProgress에 해당 section에 속한 video들의 videoProgress에 endDay가 curriculum에 startDay + timetaken > endDay 이면 over 0 반대면 1
+
+
+
 
         //섹션에 포함된 모든 비디오가 다 state가 1이아니면 over 1
         //1:실패 0:성공
@@ -251,4 +248,127 @@ public class CurriculumService {
             }
         }
     }
+
+
+
+    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId) {
+        boolean nextSectionCheck = false; // 다음 섹션을 체크해야 하는지 표시하는 플래그
+
+        //특정 회원이 가지고 있는 모든 커리큘럼을 조회
+        List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
+
+        //사용자의 학습 진행 상황을 나타내는 DTO
+        List<MyPlanInfoDTO> myPlanInfoList = new ArrayList<>();
+
+        for (Curriculum curriculum : curriculums) {
+            List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists = new ArrayList<>();
+
+            //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
+            List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
+            //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
+            for (Section lectureSection : lectureSections) {
+                //각 섹션에 포함된 전체 비디오의 수를 조회
+                long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
+
+                //완료된 전체 비디오 수 처음엔 0
+                int completedVideos = 0;
+
+                //현재 섹션에 포함된 모든 비디오를 조회
+                List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
+
+                List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
+                int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
+
+                String overMessage = "";
+                String checkMessage = "";
+
+                //over가 1일경우
+                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함
+
+                //기한을 넘겼습니다. 인 경우 그다음 섹션은
+                //이번주에 들을 섹션이다 라고 표시,true false이용해서 판단
+                if(over == 1){
+                    overMessage = lectureSection.getName() + "기한을 넘겼습니다.";
+                    nextSectionCheck = true;
+                }else if(nextSectionCheck){
+                    checkMessage = lectureSection.getName() + "이번에 들어야할 섹션입니다.";
+                    nextSectionCheck = false;
+                }
+                //이번주 말고 다음주에 들어야할 섹션인 경우에는 over,checkMessage가 "" 뜨게 예외처리
+                //over 수정 startDay 컬럼추가해서 계싼3
+
+
+
+                // 전체 비디오 수와 완료된 비디오 수 계산
+                int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
+                int totalVideoss = videoCounts[0];
+                int completedVideoss = videoCounts[1];
+                int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
+
+                System.out.println("완료된 총 갯수 " + completedVideos);
+                System.out.println("비디오 총 갯수" + totalVideos);
+                // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
+                updateLectureProgressState(memberId, lectureSection.getLecture().getId());
+
+                SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
+                        .sectionId(lectureSection.getId())
+                        .lectureId(lectureSection.getLecture().getId())
+                        .lectureName(lectureSection.getLecture().getName())
+                        .sectionName(lectureSection.getName())
+                        .progress(progress)
+                        .over(over)
+                        .overMessage(overMessage)
+                        .checkMessage(checkMessage)
+                        .build();
+
+                sectionDTOMessageLists.add(sectionDTO);
+            }
+
+
+            MyPlanInfoDTO myPlanInfoDTO = MyPlanInfoDTO.builder()
+                    .curriculumId(curriculum.getId())
+                    .date(curriculum.getCreateDate())
+                    .sectionDTOList(sectionDTOMessageLists)
+                    .build();
+
+            myPlanInfoList.add(myPlanInfoDTO);
+        }
+
+        return myPlanInfoList;
+    }
+
+
+    //DB에서 해당 과목에 속하는 섹션들의 비디오들의 총 갯수(total), 다들은 비디오 갯수(completed)를 구함
+    //만약 나중에 이거 문제생기면 위에 코드상에서 계산한걸로 사용
+    private int[] countTotalAndCompletedVideos(int memberId, Section s) {
+        int totalVideos = 0;
+        int completedVideos = 0;
+
+        List<Section> sections = sectionRepository.findBySectionsId(s.getId());
+
+        for (Section section : sections) {
+            List<Object[]> videoCounts  = videoRepository.findTotalAndCompletedVideosForSection(memberId, section.getId());
+            if (!videoCounts.isEmpty()) {
+                Object[] counts = videoCounts.get(0);
+                totalVideos += toInt(counts[0]);
+                completedVideos += toInt(counts[1]);
+            }
+        }
+        return new int[] { totalVideos, completedVideos };
+    }
+
+    //형변환 에러방지
+    private int toInt(Object obj) {
+        if (obj instanceof BigInteger) {
+            return ((BigInteger) obj).intValue();
+        } else if (obj instanceof Long) {
+            return ((Long) obj).intValue();
+        } else if (obj instanceof Integer) {
+            return (Integer) obj;
+        } else {
+            throw new IllegalArgumentException("Unsupported number type: " + obj.getClass().getName());
+        }
+    }
+
+
 }
