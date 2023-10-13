@@ -16,7 +16,6 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 @Slf4j
@@ -98,9 +97,11 @@ public class CurriculumService {
     //기존 getMyPlanList랑 다른점은 해당 커리큘럼에 있는 섹션을 기한내에 다들었는지
     //혹은 이번에 들어야하는 섹션인지 표시해주는게 들어가있음
     public List<MyPlanInfoDTO> getMyPlanInfo(int memberId) {
+        boolean finish = true;  // 이전 섹션이 완료되었는지 표시
+        boolean message = false;  // 메시지가 설정되었는지 확인
+
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
         List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
-
         //사용자의 학습 진행 상황을 나타내는 DTO
         List<MyPlanInfoDTO> myPlanInfoList = new ArrayList<>();
 
@@ -109,8 +110,12 @@ public class CurriculumService {
 
             //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
             List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
+
+            //커리큘럼에 statDay + timeTaken 값이 필요
+
             //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
             for (Section lectureSection : lectureSections) {
+
                 //각 섹션에 포함된 전체 비디오의 수를 조회
                 long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
 
@@ -123,22 +128,26 @@ public class CurriculumService {
                 int completedVideoss = videoCounts[1];
                 int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
 
-
                 String overMessage = "";
                 String checkMessage = "";
                 String finishMessage = "";
 
                 //over가 1일경우
-                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함
-
-                //기한을 넘겼습니다. 인 경우 그다음 섹션은
-                //이번주에 들을 섹션이다 라고 표시,true false이용해서 판단
+                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함 -> 기한을 넘겼습니다. 표시
+                //이번에 들어야할 섹션입니다.는 주차별로 표시를 할것
                 if(over == 1){
                     overMessage = lectureSection.getName() + " 기한을 넘겼습니다.";
-                }else if(over == 0 && progress != 100){
+                    finish = false;
+                }else if(over == 0 && progress != 100 && !message){
+                    //전 섹션을 다듣지못하면 그다음 섹션의 영상은 볼 수 없으니
+                    //전 섹션을 다들었을 경우 그다음 섹션에는 해당 메시지가 표시될수 있게 하면됨
                     checkMessage = lectureSection.getName() + " 이번에 들어야할 섹션입니다.";
+                    finish = false;
+                    message = true;
+
                 }else if(progress == 100 && over == 0) {
                     finishMessage = lectureSection.getName() + " 해당 섹션의 비디오들을 다 수강하셨습니다.";
+                    finish = true;
                 }
 
                 // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
@@ -171,6 +180,7 @@ public class CurriculumService {
 
         return myPlanInfoList;
     }
+
 
 
     //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1
