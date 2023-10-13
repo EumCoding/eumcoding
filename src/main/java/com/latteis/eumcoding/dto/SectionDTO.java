@@ -165,5 +165,6 @@ public class SectionDTO {
         private int over;
         private String overMessage;
         private String checkMessage;
+        private String finishMessage;
     }
 }

@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.*;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -83,6 +84,22 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<VideoProgress> findByDeleteVideoProgressId(@Param("memberId") int memberId);
 
+
+    @Query(value =
+            "SELECT vp.* " +
+                    "FROM video_progress vp " +
+                    "RIGHT JOIN video v ON vp.video_id = v.id " +
+                    "JOIN section s ON v.section_id = s.id " +
+                    "JOIN lecture l ON s.lecture_id = l.id " +
+                    "JOIN curriculum c ON c.section_id = s.id " +
+                    "JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
+                    "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+                    "JOIN payment p ON pl.payment_id = p.id " +
+                    "JOIN member m ON p.member_id = m.id " +
+                    "WHERE s.id = :sectionId AND m.id = :memberId " +
+                    "ORDER BY v.id DESC, s.id desc " +
+                    "LIMIT 1", nativeQuery = true)
+    List<VideoProgress> findVideoProgressEndDay(@Param("memberId")int memberId,@Param("sectionId") int sectionId);
 
 }
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class CurriculumService {
                 List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
 
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
-                int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
+                int over = checkOver(lectureSection.getId(), memberId,videoProgresses);
 
                 int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
                 int totalVideoss = videoCounts[0];
@@ -93,71 +94,151 @@ public class CurriculumService {
         return myPlanList;
     }
 
+
+    //기존 getMyPlanList랑 다른점은 해당 커리큘럼에 있는 섹션을 기한내에 다들었는지
+    //혹은 이번에 들어야하는 섹션인지 표시해주는게 들어가있음
+    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId) {
+        //특정 회원이 가지고 있는 모든 커리큘럼을 조회
+        List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
+
+        //사용자의 학습 진행 상황을 나타내는 DTO
+        List<MyPlanInfoDTO> myPlanInfoList = new ArrayList<>();
+
+        for (Curriculum curriculum : curriculums) {
+            List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists = new ArrayList<>();
+
+            //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
+            List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
+            //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
+            for (Section lectureSection : lectureSections) {
+                //각 섹션에 포함된 전체 비디오의 수를 조회
+                long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
+
+                List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
+                int over = checkOver(lectureSection.getId(), memberId,videoProgresses);
+
+                // 전체 비디오 수와 완료된 비디오 수 계산
+                int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
+                int totalVideoss = videoCounts[0];
+                int completedVideoss = videoCounts[1];
+                int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
+
+
+                String overMessage = "";
+                String checkMessage = "";
+                String finishMessage = "";
+
+                //over가 1일경우
+                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함
+
+                //기한을 넘겼습니다. 인 경우 그다음 섹션은
+                //이번주에 들을 섹션이다 라고 표시,true false이용해서 판단
+                if(over == 1){
+                    overMessage = lectureSection.getName() + " 기한을 넘겼습니다.";
+                }else if(over == 0 && progress != 100){
+                    checkMessage = lectureSection.getName() + " 이번에 들어야할 섹션입니다.";
+                }else if(progress == 100 && over == 0) {
+                    finishMessage = lectureSection.getName() + " 해당 섹션의 비디오들을 다 수강하셨습니다.";
+                }
+
+                // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
+                updateLectureProgressState(memberId, lectureSection.getLecture().getId());
+
+                SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
+                        .sectionId(lectureSection.getId())
+                        .lectureId(lectureSection.getLecture().getId())
+                        .lectureName(lectureSection.getLecture().getName())
+                        .sectionName(lectureSection.getName())
+                        .progress(progress)
+                        .over(over)
+                        .overMessage(overMessage)
+                        .checkMessage(checkMessage)
+                        .finishMessage(finishMessage)
+                        .build();
+
+                sectionDTOMessageLists.add(sectionDTO);
+            }
+
+
+            MyPlanInfoDTO myPlanInfoDTO = MyPlanInfoDTO.builder()
+                    .curriculumId(curriculum.getId())
+                    .date(curriculum.getCreateDate())
+                    .sectionDTOList(sectionDTOMessageLists)
+                    .build();
+
+            myPlanInfoList.add(myPlanInfoDTO);
+        }
+
+        return myPlanInfoList;
+    }
+
+
     //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1
     //videoProgress에 state는 last_View를 가지고 Video에 playTime이랑 일치할 경우 state는 1로 바뀌도록
     //밑에 메서드에 표시해놨음  updateVideoProgressState
-    private int CheckOver(int sectionId,int memberId, List<VideoProgress> videoProgresses) {
+    private int checkOver(int sectionId,int memberId, List<VideoProgress> videoProgresses) {
+
         //section_id로 curriculum찾기
         Curriculum curriculum = curriculumRepository.findBySectionId(sectionId,memberId);
+        LocalDateTime newDate = curriculum.getStartDay().plusDays(curriculum.getTimeTaken());
+
         //curriculum에 section_id에 설정되지 않은 섹션 아이디는 일단은 over 0으로 할거임
         //즉 설정하지 않은 것에 대해선 다 0으로 기간지나지않음으로 처리
-
-        List<VideoProgress> vpr = videoProgressRepository.findBySectionsId(sectionId);
-
         if (curriculum == null) {
             return 0; // Curriculum이 없는 경우 over는 0
+
         }
-        //+videoProgress에 해당 video에 대한 들은 기록이없다 이럴경우에도 over 0
-        for(VideoProgress existVp : vpr){
-            if(existVp == null){
-                return 0;
-            }
+
+        List<VideoProgress> vpr = videoProgressRepository.findVideoProgressEndDay(sectionId,memberId);
+        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음
+        //videoProgress에 해당 section에 속한 video들의 videoProgress에 endDay가 curriculum에 startDay + timetaken > endDay 이면 over 0 반대면 1
+        //여기서 vpr에 endDay는 lastView 즉 해당 강의를 다들었을 경우 endDay에 다들은 시점의 LocalDateTime.now()가 저장된다고 생각함.
+
+        //videoProgresses테이블에 video에대한 정보가없을경우(아직 안들었을경우)
+        //단, newDate의 기한을 넘기지 않아야함
+        if (vpr.isEmpty() && newDate.isAfter(LocalDateTime.now())) {
+            return 0; //기한을 넘지않음
+        }else if(vpr.isEmpty() && newDate.isBefore(LocalDateTime.now())){
+            return 1; //기한을 넘음
         }
+
+        if (newDate.isAfter(vpr.get(0).getEndDay())) {
+            return 0;
+        }
+
         // Curriculum에 연결된 모든 비디오를 가져옴
         List<Video> videos = videoRepository.findByCurriculum(curriculum);
 
-        int totalViewTime = 0; //전체 시청 시간 저장
         boolean allVideosCompleted = true; //섹션에 있는 비디오가 완료되었는지 확인
 
         for (Video video : videos) {
             boolean videoCompleted = false; //각 비디오가 완료되엇는지 확인
             for (VideoProgress vp : videoProgresses) {
                 if (vp.getVideo().getId() == video.getId() && vp.getState() == 1) {
-                    totalViewTime += video.getPlayTime().toSecondOfDay() / 60; //전체 시청시간에 비디오 재생 시간더하기
+                    //여기서는 video에 대해 videoProgress에 정보가 없을수도있다는 가정은 안함(비디오를 듣지않았을경우)
+                    //위에 해당 경우 조건을 만들어놨음
                     videoCompleted = true; //비디오 완료
+                    allVideosCompleted = true;
                     break;
                 }
-            }
-            if (!videoCompleted) {
-                allVideosCompleted = false;
+                else if (!videoCompleted) {
+                    allVideosCompleted = false;
+                }
             }
         }
-
-        // Curriculum의 timeTaken을 분으로 변환 (1일 = 24시간 = 1440분)
-        int curriculumTimeTakenInMinutes = curriculum.getTimeTaken() * 24 * 60;
-
-        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음
-        //videoProgress에 해당 section에 속한 video들의 videoProgress에 endDay가 curriculum에 startDay + timetaken > endDay 이면 over 0 반대면 1
-
-
-
 
         //섹션에 포함된 모든 비디오가 다 state가 1이아니면 over 1
         //1:실패 0:성공
-        if(!allVideosCompleted)
+        if(!allVideosCompleted || newDate.isBefore(vpr.get(0).getEndDay()))
         {
-            return 1;
-        }
-        // 모든 비디오가 완전히 시청되었지만, 전체 시청 시간이 Curriculum의 timeTaken을 초과하면 over는 1
-        if (totalViewTime > curriculumTimeTakenInMinutes) {
             return 1;
         }
         // 그 외의 경우에는 over는 0
         else {
             return 0;
         }
-    }
 
+    }
 
     //video_progress에 state 상태를 해당 조건에 맞게 변경
     //50% 수강중, 100%수강 완료 0->1변경
@@ -247,94 +328,6 @@ public class CurriculumService {
                 lectureProgressRepository.save(lp);
             }
         }
-    }
-
-
-
-    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId) {
-        boolean nextSectionCheck = false; // 다음 섹션을 체크해야 하는지 표시하는 플래그
-
-        //특정 회원이 가지고 있는 모든 커리큘럼을 조회
-        List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
-
-        //사용자의 학습 진행 상황을 나타내는 DTO
-        List<MyPlanInfoDTO> myPlanInfoList = new ArrayList<>();
-
-        for (Curriculum curriculum : curriculums) {
-            List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists = new ArrayList<>();
-
-            //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
-            List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
-            //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
-            for (Section lectureSection : lectureSections) {
-                //각 섹션에 포함된 전체 비디오의 수를 조회
-                long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
-
-                //완료된 전체 비디오 수 처음엔 0
-                int completedVideos = 0;
-
-                //현재 섹션에 포함된 모든 비디오를 조회
-                List<Video> sectionVideos = videoRepository.findBySectionId(lectureSection.getId());
-
-                List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
-                int over = CheckOver(lectureSection.getId(), memberId,videoProgresses);
-
-                String overMessage = "";
-                String checkMessage = "";
-
-                //over가 1일경우
-                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함
-
-                //기한을 넘겼습니다. 인 경우 그다음 섹션은
-                //이번주에 들을 섹션이다 라고 표시,true false이용해서 판단
-                if(over == 1){
-                    overMessage = lectureSection.getName() + "기한을 넘겼습니다.";
-                    nextSectionCheck = true;
-                }else if(nextSectionCheck){
-                    checkMessage = lectureSection.getName() + "이번에 들어야할 섹션입니다.";
-                    nextSectionCheck = false;
-                }
-                //이번주 말고 다음주에 들어야할 섹션인 경우에는 over,checkMessage가 "" 뜨게 예외처리
-                //over 수정 startDay 컬럼추가해서 계싼3
-
-
-
-                // 전체 비디오 수와 완료된 비디오 수 계산
-                int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
-                int totalVideoss = videoCounts[0];
-                int completedVideoss = videoCounts[1];
-                int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
-
-                System.out.println("완료된 총 갯수 " + completedVideos);
-                System.out.println("비디오 총 갯수" + totalVideos);
-                // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
-                updateLectureProgressState(memberId, lectureSection.getLecture().getId());
-
-                SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
-                        .sectionId(lectureSection.getId())
-                        .lectureId(lectureSection.getLecture().getId())
-                        .lectureName(lectureSection.getLecture().getName())
-                        .sectionName(lectureSection.getName())
-                        .progress(progress)
-                        .over(over)
-                        .overMessage(overMessage)
-                        .checkMessage(checkMessage)
-                        .build();
-
-                sectionDTOMessageLists.add(sectionDTO);
-            }
-
-
-            MyPlanInfoDTO myPlanInfoDTO = MyPlanInfoDTO.builder()
-                    .curriculumId(curriculum.getId())
-                    .date(curriculum.getCreateDate())
-                    .sectionDTOList(sectionDTOMessageLists)
-                    .build();
-
-            myPlanInfoList.add(myPlanInfoDTO);
-        }
-
-        return myPlanInfoList;
     }
 
 
