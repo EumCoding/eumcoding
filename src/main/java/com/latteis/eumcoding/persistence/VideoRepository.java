@@ -48,7 +48,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     //curriculumService에 CheckOver메서드에  video findByCurriculum 메서드에서는
     //Curriculum 엔티티를 입력받아서 해당 Curriculum과 관련된 모든 Video를 반환
     //즉 커리큘럼의 section_id에 해당하는 video를 가져오는것
-    @Query("SELECT v FROM Video v WHERE v.section.id  IN (SELECT c.section.id FROM Curriculum c WHERE c = :curriculum)")
+    @Query("SELECT v FROM Video v WHERE v.section.id IN (SELECT c.section.id FROM Curriculum c WHERE c = :curriculum)")
     List<Video> findByCurriculum(@Param("curriculum") Curriculum curriculum);
 
     // lectureId에 있는 video 개수 가져오기
