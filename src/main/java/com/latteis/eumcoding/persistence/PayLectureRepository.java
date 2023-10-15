@@ -53,4 +53,45 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
     @Query("SELECT pl FROM PayLecture pl WHERE pl.payment.member.id = :memberId AND pl.payment.state = 1")
     List<PayLecture> findLecturesByStudentId(@Param("memberId") int memberId);
 
+    /*
+    * 이번 달 총 판매량 가져오기
+    */
+    @Query("SELECT COUNT(pl) FROM PayLecture pl " +
+            "WHERE pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "AND FUNCTION('YEAR', pl.payment.payDay) = FUNCTION('YEAR', CURRENT_DATE) " +
+            "AND FUNCTION('MONTH', pl.payment.payDay) = FUNCTION('MONTH', CURRENT_DATE ) ")
+    int cntTotalVolumeThisMonth(@Param("member") Member member);
+
+    /*
+    * 이번 달 총 수익 가져오기
+    */
+    @Query("SELECT SUM(pl.price) FROM PayLecture pl " +
+            "WHERE pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "AND FUNCTION('YEAR', pl.payment.payDay) = FUNCTION('YEAR', CURRENT_DATE) " +
+            "AND FUNCTION('MONTH', pl.payment.payDay) = FUNCTION('MONTH', CURRENT_DATE ) ")
+    String sumTotalRevenueThisMonth(@Param("member") Member member);
+
+    /*
+    * 이번 달 판매량 많은 순으로 가져오기
+    */
+ /*   @Query("SELECT pl.lecture.id, COUNT(pl.lecture.id) FROM PayLecture pl " +
+            "WHERE pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "AND FUNCTION('YEAR', pl.payment.payDay) = FUNCTION('YEAR', CURRENT_DATE) " +
+            "AND FUNCTION('MONTH', pl.payment.payDay) = FUNCTION('MONTH', CURRENT_DATE ) ")
+    List<Object[]> cntVolumeOrderByCnt(@Param("member") Member member);
+*/
+
+    /*
+     * 이번 달 판매량 많은 순으로 가져오기
+     */
+ /*   @Query("SELECT pl.lecture.id, COUNT(pl.lecture.id) FROM Lecture l join PayLecture pl " +
+            "WHERE l.member = :member " +
+            "AND  " +
+            "AND FUNCTION('YEAR', pl.payment.payDay) = FUNCTION('YEAR', CURRENT_DATE) " +
+            "AND FUNCTION('MONTH', pl.payment.payDay) = FUNCTION('MONTH', CURRENT_DATE ) ")
+    List<Object[]> cntVolumeOrderByCnt1(@Param("member") Member member);
+*/
 }

@@ -1,6 +1,6 @@
 package com.latteis.eumcoding.controller;
 
-import com.latteis.eumcoding.dto.KakaoPayApproveResponseDTO;
+//import com.latteis.eumcoding.dto.KakaoPayApproveResponseDTO;
 import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;

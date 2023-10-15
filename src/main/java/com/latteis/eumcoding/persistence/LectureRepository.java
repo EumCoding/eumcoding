@@ -113,4 +113,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
 
     Lecture findLectureByName(String itemName);
+
+    /*
+    * memberId로 총 강의 수 가져오기
+    */
+    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId")
+    int countByMemberId(@Param("memberId") int memberId);
+
 }
