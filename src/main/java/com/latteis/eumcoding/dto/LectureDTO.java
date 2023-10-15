@@ -221,6 +221,9 @@ public class LectureDTO {
         @ApiModelProperty(value = "등록일", example = "2023-04-13 01:47:52.000")
         private LocalDateTime createdDay;
 
+        @ApiModelProperty(value = "강의 상태", example = "1")
+        private int state;
+
         @ApiModelProperty(value = "썸네일", example = "~.png")
         private String thumb;
 
@@ -247,6 +250,7 @@ public class LectureDTO {
             this.price = lecture.getPrice();
             this.grade = lecture.getGrade();
             this.createdDay = lecture.getCreatedDay();
+            this.state = lecture.getState();
         }
 
     }
