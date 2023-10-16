@@ -199,7 +199,7 @@ public class StatsService {
         return totalVolumeDTO;
 
     }
-/*
+
 
     // 이번 달 총 판매량 비율
     public StatsDTO.TotalVolumePercentageResponseDTO getTotalVolumePercentageListThisMonth(Authentication authentication) {
@@ -216,28 +216,21 @@ public class StatsService {
         }
 
         List<Object[]> objects = payLectureRepository.cntVolumeOrderByCnt(member);
-        log.info("ffffff" + objects.toString());
         List<StatsDTO.TotalVolumePercentageDTO> totalVolumePercentageDTOList = new ArrayList<>();
 
         // 판매량 총합
         int allLectureTotalVolume = 0;
-        log.info("1.ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
         // 정보를 dto에 저장
         for (Object[] object : objects) {
-            log.info("2.ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ" + object[0]);
             StatsDTO.TotalVolumePercentageDTO totalVolumePercentageDTO = new StatsDTO.TotalVolumePercentageDTO(object);
-            log.info("3.ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
             // 판매량 총합 변수에 판매량 추가
             allLectureTotalVolume += totalVolumePercentageDTO.getSalesVolume();
-            log.info("4.ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
             // dto 리스트에 저장
             totalVolumePercentageDTOList.add(totalVolumePercentageDTO);
-            log.info("5.ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
         }
-
         // 퍼센테이지 구하기
         for (StatsDTO.TotalVolumePercentageDTO totalVolumePercentageDTO : totalVolumePercentageDTOList) {
-            double percentage = (totalVolumePercentageDTO.getSalesVolume() / allLectureTotalVolume) * 100;
+            double percentage = ((double) totalVolumePercentageDTO.getSalesVolume() / allLectureTotalVolume) * 100;
             // 저장
             totalVolumePercentageDTO.setPercentage(Math.round(percentage*100)/100.0);
         }
@@ -250,6 +243,6 @@ public class StatsService {
         return responseDTO;
 
     }
-*/
+
 
 }

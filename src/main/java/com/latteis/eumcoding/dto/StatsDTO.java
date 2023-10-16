@@ -180,7 +180,7 @@ public class StatsDTO {
         private int lectureId;
 
         @ApiModelProperty(value = "강의명", example = "강의명")
-        private int lectureName;
+        private String lectureName;
 
         @ApiModelProperty(value = "판매량", example = "1")
         private int salesVolume;
@@ -189,9 +189,9 @@ public class StatsDTO {
         private double percentage;
 
         public TotalVolumePercentageDTO(Object[] objects) {
-            this.lectureId = (int) objects[0];
-            this.lectureName = (int) objects[1];
-            this.salesVolume = (int) objects[2];
+            this.lectureId = objects[0] != null ? Integer.parseInt(String.valueOf(objects[0])) : 0;
+            this.lectureName = objects[1] != null ? String.valueOf(objects[1]) : "";
+            this.salesVolume = objects[2] != null ? Integer.parseInt(String.valueOf(objects[2])) : 0;
         }
 
     }

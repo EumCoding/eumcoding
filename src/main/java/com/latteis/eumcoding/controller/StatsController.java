@@ -90,7 +90,6 @@ public class StatsController {
         }
 
     }
-/*
 
     // 이번 달 강의 총 수익
     @PostMapping(value = "/totalVolumePercentage")
@@ -105,7 +104,6 @@ public class StatsController {
         }
 
     }
-*/
 
 
 }
