@@ -16,9 +16,7 @@ import org.springframework.util.Assert;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -57,10 +55,12 @@ public class EmailKakaoNumberService {
                 emailKakaoNumber.setEmailNumberId(verificationNumber);
                 emailKakaoNumber.resetExpiration(); // 만료시간을 재설정하는 메서드
                 emailKakaoNumber.setExpired(0); //0:유효 1:만료
+                checkAndExpireEmailNumbers();
             }else{
                 // 존재하지 않는 경우 생성
                 emailKakaoNumber = EmailKakaoNumber.createEmailNumber(id);
                 emailKakaoNumber.setEmailNumberId(verificationNumber);
+                checkAndExpireEmailNumbers();
             }
             emailKakaoNumberRepository.save(emailKakaoNumber);
 
@@ -79,16 +79,21 @@ public class EmailKakaoNumberService {
 
     // 매 분마다 실행되는 스케줄러
     // expiration_date에 값이 넘어서면 DB에서 자동으로 expired 가 0->1 (사용가능->사용불가능)으로 업데이트
-    @Scheduled(fixedRate = 60000)  // 60,000ms = 1분
     public void checkAndExpireEmailNumbers() {
-        List<EmailKakaoNumber> emailNumbers = emailKakaoNumberRepository.findAllByExpiredFalseAndExpirationDateBefore(LocalDateTime.now());
+        TimerTask task = new TimerTask(){
+            @Override
+            public void run(){
+                List<EmailKakaoNumber> emailNumbers = emailKakaoNumberRepository.findAllByExpiredFalseAndExpirationDateBefore(LocalDateTime.now());
 
-        for(EmailKakaoNumber emailKakaoNumber : emailNumbers) {
-            emailKakaoNumber.setExpired(1);
-            emailKakaoNumberRepository.save(emailKakaoNumber);
-        }
+                for(EmailKakaoNumber emailKakaoNumber : emailNumbers) {
+                    emailKakaoNumber.setExpired(1);
+                    emailKakaoNumberRepository.save(emailKakaoNumber);
+                }
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(task,300000);
     }
-
 
 }
 
