@@ -2,6 +2,7 @@
 package com.latteis.eumcoding.service;
 
 
+import com.latteis.eumcoding.model.EmailKakaoNumber;
 import com.latteis.eumcoding.model.EmailNumber;
 import com.latteis.eumcoding.model.EmailToken;
 import com.latteis.eumcoding.persistence.EmailNumberRepository;
@@ -16,9 +17,7 @@ import org.springframework.util.Assert;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -56,10 +55,12 @@ public class EmailNumberService {
                 emailNumber.setEmailNumberId(verificationNumber);
                 emailNumber.resetExpiration(); // 만료시간을 재설정하는 메서드
                 emailNumber.setExpired(0); //0:유효 1:만료
+                checkAndExpireEmailNumbers();
             }else{
                 // 존재하지 않는 경우 생성
                 emailNumber = EmailNumber.createEmailNumber(id);
                 emailNumber.setEmailNumberId(verificationNumber);
+                checkAndExpireEmailNumbers();
             }
             emailNumberRepository.save(emailNumber);
 
@@ -68,6 +69,7 @@ public class EmailNumberService {
             log.warn(e.getMessage());
             throw new RuntimeException("인증 번호 전송 중 오류 발생");
         }
+
     }
 
     // 6자리의 무작위 인증 번호 생성
@@ -78,16 +80,21 @@ public class EmailNumberService {
 
     // 매 분마다 실행되는 스케줄러
     // expiration_date에 값이 넘어서면 DB에서 자동으로 expired 가 0->1 (사용가능->사용불가능)으로 업데이트
-    @Scheduled(fixedRate = 60000)  // 60,000ms = 1분
     public void checkAndExpireEmailNumbers() {
-        List<EmailNumber> emailNumbers = emailNumberRepository.findAllByExpiredFalseAndExpirationDateBefore(LocalDateTime.now());
+        TimerTask task = new TimerTask(){
+            @Override
+            public void run(){
+                List<EmailNumber> emailNumbers = emailNumberRepository.findAllByExpiredFalseAndExpirationDateBefore(LocalDateTime.now());
 
-        for(EmailNumber emailNumber : emailNumbers) {
-            emailNumber.setExpired(1);
-            emailNumberRepository.save(emailNumber);
-        }
+                for(EmailNumber emailNumber : emailNumbers) {
+                    emailNumber.setExpired(1);
+                    emailNumberRepository.save(emailNumber);
+                }
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(task,300000);
     }
-
 
 }
 
