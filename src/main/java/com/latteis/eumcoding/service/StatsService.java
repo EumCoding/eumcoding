@@ -7,10 +7,15 @@ import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.LectureRepository;
 import com.latteis.eumcoding.persistence.MemberRepository;
+import com.latteis.eumcoding.persistence.PayLectureRepository;
+import com.latteis.eumcoding.persistence.ReviewRepository;
+import jdk.nashorn.internal.parser.JSONParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import springfox.documentation.spring.web.json.Json;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,6 +32,10 @@ public class StatsService {
 
     private final MemberRepository memberRepository;
 
+    private final ReviewRepository reviewRepository;
+
+    private final PayLectureRepository payLectureRepository;
+
     @Value("${server.domain}")
     private String domain;
 
@@ -42,9 +51,7 @@ public class StatsService {
         LocalDate endDate = dateRequestDTO.getEndDate();
 
         Member member = memberRepository.findByMemberId(memberId);
-        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
-            throw new NumberFormatException("fdf");
-        }
+
 
         // 시작일과 종료일 중 하나만 선택했다면
         if ((startDate != null && endDate == null) || (startDate == null && endDate != null)){
@@ -102,5 +109,140 @@ public class StatsService {
         return mainResponseDTO;
 
     }
+
+    // 총 강의 수
+    public StatsDTO.TotalLectureCntDTO getTotalLectureCnt(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        int totalCnt = lectureRepository.countByMemberId(member.getId());
+        StatsDTO.TotalLectureCntDTO totalLectureCntDTO = new StatsDTO.TotalLectureCntDTO(totalCnt);
+
+        return totalLectureCntDTO;
+
+    }
+
+    // 이번 달 총 평점
+    public StatsDTO.TotalRatingDTO getTotalRatingThisMonth(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        String ratingAvg = reviewRepository.ratingAvgThisMonth(member);
+        if (ratingAvg == null) {
+            ratingAvg = "0.0";
+        }
+        StatsDTO.TotalRatingDTO totalRatingDTO = new StatsDTO.TotalRatingDTO(Double.parseDouble(ratingAvg));
+
+        return totalRatingDTO;
+
+    }
+
+    // 이번 달 총 판매량
+    public StatsDTO.TotalVolumeDTO getTotalVolumeThisMonth(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        int volumeCnt = payLectureRepository.cntTotalVolumeThisMonth(member);
+        StatsDTO.TotalVolumeDTO totalVolumeDTO = new StatsDTO.TotalVolumeDTO(volumeCnt);
+
+        return totalVolumeDTO;
+
+    }
+
+    // 이번 달 총 강의 수익
+    public StatsDTO.TotalRevenueDTO getTotalRevenueThisMonth(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        String totalRevenue = payLectureRepository.sumTotalRevenueThisMonth(member);
+        if (totalRevenue == null) {
+            totalRevenue = "0";
+        }
+        StatsDTO.TotalRevenueDTO totalVolumeDTO = new StatsDTO.TotalRevenueDTO(Integer.parseInt(totalRevenue));
+
+        return totalVolumeDTO;
+
+    }
+
+
+    // 이번 달 총 판매량 비율
+    public StatsDTO.TotalVolumePercentageResponseDTO getTotalVolumePercentageListThisMonth(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        List<Object[]> objects = payLectureRepository.cntVolumeOrderByCnt(member);
+        List<StatsDTO.TotalVolumePercentageDTO> totalVolumePercentageDTOList = new ArrayList<>();
+
+        // 판매량 총합
+        int allLectureTotalVolume = 0;
+        // 정보를 dto에 저장
+        for (Object[] object : objects) {
+            StatsDTO.TotalVolumePercentageDTO totalVolumePercentageDTO = new StatsDTO.TotalVolumePercentageDTO(object);
+            // 판매량 총합 변수에 판매량 추가
+            allLectureTotalVolume += totalVolumePercentageDTO.getSalesVolume();
+            // dto 리스트에 저장
+            totalVolumePercentageDTOList.add(totalVolumePercentageDTO);
+        }
+        // 퍼센테이지 구하기
+        for (StatsDTO.TotalVolumePercentageDTO totalVolumePercentageDTO : totalVolumePercentageDTOList) {
+            double percentage = ((double) totalVolumePercentageDTO.getSalesVolume() / allLectureTotalVolume) * 100;
+            // 저장
+            totalVolumePercentageDTO.setPercentage(Math.round(percentage*100)/100.0);
+        }
+
+        // 응답 DTO에 총판매량과 DTO List 저장
+        StatsDTO.TotalVolumePercentageResponseDTO responseDTO = new StatsDTO.TotalVolumePercentageResponseDTO();
+        responseDTO.setTotalSalesVolume(allLectureTotalVolume);
+        responseDTO.setTotalVolumePercentageDTOList(totalVolumePercentageDTOList);
+
+        return responseDTO;
+
+    }
+
 
 }

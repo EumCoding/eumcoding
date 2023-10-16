@@ -126,4 +126,88 @@ public class StatsDTO {
         }
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "총 강의 수 응답 DTO")
+    public static class TotalLectureCntDTO {
+
+        @ApiModelProperty(value = "총 강의 수", example = "1")
+        private int totalLectureCnt;
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "이번 달 총 평점 응답 DTO")
+    public static class TotalRatingDTO {
+
+        @ApiModelProperty(value = "총 평점", example = "4.0")
+        private double totalRating;
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "이번 달 총 판매량 응답 DTO")
+    public static class TotalVolumeDTO {
+
+        @ApiModelProperty(value = "총 판매량", example = "4")
+        private double totalVolume;
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "이번 달 강의 총 수익 응답 DTO")
+    public static class TotalRevenueDTO {
+
+        @ApiModelProperty(value = "총 수익", example = "4")
+        private double totalRevenue;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "이번 달 판매 비율 DTO")
+    public static class TotalVolumePercentageDTO {
+
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int lectureId;
+
+        @ApiModelProperty(value = "강의명", example = "강의명")
+        private String lectureName;
+
+        @ApiModelProperty(value = "판매량", example = "1")
+        private int salesVolume;
+
+        @ApiModelProperty(value = "퍼센테이지", example = "30.22")
+        private double percentage;
+
+        public TotalVolumePercentageDTO(Object[] objects) {
+            this.lectureId = objects[0] != null ? Integer.parseInt(String.valueOf(objects[0])) : 0;
+            this.lectureName = objects[1] != null ? String.valueOf(objects[1]) : "";
+            this.salesVolume = objects[2] != null ? Integer.parseInt(String.valueOf(objects[2])) : 0;
+        }
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "이번 달 판매 비율 응답 DTO")
+    public static class TotalVolumePercentageResponseDTO {
+
+        @ApiModelProperty(value = "총 판매량", example = "1")
+        private int totalSalesVolume;
+
+        List<TotalVolumePercentageDTO> totalVolumePercentageDTOList;
+
+    }
+
+
 }
