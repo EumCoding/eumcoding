@@ -17,4 +17,15 @@ public class ExceptionDTO {
         this.message = errorCode.getMessage();
     }
 
+
+
+
+
+/*
+    public ExceptionDTO(String message) {
+//        this.errorCode = errorCode;
+        this.message = errorCode.getMessage();
+    }
+*/
+
 }

@@ -16,6 +16,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getErrorCode().getStatus())
                 .body(new ExceptionDTO(ex.getErrorCode()));
     }
+  /*  @ExceptionHandler({ResponseMessageException.class})
+    protected ResponseEntity handleResponseMessageException(ResponseMessageException ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(ex.getHttpStatus())
+                .body(new ExceptionDTO(ex.getMessage())));
+    }*/
 //
 //    @ExceptionHandler({RuntimeException.class})
 //    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

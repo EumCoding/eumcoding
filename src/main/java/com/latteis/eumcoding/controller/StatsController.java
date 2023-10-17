@@ -36,7 +36,7 @@ public class StatsController {
     }
 
     // 총 강의 수
-    @PostMapping(value = "/totalCnt")
+    @PostMapping(value = "/total-cnt")
     @ApiOperation(value = "총 강좌 수")
     public ResponseEntity<StatsDTO.TotalLectureCntDTO> getTotalLectureCnt(@ApiIgnore Authentication authentication) {
 
@@ -50,7 +50,7 @@ public class StatsController {
     }
 
     // 이번 달 총 평점
-    @PostMapping(value = "/totalRating")
+    @PostMapping(value = "/total-rating")
     @ApiOperation(value = "이번 달 총 평점")
     public ResponseEntity<StatsDTO.TotalRatingDTO> getTotalRatingThisMonth(@ApiIgnore Authentication authentication) {
 
@@ -64,7 +64,7 @@ public class StatsController {
     }
 
     // 이번 달 총 판매량
-    @PostMapping(value = "/totalVolume")
+    @PostMapping(value = "/total-volume")
     @ApiOperation(value = "이번 달 총 판매량")
     public ResponseEntity<StatsDTO.TotalVolumeDTO> getTotalVolumeThisMonth(@ApiIgnore Authentication authentication) {
 
@@ -78,7 +78,7 @@ public class StatsController {
     }
 
     // 이번 달 강의 총 수익
-    @PostMapping(value = "/totalRevenue")
+    @PostMapping(value = "/total-revenue")
     @ApiOperation(value = "이번 달 강의 총 수익")
     public ResponseEntity<StatsDTO.TotalRevenueDTO> getTotalRevenueThisMonth(@ApiIgnore Authentication authentication) {
 
@@ -92,13 +92,29 @@ public class StatsController {
     }
 
     // 이번 달 강의 총 수익
-    @PostMapping(value = "/totalVolumePercentage")
+    @PostMapping(value = "/total-volume-percentage")
     @ApiOperation(value = "이번 달 총 판매량 비율")
     public ResponseEntity<StatsDTO.TotalVolumePercentageResponseDTO> getTotalVolumePercentageListThisMonth(@ApiIgnore Authentication authentication) {
 
         try {
             StatsDTO.TotalVolumePercentageResponseDTO totalVolumePercentageResponseDTO = statsService.getTotalVolumePercentageListThisMonth(authentication);
             return ResponseEntity.ok().body(totalVolumePercentageResponseDTO);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
+
+    /*
+    * 기간별 강의별 수익 분포
+    */
+    @PostMapping(value = "/revenue-distribution")
+    @ApiOperation(value = "기간별 강의별 수익 분포")
+    public ResponseEntity<StatsDTO.RevenueDistributionDTO>getRevenueDistribution(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
+
+        try {
+            StatsDTO.RevenueDistributionDTO revenueDistributionDTO = statsService.getRevenueDistribution(authentication, periodOptionRequestDTO);
+            return ResponseEntity.ok().body(revenueDistributionDTO);
         } catch (Exception e) {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }

@@ -209,5 +209,81 @@ public class StatsDTO {
 
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간 옵션 요청 DTO")
+    public static class PeriodOptionRequestDTO {
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "기간 옵션", example = "일주일 : 0, 한달 : 1, 세달 : 2, 여섯달 : 3, 일년 : 4")
+        private int periodOption;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간별 강의별 수익 분포 DTO")
+    public static class RevenueDistributionDTO {
+
+        @ApiModelProperty(value = "기간 옵션", example = "1")
+        private int periodOption;
+
+        // 기간의 강의 수익 DTO LIST
+        List<LectureRevenueByPeriodDTO> lectureRevenueByPeriodDTOList;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간의 강의 수익 DTO")
+    public static class LectureRevenueByPeriodDTO {
+
+        @ApiModelProperty(value = "월 or 일", example = "1")
+        private int date;
+
+        // 강의 수익 DTO LIST
+        List<LectureRevenueDTO> lectureRevenueDTOList;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "강의 수익 DTO")
+    public static class LectureRevenueDTO {
+
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int lectureId;
+
+        @ApiModelProperty(value = "강의명", example = "강의명")
+        private String lectureName;
+
+        @ApiModelProperty(value = "총 판매량", example = "1")
+        private int totalSalesVolume;
+
+    }
+
+    // 기간 선택 날짜 옵션
+    public static class PeriodOption {
+
+        // 일주일
+        public static final int WEEK = 0;
+
+        // 한달
+        public static final int A_MONTH = 1;
+
+        // 세달
+        public static final int THREE_MONTH = 2;
+
+        // 여섯달
+        public static final int SIX_MONTH = 3;
+
+        // 1년
+        public static final int YEAR = 4;
+
+    }
 
 }

@@ -244,5 +244,24 @@ public class StatsService {
 
     }
 
+    // 이번 달 총 강의 수익
+    public StatsDTO.RevenueDistributionDTO getRevenueDistribution(Authentication authentication, StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
 
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+        // dateOption에 유효한 값이 넘어왔는지 검사
+        if (periodOptionRequestDTO.getPeriodOption() > StatsDTO.PeriodOption.YEAR) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+
+    }
 }
