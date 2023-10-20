@@ -19,7 +19,7 @@ public class FileUploadProgressListener implements HttpSessionBindingListener {
 
     @Override
     public void valueBound(HttpSessionBindingEvent event) {
-        session = event.getSession();
+        session = event.getSession(); // 현재의 세션을 session 변수에 저장
     }
 
     @Override
