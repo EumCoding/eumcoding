@@ -8,15 +8,20 @@ import com.latteis.eumcoding.dto.VideoProgressDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
+import com.latteis.eumcoding.util.FileUploadProgressListener;
 import com.latteis.eumcoding.util.MultipartUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -27,6 +32,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class VideoService {
+    private static final Logger logger = LoggerFactory.getLogger(VideoService.class);
+
+
+    @Autowired
+    private FileUploadProgressListener progressListener;
+
+    @Autowired
+    private HttpSession httpSession;
 
     private final VideoRepository videoRepository;
 
@@ -67,6 +80,125 @@ public class VideoService {
         file.mkdirs();
 
         return file;
+    }
+
+    // 진행률 리스너를 이용한 동영상 업로드
+    public void uploadVideoWithProgress(int memberId, VideoDTO.UploadRequestDTO uploadRequestDTO,
+                                        List<MultipartFile> videoFile, List<MultipartFile> thumb) throws IOException {
+        try{
+            // 진행률 리스너를 세션에 추가
+            httpSession.setAttribute("uploadProgressListener", progressListener);
+
+            // 기존의 비디오 업로드 로직...
+            // 섹션 정보 가져오기
+            Section section = sectionRepository.findBySectionId(uploadRequestDTO.getSectionId());
+            Preconditions.checkNotNull(section, "등록된 섹션이 없습니다. (섹션 ID : %s)", uploadRequestDTO.getSectionId());
+
+            // 등록된 회원인지 검사
+            Member member = memberRepository.findByMemberId(memberId);
+            Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+            // 해당 섹션에 존재하는 비디오 개수 구하기
+            long videoCount = videoRepository.countBySectionId(section.getId());
+
+            Video video = Video.builder()
+                    .section(section)
+                    .name(uploadRequestDTO.getName())
+                    .description(uploadRequestDTO.getDescription())
+                    .uploadDate(LocalDateTime.now())
+                    .preview(uploadRequestDTO.getPreview())
+                    .sequence((int) videoCount)
+                    .build();
+            videoRepository.save(video);
+
+            // 비디오 파일인지 구분
+            boolean isVideoFile;
+
+            /*// 동영상이 있을 경우
+            if (videoFile != null && !videoFile.isEmpty()) {
+
+                // 비디오 파일이라고 체크
+                isVideoFile = true;
+
+                // 동영상 한개만 저장
+                MultipartFile multipartFile = videoFile.get(0);
+
+                // 동영상 저장
+                File newFile = saveFile(video.getPath(), video.getId(), getVideoFileDirectoryPath(), multipartFile, isVideoFile);
+
+                // 이미지 파일명 DB에 저장
+                video.setPath(newFile.getName());
+
+                // 동영상 재생시간 받아와서 저장
+                video.setPlayTime(getVideoPlayTime(newFile));
+            }
+
+            // 강의 썸네일 이미지가 있을 경우
+            if (thumb != null && !thumb.isEmpty()) {
+
+                // 비디오 파일이 아니라고 체크
+                isVideoFile = false;
+
+                // 이미지 한개만 저장
+                MultipartFile multipartFile = thumb.get(0);
+
+                // 이미지 저장
+                File newFile = saveFile(video.getThumb(), video.getId(), getVideoThumbDirectoryPath(), multipartFile, isVideoFile);
+
+                // 이미지 파일명 DB에 저장
+                video.setThumb(newFile.getName());
+
+            }*/
+
+            // 동영상이 있을 경우
+            if (videoFile != null && !videoFile.isEmpty()) {
+                MultipartFile multipartFile = videoFile.get(0); // 동영상 한개만 저장
+                if(multipartFile.getSize() <= 0 || multipartFile.getOriginalFilename() == null) {
+                    logger.error("Invalid video file provided");
+                    return;  // or throw an exception
+                }
+                // 비디오 파일이라고 체크
+                isVideoFile = true;
+
+                // 동영상 저장
+                File newFile = saveFile(video.getPath(), video.getId(), getVideoFileDirectoryPath(), multipartFile, isVideoFile);
+
+                // 이미지 파일명 DB에 저장
+                video.setPath(newFile.getName());
+
+                // 동영상 재생시간 받아와서 저장
+                video.setPlayTime(getVideoPlayTime(newFile));
+            }else{
+                logger.error("동영상 업로드 : 동영상이 들어오지 않음");
+            }
+
+            // 강의 썸네일 이미지가 있을 경우
+            if (thumb != null && !thumb.isEmpty()) {
+                MultipartFile multipartFile = thumb.get(0); // 이미지 한개만 저장
+                if(multipartFile.getSize() <= 0 || multipartFile.getOriginalFilename() == null) {
+                    logger.error("Invalid thumbnail file provided");
+                    return;  // or throw an exception
+                }
+                // 비디오 파일이 아니라고 체크
+                isVideoFile = false;
+
+                // 이미지 저장
+                File newFile = saveFile(video.getThumb(), video.getId(), getVideoThumbDirectoryPath(), multipartFile, isVideoFile);
+
+                // 이미지 파일명 DB에 저장
+                video.setThumb(newFile.getName());
+            }
+
+            videoRepository.save(video);
+
+            // 업로드가 완료되면 진행률 리스너를 세션에서 제거
+            httpSession.removeAttribute("uploadProgressListener");
+        }catch(Exception e){
+            logger.error("Error uploading video", e);  // 로그 추가
+            e.printStackTrace();
+
+        }
+
     }
 
     /*
@@ -400,24 +532,30 @@ public class VideoService {
 
     // 파일 저장
     private File saveFile(String fileName, int videoId, File directoryPath, MultipartFile multipartFile, boolean isVideoFile) {
+        try{
+            // 기존 파일이 있다면 삭제
+            if (fileName != null) {
+                deleteVideoFile(fileName, directoryPath);
+            }
 
-        // 기존 파일이 있다면 삭제
-        if (fileName != null) {
-            deleteVideoFile(fileName, directoryPath);
+            File newFile;
+
+            if (isVideoFile){
+                // 동영상 저장 (파일명 : "동영상 ID.확장자")
+                newFile = MultipartUtils.saveVideo(multipartFile, directoryPath, String.valueOf(videoId));
+            }
+            else {
+                // 파일 저장 (파일명 : "동영상 ID.확장자")
+                newFile = MultipartUtils.saveImage(multipartFile, directoryPath, String.valueOf(videoId));
+            }
+
+            return newFile;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
 
-        File newFile;
 
-        if (isVideoFile){
-            // 동영상 저장 (파일명 : "동영상 ID.확장자")
-            newFile = MultipartUtils.saveVideo(multipartFile, directoryPath, String.valueOf(videoId));
-        }
-        else {
-            // 파일 저장 (파일명 : "동영상 ID.확장자")
-            newFile = MultipartUtils.saveImage(multipartFile, directoryPath, String.valueOf(videoId));
-        }
-
-        return newFile;
 
     }
 
