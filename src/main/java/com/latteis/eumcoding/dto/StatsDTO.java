@@ -227,33 +227,8 @@ public class StatsDTO {
     @ApiModel(value = "기간별 강의별 수익 분포 DTO")
     public static class RevenueDistributionDTO {
 
-        @ApiModelProperty(value = "기간 옵션", example = "1")
-        private int periodOption;
-
-        // 기간의 강의 수익 DTO LIST
-        List<LectureRevenueByPeriodDTO> lectureRevenueByPeriodDTOList;
-
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ApiModel(value = "기간의 강의 수익 DTO")
-    public static class LectureRevenueByPeriodDTO {
-
-        @ApiModelProperty(value = "월 or 일", example = "1")
-        private int date;
-
-        // 강의 수익 DTO LIST
-        List<LectureRevenueDTO> lectureRevenueDTOList;
-
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ApiModel(value = "강의 수익 DTO")
-    public static class LectureRevenueDTO {
+        @ApiModelProperty(value = "날짜", example = "20##-##")
+        private LocalDate date;
 
         @ApiModelProperty(value = "강의 ID", example = "1")
         private int lectureId;

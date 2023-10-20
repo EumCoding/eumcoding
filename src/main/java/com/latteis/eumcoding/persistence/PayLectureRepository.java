@@ -85,4 +85,12 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
            "ORDER BY cnt DESC ")
    List<Object[]> cntVolumeOrderByCnt(@Param("member") Member member);
 
+   /*
+   * 기간별 강의별 수익 가져오기
+   */
+  /*  @Query(value = "SELECT * FROM PayLecture pl " +
+            "WHERE pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "")
+    List<Object[]> getRevenueDistribution()*/
 }

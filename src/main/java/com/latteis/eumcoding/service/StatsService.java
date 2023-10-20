@@ -244,8 +244,8 @@ public class StatsService {
 
     }
 
-    // 이번 달 총 강의 수익
-    public StatsDTO.RevenueDistributionDTO getRevenueDistribution(Authentication authentication, StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
+    // 기간별 강의별 수익 분포
+   /* public StatsDTO.RevenueDistributionDTO getRevenueDistribution(Authentication authentication, StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         Member member = memberRepository.findByMemberId(memberId);
@@ -263,5 +263,6 @@ public class StatsService {
         }
 
 
-    }
+
+    }*/
 }

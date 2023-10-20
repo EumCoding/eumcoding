@@ -108,7 +108,7 @@ public class StatsController {
     /*
     * 기간별 강의별 수익 분포
     */
-    @PostMapping(value = "/revenue-distribution")
+    /*@PostMapping(value = "/revenue-distribution")
     @ApiOperation(value = "기간별 강의별 수익 분포")
     public ResponseEntity<StatsDTO.RevenueDistributionDTO>getRevenueDistribution(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
 
@@ -119,7 +119,7 @@ public class StatsController {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
-    }
+    }*/
 
 
 }
