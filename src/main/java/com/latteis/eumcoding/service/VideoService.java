@@ -214,13 +214,18 @@ public class VideoService {
         Video video = videoRepository.findById(idRequestDTO.getId());
         Preconditions.checkNotNull(video, "등록된 비디오가 없습니다. (비디오 ID : %s)", idRequestDTO.getId());
 
+        // 비디오 정보로 Lecture 가져오기
+        Lecture lecture = video.getSection().getLecture();
+
         // 비디오 경로 추가
         VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
         viewResponseDTO.setPath(domain + port + "/eumCodingImgs/lecture/video/file/" + video.getPath());
 
-        // 구매한 이력이 있거나 미리보기 허용인지 검사
+        // 구매한 이력이 있거나 미리보기 허용인지 검사 + 내가 만든 강의인지 검사
         PayLecture payLecture = payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS);
-        Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
+        if(lecture.getMember().getId() != memberId){
+            Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
+        }
 
         // 비디오 시청 기록 가져와서 추가
         VideoProgress videoProgress = videoProgressRepository.findByMemberAndVideo(member, video);
