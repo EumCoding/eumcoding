@@ -334,17 +334,21 @@ public class LectureService {
     }
 
     // 강의 설명 이미지 저장
-    private File saveLectureImage(String fileName, int lectureId, File directoryPath/* Lecture lecture*/, MultipartFile multipartFile) {
+    private File saveLectureImage(String fileName, int lectureId, File directoryPath/* Lecture lecture*/, MultipartFile multipartFile){
+        try{
+            // 기존 이미지가 있다면 삭제
+            if (fileName != null) {
+                deleteLectureImage(fileName, directoryPath);
+            }
 
-        // 기존 이미지가 있다면 삭제
-        if (fileName != null) {
-            deleteLectureImage(fileName, directoryPath);
+            // 이미지 저장 (파일명 : "강의 ID.확장자")
+            File newFile = MultipartUtils.saveImage(multipartFile, directoryPath, String.valueOf(lectureId));
+
+            return newFile;
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
         }
-
-        // 이미지 저장 (파일명 : "강의 ID.확장자")
-        File newFile = MultipartUtils.saveImage(multipartFile, directoryPath, String.valueOf(lectureId));
-
-        return newFile;
 
     }
 

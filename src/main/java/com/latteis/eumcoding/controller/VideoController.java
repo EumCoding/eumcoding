@@ -4,10 +4,13 @@ import com.latteis.eumcoding.dto.SectionDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.dto.VideoProgressDTO;
 import com.latteis.eumcoding.service.VideoService;
+import com.latteis.eumcoding.util.ProgressEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -26,7 +30,31 @@ import java.util.List;
 @Api(tags = "Video Controller", description = "비디오 컨트롤러")
 public class VideoController {
 
-    private final VideoService videoService;
+        private final VideoService videoService;
+
+        private final HttpSession httpSession;
+
+        @PostMapping(value = "/uploadWithProgress")
+        @ApiOperation(value = "동영상 업로드 및 진행률")
+        public ResponseEntity<Object> uploadVideoWithProgress(@ApiIgnore Authentication authentication,
+                                                              @Valid VideoDTO.UploadRequestDTO uploadRequestDTO,
+                                                              @RequestPart(value = "videoFile", required = true) List<MultipartFile> videoFile,
+                                                              @RequestPart(value = "thumb", required = false) List<MultipartFile> thumb) {
+            try {
+                videoService.uploadVideoWithProgress(Integer.parseInt(authentication.getPrincipal().toString()),
+                        uploadRequestDTO, videoFile, thumb);
+                return ResponseEntity.ok().build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        @GetMapping("/progress")
+        public ProgressEntity getProgress() {
+            return (ProgressEntity) httpSession.getAttribute("status");
+        }
+
 
     // 동영상 업로드
     @PostMapping(value = "/upload")
