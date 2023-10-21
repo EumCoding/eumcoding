@@ -42,8 +42,8 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
             "JOIN lecture l ON s.lecture_id = l.id " +
             "JOIN pay_lecture pl ON pl.lecture_id = l.id " +
             "JOIN payment p ON pl.payment_id = p.id " +
-            "WHERE p.state IN(0,2)", nativeQuery = true)
+            "JOIN member m ON c.member_id = m.id " +
+            "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<Curriculum> findByDeleteMemberId(@Param("memberId") int memberId);
-
 
 }
