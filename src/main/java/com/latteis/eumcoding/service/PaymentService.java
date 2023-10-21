@@ -100,19 +100,18 @@ public class PaymentService {
         }
 
         Payment payment = new Payment();
-        if(payment.getState() != 1){
+  /*      if(payment.getState() != 1){
             payment.setMember(member);
             payment.setPayDay(LocalDateTime.now());
         }
+*/
+        payment.setMember(member);
+        payment.setPayDay(LocalDateTime.now());
+        payment.setState(1); // 결제 완료 상태로 설정
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
 
-        // 만약 Payment가 정상적으로 저장되었으면, 결제 상태를 결제 완료:1로 설정
-        if (savedPayment != null) {
-            savedPayment.setState(1);
-            paymentRepository.save(savedPayment);
-        }
 
         // 새로운 PayLecture 생성
         PayLecture payLecture = new PayLecture();
