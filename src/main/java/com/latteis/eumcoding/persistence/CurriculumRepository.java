@@ -46,5 +46,4 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
             "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<Curriculum> findByDeleteMemberId(@Param("memberId") int memberId);
 
-
 }
