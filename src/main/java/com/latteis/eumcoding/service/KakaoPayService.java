@@ -41,10 +41,7 @@ public class KakaoPayService {
     private final PaymentRepository paymentRepository;
     private final BasketRepository basketRepository;
     private final PayLectureRepository payLectureRepository;
-    private final LectureProgressRepository lectureProgressRepository;
-    private final VideoProgressRepository videoProgressRepository;
-    private final VideoRepository videoRepository;
-    private final PaymentService paymentService;
+    private final CommonPaymentService commonPaymentService;
 
 
     public KakaoPayReadyResponseDTO kakaoPayReady(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) {
@@ -195,7 +192,6 @@ public class KakaoPayService {
     /**
      * 결제 완료 승인
      */
-    @Transactional
     public KakaoPayApproveResponseDTO approveResponse(int memberId, String pgToken) {
         // 카카오 요청
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -234,13 +230,12 @@ public class KakaoPayService {
      * 결제 취소(환불말고)
      */
 
-    @Transactional
     public KakaoPayCancelResponseDTO cancelPayment(int memberId, String partnerOrderId) throws Exception {
         KakaoPay kakaoPay = kakaoPayRepository.findKakaoPay(memberId, partnerOrderId);
         List<Payment> payment = paymentRepository.findMemberId(memberId);
 
         for(Payment payments : payment){
-            paymentService.cancelPayment(memberId,payments.getId());
+            commonPaymentService.cancelPayment(memberId,payments.getId());
         }
 
         if (kakaoPay.getTid() == null || kakaoPay.getTid().isEmpty()) {
@@ -273,6 +268,8 @@ public class KakaoPayService {
 
         return response.getBody();
     }
+
+
 }
 
 
