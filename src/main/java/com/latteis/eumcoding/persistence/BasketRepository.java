@@ -23,4 +23,6 @@ public interface BasketRepository extends JpaRepository<Basket, Integer> {
     @Query("SELECT b FROM Basket b WHERE b.member = :member AND b.member.role = 0 AND b.member.state = 1 ORDER BY b.id ASC")
     Page<Basket> findByMemberIdAndRoleAndState(@Param("member") Member member, Pageable pageable);
 
+    @Query("SELECT count(b.lecture) FROM Basket b WHERE b.member = :member AND b.lecture = :lecture")
+    int countByMemberAndLecture(@Param("member") Member member,@Param("lecture") Lecture lecture);
 }
