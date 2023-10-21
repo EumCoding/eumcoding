@@ -69,6 +69,8 @@ public class PaymentService {
     private final LectureProgressRepository lectureProgressRepository;
     private final VideoProgressRepository videoProgressRepository;
     private final VideoRepository videoRepository;
+    private final KakaoPayService kakaoPayService;
+    private final KakaoPayRepository kakaoPayRepository;
 
     @Transactional
     public void completePayment(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
@@ -90,7 +92,7 @@ public class PaymentService {
         }
 
         List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, paymentOKRequestDTO.getLectureId());
-        if (existingPayLecture != null) {
+        if (existingPayLecture != null && !existingPayLecture.isEmpty()) {  //빈문자열이 들어올경우에 이미 결제완료된 강좌입니다로 표시된다 이를방지해야함
             throw new Exception("이미 결제 완료된 강좌입니다.");
         }
 
@@ -100,9 +102,6 @@ public class PaymentService {
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
-
-
-
 
         // 만약 Payment가 정상적으로 저장되었으면, 결제 상태를 결제 완료:1로 설정
         if (savedPayment != null) {
@@ -129,11 +128,13 @@ public class PaymentService {
             curriculum.setScore(0);
             curriculum.setCreateDate(LocalDate.now());
             curriculum.setEdit(0);
+            curriculum.setStartDay(LocalDateTime.now());
             curriculumRepository.save(curriculum);
         }
     }
 
     //내 결제 목록
+   
     public List<PaymentDTO> getMyPayments(int memberId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
         int pageNumber = pageable.getPageNumber() > 0 ? pageable.getPageNumber() - 1 : 0;
         PageRequest modifiedPageable = PageRequest.of(pageNumber, pageable.getPageSize(), pageable.getSort());
@@ -193,6 +194,7 @@ public class PaymentService {
         // 결제 확인
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new Exception("해당 결제가 존재하지 않습니다."));
+
 
         // 결제 회원 확인
         if (payment.getMember().getId() != member.getId()) {

@@ -28,5 +28,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     @Query("SELECT p FROM Payment p JOIN Member m ON p.member.id = m.id WHERE m.id = :memberId AND m.state = 1 ")
     Page<Payment> findAllByMemberIdAndState(@Param("memberId") int memberId, Pageable pageable);
 
+    @Query("SELECT p FROM Payment p WHERE p.member.id =:memberId")
+    List<Payment> findMemberId(@Param("memberId") int memberId);
 
 }
