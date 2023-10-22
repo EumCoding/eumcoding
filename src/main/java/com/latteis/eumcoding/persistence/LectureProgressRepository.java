@@ -17,16 +17,16 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
     @Query("SELECT lp FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId")
     List<LectureProgress> findByMemberId(@Param("memberId") int memberId);
 
-    @Query(value = "SELECT p.member_id, m.nickname,lp.start_day " +
+   /* @Query(value = "SELECT p.member_id, m.nickname,lp.start_day " +
             "FROM lecture_progress lp, payment p, pay_lecture pl, member m " +
             "WHERE p.id = pl.payment_id AND pl.id = lp.pay_lecture_id " +
             "AND m.id = p.member_id AND pl.lecture_id = :lectureId AND lp.state = :state", nativeQuery = true)
     Page<Object[]> getStudentList(@Param("lectureId") int lectureId, @Param("state") int state, Pageable pageable);
-
+*/
     @Query(value = "SELECT p.member.id, m.nickname,lp.startDay, lp.endDay " +
             "FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m " +
             "WHERE pl.lecture.id = :lectureId")
-    Page<Object[]> getStudentList1(@Param("lectureId") int lectureId, Pageable pageable);
+    Page<Object[]> getStudentList(@Param("lectureId") int lectureId, Pageable pageable);
 
 
 
@@ -67,5 +67,11 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
             "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<LectureProgress> findByDeleteLectureProgressId(@Param("memberId") int memberId);
 
-
+    /*
+    * 해당 강의를 듣는 학생 리스트 가져오기
+    * */
+    @Query(value = "SELECT p.member " +
+            "FROM LectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m " +
+            "WHERE pl.lecture.id = :lectureId")
+    List<Member> getStudentList(@Param("lectureId") int lectureId);
 }

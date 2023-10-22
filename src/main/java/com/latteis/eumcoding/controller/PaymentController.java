@@ -1,8 +1,6 @@
 package com.latteis.eumcoding.controller;
 
 //import com.latteis.eumcoding.dto.KakaoPayApproveResponseDTO;
-import com.latteis.eumcoding.dto.MyPlanListDTO;
-import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
 import com.latteis.eumcoding.dto.payment.PaymentOKRequestDTO;
 //import com.latteis.eumcoding.persistence.LectureRepository;
@@ -13,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,7 +23,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j

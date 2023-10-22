@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -108,18 +111,66 @@ public class StatsController {
     /*
     * 기간별 강의별 수익 분포
     */
-    /*@PostMapping(value = "/revenue-distribution")
+    @PostMapping(value = "/revenue-distribution")
     @ApiOperation(value = "기간별 강의별 수익 분포")
-    public ResponseEntity<StatsDTO.RevenueDistributionDTO>getRevenueDistribution(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
+    public ResponseEntity<List<StatsDTO.RevenueDistributionResponseDTO>>getRevenueDistribution(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
 
         try {
-            StatsDTO.RevenueDistributionDTO revenueDistributionDTO = statsService.getRevenueDistribution(authentication, periodOptionRequestDTO);
-            return ResponseEntity.ok().body(revenueDistributionDTO);
+            List<StatsDTO.RevenueDistributionResponseDTO> responseDTOList = statsService.getRevenueDistribution(authentication, periodOptionRequestDTO);
+            return ResponseEntity.ok().body(responseDTOList);
         } catch (Exception e) {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
-    }*/
+    }
+
+    /*
+    * 기간별 종합 판매 추이
+    */
+    @PostMapping(value = "/sales-volume-progress")
+    @ApiOperation(value = "기간별 종합 판매 추이")
+    public ResponseEntity<List<StatsDTO.SalesVolumeProgressResponseDTO>>getSalesVolumeProgress(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
+
+        try {
+            List<StatsDTO.SalesVolumeProgressResponseDTO> responseDTOList = statsService.getSalesVolumeProgress(authentication, periodOptionRequestDTO);
+            return ResponseEntity.ok().body(responseDTOList);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
+
+    /*
+    * 비교 판매 현황
+    */
+    @PostMapping(value = "/compare-lecture")
+    @ApiOperation(value = "비교 판매 현황")
+    public ResponseEntity<StatsDTO.CompareLectureSalesVolumeResponseDTO>getCompareLectureSalesVolume(@ApiIgnore Authentication authentication, @RequestBody StatsDTO.PeriodAndLectureRequestDTO periodAndLectureRequestDTO) {
+
+        try {
+            StatsDTO.CompareLectureSalesVolumeResponseDTO responseDTO = statsService.getCompareLectureSalesVolume(authentication, periodAndLectureRequestDTO);
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
+
+    /*
+    * 수강율 구간별 추이
+    */
+    @PostMapping(value = "/lecture-progress")
+    @ApiOperation(value = "수강율 구간별 추이")
+    public ResponseEntity<List<StatsDTO.LectureProgressDTO>> getLectureProgress(@ApiIgnore Authentication authentication, @RequestBody LectureDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            List<StatsDTO.LectureProgressDTO> responseDTOList = statsService.getLectureProgress(authentication, idRequestDTO);
+            return ResponseEntity.ok().body(responseDTOList);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
 
 
 }

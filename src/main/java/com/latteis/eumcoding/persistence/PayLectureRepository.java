@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
@@ -7,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,11 +89,91 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
    List<Object[]> cntVolumeOrderByCnt(@Param("member") Member member);
 
    /*
-   * 기간별 강의별 수익 가져오기
+   * 월별 강의별 수익 가져오기
    */
-  /*  @Query(value = "SELECT * FROM PayLecture pl " +
-            "WHERE pl.lecture.member = :member " +
+    @Query(value = "SELECT pl.lecture.id, pl.lecture.name, sum(pl.price) " +
+            "FROM PayLecture pl " +
+            "WHERE YEAR(pl.payment.payDay) = :year " +
+            "AND MONTH(pl.payment.payDay) = :month " +
+            "And pl.lecture.member = :member " +
             "AND pl.payment.state = 1 " +
-            "")
-    List<Object[]> getRevenueDistribution()*/
+            "GROUP BY pl.lecture.id " +
+            "ORDER BY pl.lecture.id ")
+    List<Object[]> getRevenueDistributionByMonth(@Param("member") Member member, @Param("year") int year,
+                                                @Param("month") int month);
+   /*
+   * 일별 강의별 수익 가져오기
+   */
+    @Query(value = "SELECT pl.lecture.id, pl.lecture.name, sum(pl.price) " +
+            "FROM PayLecture pl " +
+            "WHERE YEAR(pl.payment.payDay) = :year " +
+            "AND MONTH(pl.payment.payDay) = :month " +
+            "AND DAY(pl.payment.payDay) = :day " +
+            "And pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "GROUP BY pl.lecture.id " +
+            "ORDER BY pl.lecture.id ")
+    List<Object[]> getRevenueDistributionByDay(@Param("member") Member member, @Param("year") int year,
+                                                @Param("month") int month, @Param("day") int day);
+
+    /*
+     * 일별 종합 판매 추이 가져오기
+     */
+    @Query(value = "SELECT pl.payment.payDay, COUNT(pl) " +
+            "FROM PayLecture pl " +
+            "WHERE pl.payment.payDay >= :startDate " +
+            "AND pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 " +
+            "GROUP BY DATE(pl.payment.payDay) ")
+    List<Object[]> getSalesVolumeProgressByDay(@Param("member") Member member, @Param("startDate") LocalDateTime startDate);
+
+    /*
+    * 월별 종합 판매 추이 가져오기
+    */
+    @Query(value = "SELECT COUNT(pl) " +
+            "FROM PayLecture pl " +
+            "WHERE YEAR(pl.payment.payDay) = :year " +
+            "AND MONTH(pl.payment.payDay) = :month " +
+            "AND pl.lecture.member = :member " +
+            "AND pl.payment.state = 1 ")
+    int getSalesVolumeProgressByMonth(@Param("member") Member member, @Param("year") int year, @Param("month") int month);
+
+    /*
+     * 일별 강의 판매 추이 가져오기
+     */
+    @Query(value = "SELECT (SELECT COUNT(pl.lecture_id) " +
+            "FROM pay_lecture pl inner join payment p on pl.payment_id = p.id " +
+            "WHERE YEAR(p.pay_day) = :year " +
+            "AND MONTH(p.pay_day) = :month " +
+            "AND DAY(p.pay_day) = :day " +
+            "AND pl.lecture_id = :lecture1 " +
+            "AND p.state = 1), " +
+            "(SELECT COUNT(pl.lecture_id) " +
+            "FROM pay_lecture pl inner join payment p on pl.payment_id = p.id " +
+            "WHERE YEAR(p.pay_day) = :year " +
+            "AND MONTH(p.pay_day) = :month " +
+            "AND DAY(p.pay_day) = :day " +
+            "AND pl.lecture_id = :lecture2 " +
+            "AND p.state = 1) ", nativeQuery = true)
+    List<Object[]> getLectureSalesVolumeByDay(@Param("lecture1") Lecture lecture1, @Param("lecture2") Lecture lecture2, @Param("year") int year, @Param("month") int month, @Param("day") int day);
+
+    /*
+    * 월별 강의 판매 추이 가져오기
+    */
+    @Query(value = "SELECT (SELECT COUNT(pl.lecture_id) " +
+            "FROM pay_lecture pl inner join payment p on pl.payment_id = p.id " +
+            "WHERE YEAR(p.pay_day) = :year " +
+            "AND MONTH(p.pay_day) = :month " +
+            "AND pl.lecture_id = :lecture1 " +
+            "AND p.state = 1), " +
+            "(SELECT COUNT(pl.lecture_id) " +
+            "FROM pay_lecture pl inner join payment p on pl.payment_id = p.id " +
+            "WHERE YEAR(p.pay_day) = :year " +
+            "AND MONTH(p.pay_day) = :month " +
+            "AND pl.lecture_id = :lecture2 " +
+            "AND p.state = 1) ", nativeQuery = true
+    )
+    List<Object[]> getLectureSalesVolumeByMonth(@Param("lecture1") Lecture lecture1, @Param("lecture2") Lecture lecture2, @Param("year") int year, @Param("month") int month);
+
+
 }
