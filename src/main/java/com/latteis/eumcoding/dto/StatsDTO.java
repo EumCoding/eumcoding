@@ -8,15 +8,23 @@ import org.springframework.util.ObjectUtils;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @AllArgsConstructor
 @Data
 @Builder
 public class StatsDTO {
+
+    public static LocalDate localDateTimeToLocalDate(LocalDateTime localDateTime) {
+        LocalDate localDate = localDateTime.toLocalDate();
+        return localDate;
+    }
 
     @Getter
     @Setter
@@ -209,5 +217,169 @@ public class StatsDTO {
 
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간 옵션 요청 DTO")
+    public static class PeriodOptionRequestDTO {
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "일주일 : 0, 한달 : 1, 세달 : 2, 여섯달 : 3, 일년 : 4", example = "0")
+        private int periodOption;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간별 강의별 수익 분포 응답 DTO")
+    public static class RevenueDistributionResponseDTO {
+
+        @ApiModelProperty(value = "날짜", example = "20##-##")
+        private LocalDate date;
+
+        List<RevenueDistributionDTO> revenueDistributionDTOList;
+
+    }
+
+    @Getter
+    @Setter
+    @ApiModel(value = "기간별 강의별 수익 분포 DTO")
+    public static class RevenueDistributionDTO {
+
+        @ApiModelProperty(value = "강의 ID", example = "1")
+        private int lectureId;
+
+        @ApiModelProperty(value = "강의명", example = "강의명")
+        private String lectureName;
+
+        @ApiModelProperty(value = "판매수익", example = "1")
+        private Long revenue;
+
+        public RevenueDistributionDTO(Object[] objects) {
+            this.lectureId = objects[0] != null ? Integer.parseInt(String.valueOf(objects[0])) : 0;
+            this.lectureName = objects[1] != null ? String.valueOf(objects[1]) : "";
+            this.revenue = objects[2] != null ? Long.parseLong(String.valueOf(objects[2])) : 0;
+        }
+
+        public RevenueDistributionDTO(int lectureId, String lectureName, Long revenue) {
+            this.lectureId = lectureId;
+            this.lectureName = lectureName;
+            this.revenue = revenue;
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "종합 판매 추이 응답 DTO")
+    public static class SalesVolumeProgressResponseDTO {
+
+        @ApiModelProperty(value = "날짜", example = "20##-##")
+        private LocalDate date;
+
+        @ApiModelProperty(value = "판매량", example = "1")
+        private Long salesVolume;
+
+        public SalesVolumeProgressResponseDTO(Object[] objects) {
+            this.date = localDateTimeToLocalDate((LocalDateTime) objects[0]);
+            this.salesVolume = (Long) objects[1];
+        }
+
+        public SalesVolumeProgressResponseDTO(LocalDate date, int salesVolume) {
+            this.date = date;
+            this.salesVolume = (long) salesVolume;
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "기간, 강의 요청 DTO")
+    public static class PeriodAndLectureRequestDTO {
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "일주일 : 0, 한달 : 1, 세달 : 2, 여섯달 : 3, 일년 : 4", example = "0")
+        private int periodOption;
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "강의1 ID", example = "0")
+        private int firstLectureId;
+
+        @PositiveOrZero(message = "0과 양수만 가능합니다.")
+        @ApiModelProperty(value = "강의2 ID", example = "0")
+        private int secondLectureId;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "비교 판매 현황 DTO")
+    public static class CompareLectureSalesVolumeResponseDTO {
+
+        @ApiModelProperty(value = "강의1 이름", example = "강의명1")
+        private String lectureName1;
+
+        @ApiModelProperty(value = "강의2 이름", example = "강의명2")
+        private String lectureName2;
+
+        List<CompareLectureSalesVolumeDTO> compareLectureSalesVolumeDTOList;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "비교 판매 현황 DTO")
+    public static class CompareLectureSalesVolumeDTO {
+
+        @ApiModelProperty(value = "날짜", example = "20##-##")
+        private LocalDate date;
+
+        @ApiModelProperty(value = "강의1 판매량", example = "1")
+        private int salesVolume1;
+
+        @ApiModelProperty(value = "강의2 판매량", example = "1")
+        private int salesVolume2;
+
+        public CompareLectureSalesVolumeDTO(Object[] objects, LocalDate localDate) {
+            this.salesVolume1 = Integer.parseInt(String.valueOf(objects[0]));
+            this.salesVolume2 = Integer.parseInt(String.valueOf(objects[1]));
+            this.date = localDate;
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "구간별 수강률 DTO")
+    public static class LectureProgressDTO {
+
+        @ApiModelProperty(value = "해당 구간 수 (0~9%부터)", example = "1")
+        private int count;
+
+    }
+
+    // 기간 선택 날짜 옵션
+    public static class PeriodOption {
+
+        // 일주일
+        public static final int WEEK = 0;
+
+        // 한달
+        public static final int A_MONTH = 1;
+
+        // 세달
+        public static final int THREE_MONTH = 2;
+
+        // 여섯달
+        public static final int SIX_MONTH = 3;
+
+        // 1년
+        public static final int YEAR = 4;
+
+    }
 
 }

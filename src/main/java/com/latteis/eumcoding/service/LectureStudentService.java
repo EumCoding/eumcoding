@@ -56,7 +56,7 @@ public class LectureStudentService {
         // 해당 강의의 모든 동영상 갯수
         long totalVideoCount = videoRepository.countByLectureId(lecture.getId());
         // progress 제외한 학생dto 리스트 가져옴
-        Page<Object[]> pageObjects = lectureProgressRepository.getStudentList1(lecture.getId(), pageable);
+        Page<Object[]> pageObjects = lectureProgressRepository.getStudentList(lecture.getId(), pageable);
         // 학생 DTO List 생성
         List<LectureStudentDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
         // 반복문
