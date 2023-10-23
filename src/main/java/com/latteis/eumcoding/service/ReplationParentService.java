@@ -17,6 +17,7 @@ import java.nio.channels.IllegalChannelGroupException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -107,14 +108,12 @@ public class ReplationParentService {
         emailNumberRepository.save(emailNumber);
     }
 
-    
-    //권한 획득 시 자녀 정보가져옴
-    public Member getChildByParent(int parentId,int childId) {
-        //부모 id를 기반으로 자녀 목록 가져옴
-        Optional<ReplationParent> relations = relationParentRepository.findByParentIdChildId(parentId,childId);
-        ReplationParent replationParent = relations.orElseThrow(() -> new IllegalArgumentException("자녀가 아닙니다."));
 
-        return replationParent.getChild();
+   public List<MyPlanInfoDTO> getChildByParent(int parentId,int childId) {
+        ReplationParent member = relationParentRepository.findByParentIdChildId(parentId,childId)
+                .orElseThrow(() -> new IllegalArgumentException("해당하는 자녀가 없습니다."));
+        List<MyPlanInfoDTO> curriculumList = curriculumService.getMyPlanInfo(member.getChild().getId());
+        return curriculumList;
     }
 
 

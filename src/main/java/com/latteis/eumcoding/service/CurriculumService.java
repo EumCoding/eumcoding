@@ -34,6 +34,7 @@ public class CurriculumService {
 
 
     //특정 회원의 학습 계획 리스트를 반환 각 커리큘럼의 섹션별로 비디오 진행 상황을 확인하고, 그에 따른 진행률을 계산하여 DTO에 담아 반환
+/*
     public List<MyPlanListDTO> getMyPlanList(int memberId) {
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
         List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
@@ -92,6 +93,7 @@ public class CurriculumService {
 
         return myPlanList;
     }
+*/
 
 
     //기존 getMyPlanList랑 다른점은 해당 커리큘럼에 있는 섹션을 기한내에 다들었는지

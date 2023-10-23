@@ -2,6 +2,7 @@
 package com.latteis.eumcoding.controller;
 
 
+import com.latteis.eumcoding.dto.MyPlanInfoDTO;
 import com.latteis.eumcoding.dto.MyPlanListDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.model.Member;
@@ -61,28 +62,15 @@ public class ReplationParentController {
         }
     }
     //인증이 성공적으로 되면 자녀 커리큘럼 확인가능
-    @GetMapping("/children/curriculum")
+   @GetMapping("/children/curriculum")
     public ResponseEntity<?> getChildrenCurriculum(@ApiIgnore Authentication authentication,
                                                    @RequestParam(required = false) Integer childId) {
         try {
             int parentId = Integer.parseInt(authentication.getPrincipal().toString());
-
             if (childId == null) {
                 return ResponseEntity.badRequest().body("자녀 ID를 제공해야 합니다.");
             }
-
-            // 제공된 childId로 해당 자녀의 정보를 조회
-            Member child = replationParentService.getChildByParent(parentId, childId);
-            if (child == null) {
-                return ResponseEntity.badRequest().body("해당하는 자녀가 없습니다.");
-            }
-
-            List<Member> children = Collections.singletonList(child);  // 하나의 자녀 정보만 리스트에 추가, 메모리 절약을위해 사용
-            List<MyPlanListDTO> curriculumList = new ArrayList<>();
-            for (Member m : children) {
-                List<MyPlanListDTO> childCurriculum = curriculumService.getMyPlanList(m.getId());
-                curriculumList.addAll(childCurriculum);
-            }
+            List<MyPlanInfoDTO> curriculumList = replationParentService.getChildByParent(parentId,childId);
 
             return ResponseEntity.ok().body(curriculumList);
 

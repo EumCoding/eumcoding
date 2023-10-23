@@ -24,7 +24,7 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/unauth")
+@RequestMapping("/member/kakao")
 public class KaKaoController {
 
     @Value("${kakao.clientId}")

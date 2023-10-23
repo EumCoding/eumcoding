@@ -176,7 +176,7 @@ public class MemberController {
 
 
     //내 커리큘럼 목록 확인하기
-    @GetMapping("/myplan/list")
+/*    @GetMapping("/myplan/list")
     public ResponseEntity<?> getMyPlanList(@ApiIgnore Authentication authentication) {
         try{
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
@@ -189,7 +189,7 @@ public class MemberController {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
-    }
+    }*/
 
     //내 커리큘럼 진행상황 확인하기
     @GetMapping("/myplan/list/info")
