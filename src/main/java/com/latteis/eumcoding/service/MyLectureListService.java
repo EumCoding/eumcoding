@@ -134,7 +134,7 @@ public class MyLectureListService {
                     .progress(progress)
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
-                    .thumb(domain + port + "/eumCodingImgs/myLecture/lecture/" + lecture.getThumb())
+                    .thumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb())
                     .payDay(payDay)
                     .build();
 
