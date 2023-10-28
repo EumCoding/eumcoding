@@ -113,6 +113,7 @@ public class QuestionDTO {
         private LocalDateTime date;
         private int lectureId;
         private String lectureName;
+        private String content;
     }
 
     @Data

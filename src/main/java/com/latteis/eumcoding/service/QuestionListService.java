@@ -58,8 +58,12 @@ public class QuestionListService {
         List<QuestionDTO.MyQuestionListDTO> myQuestionListDTOS = questionsPage.getContent().stream().map(question -> {
             // 해당 질문에 대한 답변 유무 확인
             int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
+            // 닉네임 가져오기
+            String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
 
             return QuestionDTO.MyQuestionListDTO.builder()
+                    .nickname(nickname)
+                    .content(question.getContent())
                     .nickname(question.getMember().getNickname())
                     .qnaId(question.getId())
                     .title(question.getTitle())
