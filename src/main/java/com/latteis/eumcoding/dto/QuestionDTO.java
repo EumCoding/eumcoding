@@ -123,6 +123,8 @@ public class QuestionDTO {
         private int qnaId;
         private int memberId;
         private int lectureId;
+        private String content;
+        private String nickname;
         private int answer; //답변 여부 1:했다. 0:안했다
         private String title;
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

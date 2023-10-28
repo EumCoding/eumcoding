@@ -2,6 +2,7 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.QuestionDTO;
 import com.latteis.eumcoding.model.Lecture;
+import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Question;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class QuestionListService {
 
     private final QuestionRepository questionRepository;
     private final QuestionCommentRepository questionCommentRepository;
+    private final MemberRepository memberRepository;
 
 
     //이상하게 이건 Pageable pageable을 사용하면 page정보들이 다 넘어와서
@@ -88,7 +90,13 @@ public class QuestionListService {
                     // 해당 질문에 대한 답변 유무 확인
                 int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
 
+                // 해당 질문의 id로 member의 닉네임을 가져옵니다.
+                String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
+
+
                 return QuestionDTO.QnAQuestionListDTO.builder()
+                        .nickname(nickname)
+                        .content(question.getContent())
                         .qnaId(question.getId())
                         .memberId(question.getMember().getId())
                         .lectureId(question.getLecture().getId())
