@@ -34,9 +34,11 @@ public class QuestionCommentController {
     @ApiOperation(value = "질문에 대한 답변", notes = "강사만 답변을 작성할 수 있습니다.")
     @PostMapping("/write")
     public ResponseEntity<QuestionCommentDTO.WriteRequestDTO> writeComment(@ApiIgnore Authentication authentication,
-                                                                 QuestionCommentDTO.WriteRequestDTO writeRequestDTO) {
+                                                                 @RequestBody QuestionCommentDTO.WriteRequestDTO writeRequestDTO) {
 
         try{
+            log.info(String.valueOf(writeRequestDTO.getQuestionId()));
+            log.info(writeRequestDTO.getContent());
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
             QuestionCommentDTO.WriteRequestDTO writeComment = questionCommentService.writeComment(memberId, writeRequestDTO);
             return ResponseEntity.ok(writeComment);
