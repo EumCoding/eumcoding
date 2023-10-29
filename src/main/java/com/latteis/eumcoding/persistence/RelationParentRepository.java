@@ -25,4 +25,13 @@ public interface RelationParentRepository extends JpaRepository<ReplationParent,
     //이미 엔티티에서 외래키 설정표시를 해놔서 여기선 딱히 조인안써도 괜찮음
     @Query("SELECT r FROM ReplationParent r WHERE r.child.id = :childId")
     Optional<ReplationParent> findByChildId(@Param("childId") int childId);
+
+    @Query(value = "SELECT rp FROM ReplationParent rp WHERE rp.parent.id = :parentsId")
+    List<ReplationParent> findChildId(@Param("parentsId") int parentsId);
+
+
+  /*  @Query(value = "SELECT count(*) FROM replation_parent WHERE parents_id = :parentsId", nativeQuery = true)
+    Integer findCountChildId(@Param("parentsId") int parentsId);*/
+
+
 }
