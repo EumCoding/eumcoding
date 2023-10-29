@@ -36,17 +36,25 @@ public class QuestionCommentService {
 
 
         // 강좌에 대한 멤버 정보.(해당 멤버가 강좌를 만들었는지.)
-        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId())
-                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+//        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId())
+//                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+//        Lecture lecture = question.getLecture();
+
+        // 해당 멤버가 글 작성자 또는 강좌 생성자인지 체크합니다
+        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId()).get();
         Lecture lecture = question.getLecture();
-
-        //글 작성자도 댓글 달 수있게 허용해야함
-        boolean isQuestionAuthor = question.getMember().getId() == memberId;
-
-
-        if (lecture.getMember().getId() != memberId && !isQuestionAuthor) {
+        // 둘 다 아니면 예외처리
+        if(lecture.getMember().getId() != memberId && question.getMember().getId() != memberId){
             throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
         }
+
+        //글 작성자도 댓글 달 수있게 허용해야함
+//        boolean isQuestionAuthor = question.getMember().getId() == memberId;
+//
+//
+//        if (lecture.getMember().getId() != memberId && !isQuestionAuthor) {
+//            throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
+//        }
 
 /*        // 질문에 대한 답이 있는지 체크
         boolean completeAnswer = questionCommentRepository.existsByQuestion(question.getId());
@@ -232,6 +240,24 @@ public class QuestionCommentService {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("BoardCommentService.getMyCommentList() : 에러 발생");
+        }
+    }
+
+    public List<QuestionCommentDTO.QnACommentListDTO> getCommentList(int memberId, int questionId) {
+        try{
+            // comment들을 불러와 리스트화 함
+            List<QuestionComment> questionComments = questionCommentRepository.findAllByQuestionId(questionId);
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = new ArrayList<>();
+            // 반복문으로 DTO 리스트에 넣기 - 매개변수가 object[] 타입이므로 이에 맞게 해야 합니다.
+            for (QuestionComment questionComment : questionComments) {
+                // DTO에 담기
+                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment);
+                listResponseDTOS.add(listDTO);
+            }
+            return listResponseDTOS;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("BoardCommentService.getCommentList() : 에러 발생");
         }
     }
 

@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.latteis.eumcoding.model.QuestionComment;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -116,6 +117,7 @@ public class QuestionCommentDTO {
     public static class QnACommentListDTO{
         private int id; //질문답변 아이디
         private int questionId;//질문 아이디
+        private String nickname;
         private String title;
         private String content;
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -128,6 +130,16 @@ public class QuestionCommentDTO {
             this.title = (String) objects[2];
             this.content = (String) objects[3];
             this.createDay = timestampToLocalDateTime((Timestamp) objects[4]);
+            this.nickname = (String) objects[5];
+        }
+
+        public QnACommentListDTO(QuestionComment questionComment) {
+            this.id = questionComment.getId();
+            this.questionId = questionComment.getQuestion().getId();
+            this.title = questionComment.getQuestion().getTitle();
+            this.content = questionComment.getContent();
+            this.createDay = questionComment.getCreatedDay();
+            this.nickname = questionComment.getMember().getNickname();
         }
 
         // Timestamp -> LocalDateTime 변환

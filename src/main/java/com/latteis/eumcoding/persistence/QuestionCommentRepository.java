@@ -37,4 +37,6 @@ public interface QuestionCommentRepository extends JpaRepository<QuestionComment
             "GROUP BY qc.id " +
             "ORDER BY qc.created_day DESC", nativeQuery = true)
     Page<Object[]> getMyList(@Param("memberId") int memberId, Pageable pageable);
+
+    List<QuestionComment> findAllByQuestionId(int questionId);
 }

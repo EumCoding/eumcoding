@@ -36,9 +36,14 @@ public class QuestionCommentController {
     public ResponseEntity<QuestionCommentDTO.WriteRequestDTO> writeComment(@ApiIgnore Authentication authentication,
                                                                  QuestionCommentDTO.WriteRequestDTO writeRequestDTO) {
 
-        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        QuestionCommentDTO.WriteRequestDTO writeComment = questionCommentService.writeComment(memberId, writeRequestDTO);
-        return ResponseEntity.ok(writeComment);
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            QuestionCommentDTO.WriteRequestDTO writeComment = questionCommentService.writeComment(memberId, writeRequestDTO);
+            return ResponseEntity.ok(writeComment);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     // 대댓글 작성
@@ -85,6 +90,20 @@ public class QuestionCommentController {
             return ResponseEntity.ok().body(myListResponseDTOS);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+    // question comment list 가져오기
+    @PostMapping(value = "/list")
+    @ApiOperation(value = "질문 게시판 댓글 리스트 가져오기")
+    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@ApiIgnore Authentication authentication, @RequestParam("questionId") int questionId) {
+
+        try {
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(Integer.parseInt(authentication.getPrincipal().toString()), questionId);
+            return ResponseEntity.ok().body(listResponseDTOS);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
     }
