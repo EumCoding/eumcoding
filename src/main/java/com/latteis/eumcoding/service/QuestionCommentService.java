@@ -36,25 +36,17 @@ public class QuestionCommentService {
 
 
         // 강좌에 대한 멤버 정보.(해당 멤버가 강좌를 만들었는지.)
-//        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId())
-//                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
-//        Lecture lecture = question.getLecture();
-
-        // 해당 멤버가 글 작성자 또는 강좌 생성자인지 체크합니다
-        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId()).get();
+        Question question = questionRepository.findById(questionCommentWriteDTO.getQuestionId())
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다. questionId = " + questionCommentWriteDTO.getQuestionId()));
         Lecture lecture = question.getLecture();
-        // 둘 다 아니면 예외처리
-        if(lecture.getMember().getId() != memberId && question.getMember().getId() != memberId){
-            throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
-        }
 
         //글 작성자도 댓글 달 수있게 허용해야함
-//        boolean isQuestionAuthor = question.getMember().getId() == memberId;
-//
-//
-//        if (lecture.getMember().getId() != memberId && !isQuestionAuthor) {
-//            throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
-//        }
+        boolean isQuestionAuthor = question.getMember().getId() == memberId;
+
+
+        if (lecture.getMember().getId() != memberId && !isQuestionAuthor) {
+            throw new IllegalArgumentException("강사 혹은 작성자만이 댓글을 작성할 수 있습니다.");
+        }
 
 /*        // 질문에 대한 답이 있는지 체크
         boolean completeAnswer = questionCommentRepository.existsByQuestion(question.getId());
