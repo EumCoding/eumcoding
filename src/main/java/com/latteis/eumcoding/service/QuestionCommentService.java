@@ -242,8 +242,13 @@ public class QuestionCommentService {
             List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = new ArrayList<>();
             // 반복문으로 DTO 리스트에 넣기 - 매개변수가 object[] 타입이므로 이에 맞게 해야 합니다.
             for (QuestionComment questionComment : questionComments) {
+                // 내가 쓴 답변인지 체크
+                int isMyComment = 0;
+                if (memberId == questionComment.getMember().getId()) {
+                    isMyComment = 1;
+                }
                 // DTO에 담기
-                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment);
+                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment, isMyComment);
                 listResponseDTOS.add(listDTO);
             }
             return listResponseDTOS;

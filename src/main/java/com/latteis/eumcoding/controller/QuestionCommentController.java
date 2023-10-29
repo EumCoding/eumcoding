@@ -97,14 +97,20 @@ public class QuestionCommentController {
     }
 
     // question comment list 가져오기
-    @PostMapping(value = "/list")
+    @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "질문 게시판 댓글 리스트 가져오기")
-    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@ApiIgnore Authentication authentication, @RequestParam("questionId") int questionId) {
+    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@ApiIgnore Authentication authentication, @RequestParam(value = "questionId", required = true) int questionId) {
 
         try {
-            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(Integer.parseInt(authentication.getPrincipal().toString()), questionId);
+            // 로그인 된 경우가 아니면 0으로 설정
+            int memberId = 0;
+            if(authentication != null) {
+                memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            }
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(memberId, questionId);
             return ResponseEntity.ok().body(listResponseDTOS);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
