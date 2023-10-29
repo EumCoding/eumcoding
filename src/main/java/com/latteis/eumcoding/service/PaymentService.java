@@ -166,17 +166,19 @@ public class PaymentService {
 
                     lectureDTOList.add(lectureDTO);
 
-                PaymentDTO paymentDTO = PaymentDTO.builder()
-                        .paymentId(payment.getId())
-                        .memberId(payment.getMember().getId())
-                        .date(payment.getPayDay())
-                        .lectureDTOList(lectureDTOList)
-                        .stateDescription(convertStateToKorean(payment.getState()))
-                        .build();
-
-                paymentDTOs.add(paymentDTO);
             }
+
+            PaymentDTO paymentDTO = PaymentDTO.builder()
+                    .paymentId(payment.getId())
+                    .memberId(payment.getMember().getId())
+                    .date(payment.getPayDay())
+                    .lectureDTOList(lectureDTOList)
+                    .stateDescription(convertStateToKorean(payment.getState()))
+                    .build();
+
+            paymentDTOs.add(paymentDTO);
         }
+
         return paymentDTOs;
     }
 
