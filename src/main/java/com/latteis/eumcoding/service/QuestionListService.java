@@ -114,5 +114,48 @@ public class QuestionListService {
         return questionList;
     }
 
+    //해당 과목에 대한 질문들 가져오기 + 내가 작성한 질문인지 체크
+    public List<QuestionDTO.QnAQuestionListDTO> getQuestionList(int memberId, int lectureId, int page) {
+        //페이지를 1부터 시작하게함
+        int DefaultPage = page - 1;
+        if (DefaultPage < 0){
+            throw new IllegalArgumentException("페이지오류");
+        }
+        int size = 10;
+        Pageable pageable = PageRequest.of(DefaultPage, size, Sort.Direction.DESC, "createdDay");
+        Page<Question> questionPage = questionRepository.findByLectureId(lectureId,pageable);
+
+        List<QuestionDTO.QnAQuestionListDTO> questionList = questionPage.getContent().stream().map(question ->{
+            int isMyQuestion = 0;
+            // 해당 질문에 대한 답변 유무 확인
+            int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
+
+            // 해당 질문의 id로 member의 닉네임을 가져옵니다.
+            String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
+
+            // 내가 작성한 질문인지 확인
+            if (question.getMember().getId() == memberId) {
+                isMyQuestion = 1;
+            } else {
+                isMyQuestion = 0;
+            }
+
+
+            return QuestionDTO.QnAQuestionListDTO.builder()
+                    .nickname(nickname)
+                    .content(question.getContent())
+                    .qnaId(question.getId())
+                    .memberId(question.getMember().getId())
+                    .lectureId(question.getLecture().getId())
+                    .answer(questionCommentStatus)
+                    .title(question.getTitle())
+                    .date(question.getCreatedDay())
+                    .lectureName(question.getLecture().getName())
+                    .isMyQuestion(isMyQuestion)
+                    .build();
+        }).collect(Collectors.toList());
+
+        return questionList;
+    }
 
 }
