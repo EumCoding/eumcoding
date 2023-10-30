@@ -132,5 +132,6 @@ public class QuestionDTO {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime date;
         private String lectureName;
+        private int isMyQuestion; // 내가 쓴 질문인지 확인
     }
 }

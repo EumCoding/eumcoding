@@ -121,6 +121,8 @@ public class QuestionCommentDTO {
         private String title;
         private String content;
         private int isMyComment; // 내가 쓴 댓글인지 확인
+        private int isWriter; // 작성자인지 여부 확인
+        private int memberId;
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createDay;
@@ -134,7 +136,7 @@ public class QuestionCommentDTO {
             this.nickname = (String) objects[5];
         }
 
-        public QnACommentListDTO(QuestionComment questionComment, int isMyComment) {
+        public QnACommentListDTO(QuestionComment questionComment, int isMyComment, int isWriter) {
             this.id = questionComment.getId();
             this.questionId = questionComment.getQuestion().getId();
             this.title = questionComment.getQuestion().getTitle();
@@ -142,6 +144,8 @@ public class QuestionCommentDTO {
             this.createDay = questionComment.getCreatedDay();
             this.nickname = questionComment.getMember().getNickname();
             this.isMyComment = isMyComment;
+            this.isWriter = isWriter;
+            this.memberId = questionComment.getMember().getId();
         }
 
         // Timestamp -> LocalDateTime 변환

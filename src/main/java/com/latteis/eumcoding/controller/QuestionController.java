@@ -98,4 +98,17 @@ public class QuestionController {
         List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(lectureId, page);
         return ResponseEntity.ok(questionList);
     }
+
+    //해당 과목에 대해 질문들 가져오기 - for 회원
+    @GetMapping("/auth/list")
+    public ResponseEntity<List<QuestionDTO.QnAQuestionListDTO>> getQuestionListForAuth(
+            @ApiIgnore Authentication authentication,
+            @RequestParam("lectureId") int lectureId,
+            @RequestParam("page") int page
+
+    ){
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(memberId, lectureId, page);
+        return ResponseEntity.ok(questionList);
+    }
 }

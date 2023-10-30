@@ -247,8 +247,13 @@ public class QuestionCommentService {
                 if (memberId == questionComment.getMember().getId()) {
                     isMyComment = 1;
                 }
+                // 해당 답변이 글 작성자가 쓴 것인지 체크
+                int isWriter = 0;
+                if (questionComment.getMember().getId() == questionComment.getQuestion().getMember().getId()) {
+                    isWriter = 1;
+                }
                 // DTO에 담기
-                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment, isMyComment);
+                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment, isMyComment, isWriter);
                 listResponseDTOS.add(listDTO);
             }
             return listResponseDTOS;
