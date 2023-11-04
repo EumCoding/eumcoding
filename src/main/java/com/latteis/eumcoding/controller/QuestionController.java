@@ -95,8 +95,13 @@ public class QuestionController {
             @RequestParam("page") int page
 
     ){
-        List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(lectureId, page);
-        return ResponseEntity.ok(questionList);
+        try{
+            List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(lectureId, page);
+            return ResponseEntity.ok(questionList);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     //해당 과목에 대해 질문들 가져오기 - for 회원
@@ -107,8 +112,13 @@ public class QuestionController {
             @RequestParam("page") int page
 
     ){
-        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(memberId, lectureId, page);
-        return ResponseEntity.ok(questionList);
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<QuestionDTO.QnAQuestionListDTO> questionList = questionListService.getQuestionList(memberId, lectureId, page);
+            return ResponseEntity.ok(questionList);
+        }catch(Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }

@@ -99,15 +99,26 @@ public class QuestionCommentController {
     // question comment list 가져오기
     @GetMapping(value = "/unauth/list")
     @ApiOperation(value = "질문 게시판 댓글 리스트 가져오기")
-    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@ApiIgnore Authentication authentication, @RequestParam(value = "questionId", required = true) int questionId) {
+    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@RequestParam(value = "questionId", required = true) int questionId) {
 
         try {
-            // 로그인 된 경우가 아니면 0으로 설정
-            int memberId = 0;
-            if(authentication != null) {
-                memberId = Integer.parseInt(authentication.getPrincipal().toString());
-            }
-            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(memberId, questionId);
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(questionId); // 비로그인회원
+            return ResponseEntity.ok().body(listResponseDTOS);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+    }
+
+    // question comment list 가져오기(로그인회원)
+    @GetMapping(value = "/auth/list")
+    @ApiOperation(value = "질문 게시판 댓글 리스트 가져오기")
+    public ResponseEntity<List<QuestionCommentDTO.QnACommentListDTO>> getCommentList(@ApiIgnore Authentication authentication, @RequestParam(value = "questionId", required = true) int questionId, @PageableDefault(size = 10) Pageable pageable) {
+
+        try {
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = questionCommentService.getCommentList(memberId, questionId); // 로그인회원
             return ResponseEntity.ok().body(listResponseDTOS);
         } catch (Exception e) {
             e.printStackTrace();

@@ -235,10 +235,33 @@ public class QuestionCommentService {
         }
     }
 
-    public List<QuestionCommentDTO.QnACommentListDTO> getCommentList(int memberId, int questionId) {
+    //로그인 하지 않은 회원용 getCommentList
+    public List<QuestionCommentDTO.QnACommentListDTO> getCommentList(int questionId) {
         try{
             // comment들을 불러와 리스트화 함
             List<QuestionComment> questionComments = questionCommentRepository.findAllByQuestionId(questionId);
+            List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = new ArrayList<>();
+            // 반복문으로 DTO 리스트에 넣기 - 매개변수가 object[] 타입이므로 이에 맞게 해야 합니다.
+            for (QuestionComment questionComment : questionComments) {
+                // 내가 쓴 답변인지 체크
+                int isMyComment = 0;
+                // 해당 답변이 글 작성자가 쓴 것인지 체크
+                int isWriter = 0;
+                // DTO에 담기
+                QuestionCommentDTO.QnACommentListDTO listDTO = new QuestionCommentDTO.QnACommentListDTO(questionComment, isMyComment, isWriter);
+                listResponseDTOS.add(listDTO);
+            }
+            return listResponseDTOS;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("BoardCommentService.getCommentList() : 에러 발생");
+        }
+    }
+
+    public List<QuestionCommentDTO.QnACommentListDTO> getCommentList(int memberId, int questionId) {
+        try{
+            // comment들을 불러와 리스트화 함
+            List<QuestionComment> questionComments = questionCommentRepository.findAllByQuestionId(questionId); // 질문id로 댓글들 가져오기
             List<QuestionCommentDTO.QnACommentListDTO> listResponseDTOS = new ArrayList<>();
             // 반복문으로 DTO 리스트에 넣기 - 매개변수가 object[] 타입이므로 이에 맞게 해야 합니다.
             for (QuestionComment questionComment : questionComments) {
