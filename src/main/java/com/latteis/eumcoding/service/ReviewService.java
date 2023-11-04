@@ -126,12 +126,12 @@ public class ReviewService {
     }
 
     // 내가 작성한 리뷰 목록 가져오기
-    public List<ReviewDTO.MyListResponseDTO> getMyReviewList(int memberId, Pageable pageable) {
+    public List<ReviewDTO.MyListResponseDTO> getMyReviewList(int memberId, Pageable pageable, ReviewDTO.MyListRequestDTO myListRequestDTO) {
 
         try {
 
             // 오브젝트에 리스트 담기
-            Page<Object[]> pageList = reviewRepository.getMyReviewList(memberId, pageable);
+            Page<Object[]> pageList = reviewRepository.getMyReviewListByDate(memberId, myListRequestDTO.getStart(), myListRequestDTO.getEnd(), pageable);
             List<Object[]> objects = pageList.getContent();
             List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
             // 반복으로 DTO에 넣기

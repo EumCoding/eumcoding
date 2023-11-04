@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -23,6 +24,33 @@ public class ReviewDTO {
         @ApiModelProperty(value = "리뷰 ID", example = "1")
         private int id;
 
+    }
+
+    // 내가 작성한 리뷰 요청 DTO
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "내가 작성한 리뷰 요청 DTO")
+    public static class MyListRequestDTO {
+        @Positive(message = "시작일입니다.")
+        @ApiModelProperty(value = "시작일", example = "2021-04-13 01:47:52")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @Getter
+        private LocalDateTime startDate;
+
+        @Positive(message = "종료일입니다.")
+        @ApiModelProperty(value = "종료일", example = "2021-04-13 01:47:52")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @Getter
+        private LocalDateTime endDate;
+
+        public String getStart() {
+            return startDate.toString();
+        }
+
+        public String getEnd() {
+            return endDate.toString();
+        }
     }
 
     // 리뷰 작성 요청 DTO

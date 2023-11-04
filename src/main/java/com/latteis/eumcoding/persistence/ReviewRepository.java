@@ -38,6 +38,14 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "ORDER BY r.created_day DESC ", nativeQuery = true)
     Page<Object[]> getMyReviewList(@Param("memberId") int memberId, Pageable pageable);
 
+    // 내가 작성한 리스트 가져오기 + 날짜
+    @Query(value = "SELECT r.id, r.content, r.rating, r.created_day, COUNT(ir.review_id) as heart " +
+            "FROM review r left join interest_review ir on r.id = ir.review_id " +
+            "WHERE r.member_id = :memberId AND r.created_day BETWEEN :start AND :end " +
+            "GROUP BY r.id " +
+            "ORDER BY r.created_day DESC ", nativeQuery = true)
+    Page<Object[]> getMyReviewListByDate(@Param("memberId") int memberId, @Param("start") String start, @Param("end") String end, Pageable pageable);
+
     /*
      * Lecture에 맞는 리뷰 갯수 가져오기
      */
