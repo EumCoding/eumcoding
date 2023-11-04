@@ -86,13 +86,13 @@ public class ReviewController {
 
     }
 
-    // 내가 쓴 리뷰 목록
+    // 내가 쓴 리뷰 목록 + 날짜로 검색
     @PostMapping(value = "/my_list")
     @ApiOperation(value = "내가 쓴 리뷰 목록")
-    public ResponseEntity<List<ReviewDTO.MyListResponseDTO>> getMyReviewList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable) {
+    public ResponseEntity<List<ReviewDTO.MyListResponseDTO>> getMyReviewList(@ApiIgnore Authentication authentication, @PageableDefault(size = 10) Pageable pageable, @Valid @RequestBody ReviewDTO.MyListRequestDTO myListRequestDTO) {
 
         try {
-            List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = reviewService.getMyReviewList(Integer.parseInt(authentication.getPrincipal().toString()), pageable);
+            List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = reviewService.getMyReviewList(Integer.parseInt(authentication.getPrincipal().toString()), pageable, myListRequestDTO);
             return ResponseEntity.ok().body(myListResponseDTOList);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
