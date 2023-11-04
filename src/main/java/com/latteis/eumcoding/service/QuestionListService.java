@@ -126,7 +126,7 @@ public class QuestionListService {
         Page<Question> questionPage = questionRepository.findByLectureId(lectureId,pageable);
 
         List<QuestionDTO.QnAQuestionListDTO> questionList = questionPage.getContent().stream().map(question ->{
-            int isMyQuestion = 0;
+            int isMyQuestion;
             // 해당 질문에 대한 답변 유무 확인
             int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
 
@@ -134,6 +134,8 @@ public class QuestionListService {
             String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
 
             // 내가 작성한 질문인지 확인
+            log.info("question.getMember().getId() : " + question.getMember().getId());
+            log.info("memberId : " + memberId);
             if (question.getMember().getId() == memberId) {
                 isMyQuestion = 1;
             } else {
