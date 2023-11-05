@@ -74,6 +74,8 @@ public class ReviewCommentDTO {
         @ApiModelProperty(value = "강사 ID", example = "1")
         private int memberId;
 
+        private String profileImg;
+
         @NotBlank(message = "필수 입력 값입니다.")
         @ApiModelProperty(value = "내용", example = "내용입니다")
         private String content;
@@ -95,6 +97,7 @@ public class ReviewCommentDTO {
             this.nickname = (String) objects[2];
             this.commentDay = timestampToLocalDateTime((Timestamp) objects[3]);
             this.modified = (boolean) objects[4];
+            this.profileImg = (String) objects[5];
         }
 
         // Timestamp -> LocalDateTime 변환

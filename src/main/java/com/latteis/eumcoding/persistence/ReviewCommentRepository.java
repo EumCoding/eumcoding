@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param;
 public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Integer> {
     ReviewComment findByIdAndMemberId(int id, int memberId);
 
-    @Query(value = "SELECT rc.member_id, rc.content, m.nickname, rc.comment_day, rc.modified " +
-            "FROM review_comment rc left join member m on m.id = rc.member_id " +
+    @Query(value = "SELECT rc.member_id, rc.content, m.nickname, rc.comment_day, rc.modified, m.profile  " +
+            "FROM review_comment rc inner join member m on m.id = rc.member_id " +
             "WHERE rc.review_id = :reviewId ", nativeQuery = true)
     Object getCommentList(@Param("reviewId") int reviewId);
 }

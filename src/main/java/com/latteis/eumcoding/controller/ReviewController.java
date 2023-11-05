@@ -95,7 +95,7 @@ public class ReviewController {
             List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = reviewService.getMyReviewList(Integer.parseInt(authentication.getPrincipal().toString()), pageable, myListRequestDTO);
             return ResponseEntity.ok().body(myListResponseDTOList);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
     }
