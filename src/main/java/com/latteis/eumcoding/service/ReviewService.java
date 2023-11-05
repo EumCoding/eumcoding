@@ -13,11 +13,13 @@ import com.latteis.eumcoding.persistence.ReviewCommentRepository;
 import com.latteis.eumcoding.persistence.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,14 @@ public class ReviewService {
     private final MemberRepository memberRepository;
 
     private final LectureRepository lectureRepository;
+
+    // 포트번호 properties에서 가져오기
+    @Value("${server.port}")
+    private String port;
+    // 기본주소 properties에서 가져오기
+    @Value("${server.domain}")
+    private String address;
+
 
     // 리뷰 작성
     public void writeReview(int memberId, ReviewDTO.WriteRequestDTO writeRequestDTO) {
@@ -131,13 +141,26 @@ public class ReviewService {
         try {
 
             // 오브젝트에 리스트 담기
-            Page<Object[]> pageList = reviewRepository.getMyReviewListByDate(memberId, myListRequestDTO.getStart(), myListRequestDTO.getEnd(), pageable);
+            Page<Object[]> pageList = reviewRepository.getMyReviewListByDate(memberId, myListRequestDTO.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), myListRequestDTO.getEndDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), pageable);
             List<Object[]> objects = pageList.getContent();
             List<ReviewDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
             // 반복으로 DTO에 넣기
             for (Object[] object : objects) {
+                // lectureName 가져오기
+                String lectureName = lectureRepository.findById((int) object[5]).getName();
+                // lectureThumb 가져오기
+                String lectureThumb = lectureRepository.findById((int) object[5]).getThumb();
+                String lectureThumbAddress = address + port + "/eumCodingImgs/lecture/thumb/" + lectureThumb;
+                // review comment 가져오기
+                Object commentObject = reviewCommentRepository.getCommentList((int) object[0]);
                 // DTO에 담기
-                ReviewDTO.MyListResponseDTO myListResponseDTO = new ReviewDTO.MyListResponseDTO(object);
+                ReviewDTO.MyListResponseDTO myListResponseDTO = new ReviewDTO.MyListResponseDTO(object, lectureName, lectureThumbAddress);
+                // commentobject가 null이 아니면 dto에 담음
+                if (commentObject != null) {
+                    ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject);
+                    // DTO에 담기
+                    myListResponseDTO.setListCommentResponseDTO(listCommentResponseDTO);
+                }
                 // 저장
                 myListResponseDTOList.add(myListResponseDTO);
             }
