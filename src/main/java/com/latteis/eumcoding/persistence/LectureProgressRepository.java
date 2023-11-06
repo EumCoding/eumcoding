@@ -55,7 +55,7 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
     @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member")
     LectureProgress findByMemberAndLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
 
-    @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member")
+    @Query("SELECT lp FROM LectureProgress lp WHERE lp.payLecture.lecture = :lecture AND lp.payLecture.payment.member = :member AND lp.payLecture.payment.member.role = 0")
     List<LectureProgress> findByMemberLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
 
 

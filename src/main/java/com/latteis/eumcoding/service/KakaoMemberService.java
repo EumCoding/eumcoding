@@ -325,7 +325,7 @@ public class KakaoMemberService {
 
             int responseCode = conn.getResponseCode();
             if (responseCode == 401) {
-                throw new AccessTokenExpiredException("Access Token is expired.");
+                throw new AccessTokenExpiredException("에세스 토큰 만료.");
             }
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));

@@ -193,6 +193,7 @@ public class MemberController {
 
     //내 커리큘럼 진행상황 확인하기
     @GetMapping("/myplan/list/info")
+    @ApiOperation(value = "내 커리큘럼에 해당하는 섹션 진도율 및 정보", notes = "내 커리큘럼에 해당하는 섹션 진도율 및 정보")
     public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication) {
         try{
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
@@ -209,6 +210,7 @@ public class MemberController {
 
     //내 커리큘럼 timetaken 업데이트 컨트롤러
     @PostMapping("/myplan/update/{curriculumId}")
+    @ApiOperation(value = "커리큘럼 timeTaken 수정", notes = "커리큘럼 timeTaken 수정")
     public ResponseEntity<?> myPlanUpdate(@ApiIgnore Authentication authentication
                                         ,@PathVariable int curriculumId,@RequestParam int newTimeTaken) {
 
@@ -226,6 +228,7 @@ public class MemberController {
     }
 
     @PostMapping("/mylecture/list")
+    @ApiOperation(value = "해당 강좌(섹션별이아닌)의 진도율 및 정보", notes = "해당 강좌(섹션별이아닌)의 진도율 및 정보")
     public ResponseEntity<?> getMyLectureList(@ApiIgnore Authentication authentication, @RequestParam int page,@RequestParam int size,@RequestParam int sort) {
         try {
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
@@ -237,6 +240,7 @@ public class MemberController {
         }
     }
     @PostMapping("/search")
+    @ApiOperation(value = "내 강좌 검색", notes = "내 강좌 검색")
     public List<SearchMylectureDTO> searchMyLecture(@ApiIgnore Authentication authentication,
                                                     @RequestParam int page,
                                                     @RequestParam int sort,
@@ -246,8 +250,9 @@ public class MemberController {
         return myLectureListService.getSearchMyLecture(memberId, page, sort, size, keyword);
     }
     
-    @ApiOperation(value = "선생계정마이페이지")
+
     @GetMapping("/mypage")
+    @ApiOperation(value = "선생계정마이페이지")
     public ResponseEntity<TeacherMyPageDTO> getTeacherMyPage(@ApiIgnore Authentication authentication) {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         TeacherMyPageDTO teacherMyPageDTO = memberService.TeacherMyPage(memberId);
