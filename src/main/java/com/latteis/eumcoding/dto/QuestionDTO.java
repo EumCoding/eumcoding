@@ -114,6 +114,7 @@ public class QuestionDTO {
         private int lectureId;
         private String lectureName;
         private String content;
+        private String lectureThumb;
     }
 
     @Data

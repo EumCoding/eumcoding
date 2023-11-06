@@ -60,9 +60,19 @@ public class MemberService {
     @Value("${server.port}")
     private String port;
 
+    @Value("${file.path.member.profile}")
+    private String profilePath;
+
 
     public File getMemberDirectoryPath() {
         File file = new File(filePath);
+        file.mkdirs();
+
+        return file;
+    }
+
+    public File getMemberProfileDirectoryPath() {
+        File file = new File(profilePath);
         file.mkdirs();
 
         return file;

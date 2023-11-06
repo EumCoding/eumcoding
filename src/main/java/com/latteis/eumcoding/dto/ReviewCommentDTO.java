@@ -91,13 +91,13 @@ public class ReviewCommentDTO {
         @ApiModelProperty(value = "0 : 수정 안 됨, 1 : 수정됨", example = "1")
         private boolean modified;
 
-        public ListCommentResponseDTO(Object[] objects) {
+        public ListCommentResponseDTO(Object[] objects, String profileAddress) {
             this.memberId = (int) objects[0];
             this.content = (String) objects[1];
             this.nickname = (String) objects[2];
             this.commentDay = timestampToLocalDateTime((Timestamp) objects[3]);
             this.modified = (boolean) objects[4];
-            this.profileImg = (String) objects[5];
+            this.profileImg = profileAddress;
         }
 
         // Timestamp -> LocalDateTime 변환

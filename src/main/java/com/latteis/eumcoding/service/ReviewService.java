@@ -125,7 +125,9 @@ public class ReviewService {
             Object commentObject = reviewCommentRepository.getCommentList(listResponseDTO.getId());
             // 오브젝트가 null이 아니라면 리뷰DTO에 댓글 DTO 추가
             if (commentObject != null) {
-                ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject);
+                // 강사 프로필 이미지
+                String profileAddress = address + port + "/eumCodingImgs/member/" + (String) ((Object[]) commentObject)[5];
+                ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject, profileAddress);
                 listResponseDTO.setListCommentResponseDTO(listCommentResponseDTO);
             }
             // 리뷰DTO 리스트에 저장
@@ -157,7 +159,9 @@ public class ReviewService {
                 ReviewDTO.MyListResponseDTO myListResponseDTO = new ReviewDTO.MyListResponseDTO(object, lectureName, lectureThumbAddress);
                 // commentobject가 null이 아니면 dto에 담음
                 if (commentObject != null) {
-                    ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject);
+                    // 프로필이미지 주소
+                    String profileAddress = address + port + "/eumCodingImgs/member/" + (String) ((Object[]) commentObject)[5];
+                    ReviewCommentDTO.ListCommentResponseDTO listCommentResponseDTO = new ReviewCommentDTO.ListCommentResponseDTO((Object[]) commentObject, profileAddress);
                     // DTO에 담기
                     myListResponseDTO.setListCommentResponseDTO(listCommentResponseDTO);
                 }

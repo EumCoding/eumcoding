@@ -213,7 +213,7 @@ public class ImgController {
     @GetMapping(value = "/member/{fileOriginName}")
     public ResponseEntity<Resource> getProfileImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
-            String path = memberService.getMemberDirectoryPath().getPath();
+            String path = memberService.getMemberProfileDirectoryPath().getPath();
             FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
             if(!resource.exists()){
                 throw new Exception("File not found: " + path + "\\" + fileName);

@@ -29,6 +29,13 @@ public class QuestionListService {
     private final QuestionCommentRepository questionCommentRepository;
     private final MemberRepository memberRepository;
 
+    // 도메인
+    @Value("${server.domain}")
+    private String domain;
+    // 포트번호
+    @Value("${server.port}")
+    private String port;
+
 
     //이상하게 이건 Pageable pageable을 사용하면 page정보들이 다 넘어와서
     //page,size를 사용하기로함
@@ -60,6 +67,8 @@ public class QuestionListService {
             int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
             // 닉네임 가져오기
             String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
+            // 강의썸네일
+            String lectureThumbnail = domain + port + "/eumCodingImgs/lecture/thumb/" + question.getLecture().getThumb();
 
             return QuestionDTO.MyQuestionListDTO.builder()
                     .nickname(nickname)
@@ -71,6 +80,7 @@ public class QuestionListService {
                     .date(question.getCreatedDay())
                     .lectureId(question.getLecture().getId())
                     .lectureName(question.getLecture().getName())
+                    .lectureThumb(lectureThumbnail)
                     .build();
         }).collect(Collectors.toList());
 
