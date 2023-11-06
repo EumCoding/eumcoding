@@ -20,7 +20,7 @@ public class MyLectureListDTO {
     private int memberId;
     private int lectureId;
     private int teacherId;
-    private int score;
+    private int rating; //평점
     private int progress;
     private String teacherName;
     private String lectureName;

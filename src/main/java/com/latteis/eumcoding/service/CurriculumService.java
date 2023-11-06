@@ -137,8 +137,11 @@ public class CurriculumService {
                 //over가 1일경우
                 //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함 -> 기한을 넘겼습니다. 표시
                 //이번에 들어야할 섹션입니다.는 주차별로 표시를 할것
-                if(over == 1){
+                if(progress == 100 && over == 1){
                     overMessage = lectureSection.getName() + " 기한을 넘겼습니다.";
+
+                    // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
+                    updateLectureProgressState(memberId, lectureSection.getLecture().getId());
                     finish = false;
                 }else if(over == 0 && progress != 100 && !message){
                     //전 섹션을 다듣지못하면 그다음 섹션의 영상은 볼 수 없으니
@@ -149,11 +152,12 @@ public class CurriculumService {
 
                 }else if(progress == 100 && over == 0) {
                     finishMessage = lectureSection.getName() + " 해당 섹션의 비디오들을 다 수강하셨습니다.";
+                    // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
+                    updateLectureProgressState(memberId, lectureSection.getLecture().getId());
                     finish = true;
                 }
 
-                // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
-                updateLectureProgressState(memberId, lectureSection.getLecture().getId());
+
 
                 SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
                         .sectionId(lectureSection.getId())
@@ -184,10 +188,13 @@ public class CurriculumService {
     }
 
 
-
-    //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1
+    /**
+     * vpr.get(0).getEndDay로 비교하는 이유는, 쿼리보면 알겠지만, desc해서 가장 마지막에 들을 비디오의 endDay를 가져오기때문에 get(0)씀.
+     * 어차피 비디오 수강은 순차적으로 1->2->3..들어야하기 때문에 (건너뛰기 불가능 1->3 x) 그래서 이렇게함
+     */
+    //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1:기한넘김
     //videoProgress에 state는 last_View를 가지고 Video에 playTime이랑 일치할 경우 state는 1로 바뀌도록
-    //밑에 메서드에 표시해놨음  updateVideoProgressState
+    //밑에 메서드에 표시해놨음  updateVideoProgressState <- 이부분 주석처리함, 어차피 여기서 할 행위가아니기떄문
     private int checkOver(int sectionId,int memberId, List<VideoProgress> videoProgresses) {
 
         //section_id로 curriculum찾기
@@ -202,20 +209,26 @@ public class CurriculumService {
         }
 
         List<VideoProgress> vpr = videoProgressRepository.findVideoProgressEndDay(sectionId,memberId);
-        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음
+        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음 -> startDay + timeTaken = endDay
         //videoProgress에 해당 section에 속한 video들의 videoProgress에 endDay가 curriculum에 startDay + timetaken > endDay 이면 over 0 반대면 1
-        //여기서 vpr에 endDay는 lastView 즉 해당 강의를 다들었을 경우 endDay에 다들은 시점의 LocalDateTime.now()가 저장된다고 생각함.
+        //여기서 vpr에 endDay는 lastView 즉 해당 강의를 다들었을 경우 endDay
 
         //videoProgresses테이블에 video에대한 정보가없을경우(아직 안들었을경우)
         //단, newDate의 기한을 넘기지 않아야함
-        if (vpr.isEmpty() && newDate.isAfter(LocalDateTime.now())) {
-            return 0; //기한을 넘지않음
-        }else if(vpr.isEmpty() && newDate.isBefore(LocalDateTime.now())){
-            return 1; //기한을 넘음
-        }
-
-        if (newDate.isAfter(vpr.get(0).getEndDay())) {
-            return 0;
+        if (!vpr.isEmpty()) {
+            if (newDate.isAfter(vpr.get(0).getEndDay())) {
+                return 0; // 마지막 비디오의 진행 상태가 기한 내에 완료됨
+            } else if (newDate.isBefore(vpr.get(0).getEndDay())) {
+                return 1; // 마지막 비디오의 진행 상태가 기한을 넘김
+            }
+        } else {
+            // vpr 리스트가 비어 있으므로, 아직 어떤 비디오도 완료되지 않음
+            // 이 경우에 newDate와 현재 날짜를 비교
+            if (newDate.isAfter(LocalDateTime.now())) {
+                return 0; // 아직 기한이 남음
+            } else {
+                return 1; // 기한을 넘김
+            }
         }
 
         // Curriculum에 연결된 모든 비디오를 가져옴
@@ -225,10 +238,8 @@ public class CurriculumService {
 
         for (Video video : videos) {
             boolean videoCompleted = false; //각 비디오가 완료되엇는지 확인
-            for (VideoProgress vp : videoProgresses) {
+            for (VideoProgress vp : vpr) {
                 if (vp.getVideo().getId() == video.getId() && vp.getState() == 1) {
-                    //여기서는 video에 대해 videoProgress에 정보가 없을수도있다는 가정은 안함(비디오를 듣지않았을경우)
-                    //위에 해당 경우 조건을 만들어놨음
                     videoCompleted = true; //비디오 완료
                     allVideosCompleted = true;
                     break;
@@ -254,7 +265,7 @@ public class CurriculumService {
 
     //video_progress에 state 상태를 해당 조건에 맞게 변경
     //50% 수강중, 100%수강 완료 0->1변경
-    private void updateVideoProgressState(VideoProgress videoProgress, Video video) {
+  /*  private void updateVideoProgressState(VideoProgress videoProgress, Video video) {
         //비디오의 전체 재생 시간(playTime)과 마지막으로 본 시간(lastView)을 초 단위로 변환 한다.
         //비디오가 얼마나 재생되었는지 백분율로 계산 한다.
         //계산된 비율(playedPercentage)에 따라 VideoProgress의 상태(state)를 업데이트 한다.
@@ -271,7 +282,7 @@ public class CurriculumService {
         }
 
         videoProgressRepository.save(videoProgress);
-    }
+    }*/
 
     //내 커리큘럼 timetaken 수정하는 메서드
     public Curriculum updateTimeTaken(int memberId, int curriculumId, int newTimeTaken) {
@@ -291,6 +302,7 @@ public class CurriculumService {
     }
 
 
+    //강좌에 해당하는 모든 비디오 다들으면 lecture_progress 에 state 가 0-> 1로 업데이트 아니면 0
     public void updateLectureProgressState(int memberId, int lectureId) {
         // Member와 Lecture 객체를 가져옵니다.
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException("없는 회원입니다."));
@@ -299,7 +311,7 @@ public class CurriculumService {
             throw new RuntimeException("없는 강의입니다.");
         }
 
-        // 해당 회원의 해당 Lecture의 LectureProgress를 가져옴
+        // 해당 회원의 수강중인 Lecture 에대한  LectureProgress를 가져옴
         List<LectureProgress> lectureProgress = lectureProgressRepository.findByMemberLecture(member, lecture);
         if(lectureProgress.isEmpty()){
             throw new RuntimeException("해당 강의의 진행 상황을 찾을 수 없습니다.");
@@ -311,8 +323,8 @@ public class CurriculumService {
         for (Section section : sections) {
             List<Video> videos = videoRepository.findBySectionId(section.getId());
 
-            // 섹션의 시작에서 VideoProgress 리스트를 가져옴
-            List<VideoProgress> videoProgresses = videoProgressRepository.findVideoByLectureIdAndMemberId(lectureId, memberId);
+            // VideoProgress 리스트를 가져옴
+            List<VideoProgress> videoProgresses = videoProgressRepository.findVideoByLectureIdAndMemberId(memberId);
 
             for (Video video : videos) {
                 boolean currentVideoCompleted = false;
@@ -323,13 +335,11 @@ public class CurriculumService {
                         break;
                     }
                 }
-
                 if (!currentVideoCompleted) {
                     allVideosCompleted = false;
                     break;
                 }
             }
-
             if (!allVideosCompleted) break;
         }
 

@@ -114,9 +114,6 @@ public class MyLectureListService {
                     break;
                 }
             }
-
-
-
             // 전체 비디오 수와 완료된 비디오 수 계산
             int[] videoCounts = countTotalAndCompletedVideos(memberId, lecture);
             int totalVideos = videoCounts[0];
@@ -130,7 +127,7 @@ public class MyLectureListService {
                     .memberId(memberId)
                     .lectureId(lecture.getId())
                     .teacherId(lecture.getMember().getId())
-                    .score(averageRating)
+                    .rating(averageRating)
                     .progress(progress)
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
