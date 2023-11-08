@@ -36,6 +36,7 @@ public class InterestLectureController {
             interestLectureService.addHeart(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
@@ -50,6 +51,7 @@ public class InterestLectureController {
             interestLectureService.deleteHeart(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
@@ -64,6 +66,22 @@ public class InterestLectureController {
             InterestLectureDTO.ViewResponseDTO viewResponseDTO = interestLectureService.getInterestCnt(idRequestDTO);
             return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+
+    }
+
+    // 강의 정보 불러오기 + 내가 좋아요 체크했는지
+    @GetMapping(value = "/auth/view")
+    @ApiOperation(value = "해당 강의의 좋아요 수 가져오기")
+    public ResponseEntity<InterestLectureDTO.ViewResponseDTO> getInterestCnt(@ApiIgnore Authentication authentication, LectureDTO.IdRequestDTO idRequestDTO) {
+
+        try {
+            InterestLectureDTO.ViewResponseDTO viewResponseDTO = interestLectureService.getInterestCnt(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().body(viewResponseDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 

@@ -30,6 +30,9 @@ public class InterestLectureDTO {
         @ApiModelProperty(value = "좋아요 수", example = "1")
         private int interestCnt;
 
+        @ApiModelProperty(value = "좋아요 여부", example = "true")
+        private boolean isInterest;
+
     }
 
 }
