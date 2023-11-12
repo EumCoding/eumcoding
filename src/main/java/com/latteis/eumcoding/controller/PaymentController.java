@@ -44,11 +44,12 @@ public class PaymentController {
 
     @ApiOperation(value = "결제 완료", notes = "강의 결제를 완료하고 결제 정보를 등록")
     @PostMapping("/ok")
-    public ResponseEntity<?> completePayment(@ApiIgnore Authentication authentication, @RequestBody PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
+    public ResponseEntity<?> completePayment(@ApiIgnore Authentication authentication,
+                                             @RequestParam int basketId) throws Exception {
 
         try {
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-            paymentService.completePayment(memberId, paymentOKRequestDTO);
+            paymentService.completePayment(memberId, basketId);
             return ResponseEntity.ok("결제가 성공적으로 이루어졌습니다.");
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("없는강좌번호입니다.");

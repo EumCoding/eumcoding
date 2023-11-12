@@ -20,16 +20,17 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     Optional<Curriculum> findByCurriculumId(@Param("memberId")int memberId,@Param("curriculumId")int curriculumId);
 
 
-    //과목별 학생 점수
-    //이를 바탕으로 해당 과목을 듣는 학생들의 평균 점수를 구해서 
-    //선생님 마이페이지에 표시되도록 하기 위함
-    @Query(value = "SELECT AVG(member_score) " +
-            "FROM (SELECT SUM(c.score) as member_score " +
+    /**
+     *해당 커리큘럼에 lecture에 해당하는 section들의 합친후 평균을 구함( 각 회원마다)
+     * 그리고 회원마다 구해진 과목에 평균 점수를 다 더하고 거기서 또 평균점수를 더한 회원 수로 나눔
+     */
+    @Query(value = "SELECT AVG(member_average_score) AS average_score_per_section " +
+            "FROM (SELECT c.member_id, AVG(c.score) AS member_average_score " +
             "      FROM Curriculum c " +
             "      JOIN Section s ON c.section_id = s.id " +
             "      JOIN Lecture l ON s.lecture_id = l.id " +
-            "      WHERE l.id =:lectureId " +
-            "      GROUP BY c.member_id) As subQuery", nativeQuery = true)
+            "      WHERE s.lecture_id =:lectureId " +
+            "      GROUP BY c.member_id) As sub", nativeQuery = true)
     Optional<Float> findByAVGLectureScore(@Param("lectureId")int lectureId);
 
 

@@ -74,44 +74,40 @@ public class PaymentService {
 
     /**
      * 강좌 결제
+     * 11.12 -> lectureId로 결제하는걸 basketId로 결제하도록 변경
      */
     @Transactional
-    public void completePayment(int memberId, PaymentOKRequestDTO paymentOKRequestDTO) throws Exception {
+    public void completePayment(int memberId, int basketId) throws Exception {
 
         Member member = memberRepository.findByMemberId(memberId);
 
-        Basket basket = basketRepository.findByMemberIdAndLectureId(memberId,paymentOKRequestDTO.getLectureId());
+        Basket basket = basketRepository.findByBasketId(memberId,basketId);
         if (basket == null) {
             throw new Exception("해당 강의가 장바구니에 없습니다.");
         }else {
             basketRepository.delete(basket);
         }
 
-        Lecture lecture = lectureRepository.findById(paymentOKRequestDTO.getLectureId());
+        Lecture lecture = basket.getLecture();
 
         // lecture의 state가 1이 아니라면 예외 처리 0:미승인강좌
         if (lecture.getState() != 1) {
             throw new Exception("등록 되지 않은 강좌입니다.");
         }
 
-        List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, paymentOKRequestDTO.getLectureId());
+        List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, lecture.getId());
         if (existingPayLecture != null && !existingPayLecture.isEmpty()) {  //빈문자열이 들어올경우에 이미 결제완료된 강좌입니다로 표시된다 이를방지해야함
             throw new Exception("이미 결제 완료된 강좌입니다.");
         }
 
         Payment payment = new Payment();
-  /*      if(payment.getState() != 1){
-            payment.setMember(member);
-            payment.setPayDay(LocalDateTime.now());
-        }
-*/
+
         payment.setMember(member);
         payment.setPayDay(LocalDateTime.now());
         payment.setState(1); // 결제 완료 상태로 설정
 
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
-
 
         // 새로운 PayLecture 생성
         PayLecture payLecture = new PayLecture();

@@ -14,6 +14,11 @@ import java.util.Optional;
 public interface BasketRepository extends JpaRepository<Basket, Integer> {
     Basket findByMemberIdAndLectureId(int memberId, int lectureId);
 
+    @Query(value = "SELECT b.* FROM basket b " +
+            "JOIN member m on b.member_id = m.id " +
+            "JOIN lecture l on b.lecture_id = l.id " +
+            "WHERE b.id =:id AND m.id =:memberId",nativeQuery = true)
+    Basket findByBasketId(@Param("memberId") int memberId,@Param("id") int id);
     @Query("SELECT b FROM Basket b WHERE b.member = :member AND b.lecture = :lecture AND b.member.role = 0 AND b.member.state = 1")
     Optional<Basket> findByMemberAndLecture(@Param("member") Member member, @Param("lecture") Lecture lecture);
 

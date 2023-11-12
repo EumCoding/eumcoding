@@ -355,7 +355,6 @@ public class MemberService {
             }
 
             Portfolio portfolio = portfolioRepository.findByMemberId(memberId);
-
             List<Lecture> lectureList = lectureRepository.findByMemberId(memberId);
 
             List<LectureDTO.coursesDTO> coursesList = new ArrayList<>();
@@ -495,6 +494,7 @@ public class MemberService {
 
         return studentProgressList.isEmpty() ? 0 : (float) totalProgress / studentProgressList.size();
     }
+
 
 
 }
