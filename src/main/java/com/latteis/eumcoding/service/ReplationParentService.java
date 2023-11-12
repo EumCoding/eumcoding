@@ -64,6 +64,12 @@ public class ReplationParentService {
             log.info("이미 인증된 계정입니다.");
             throw new IllegalArgumentException("이미 인증된 계정입니다.");
         }
+
+        // 이메일의 주인의 role이 1(강사), 2(관리자), 3(학부모) 이면 예외처리
+        if (child.getRole() != 0) {
+            log.info("이메일의 주인이 학생이 아닙니다.");
+            throw new IllegalArgumentException("이메일의 주인이 학생이 아닙니다.");
+        }
         //인증번호전송
         emailNumberService.sendVerificationNumber(child.getId(), child.getEmail());
     }

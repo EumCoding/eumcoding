@@ -33,13 +33,15 @@ public class EmailTokenService {
 
             // 이메일 토큰 저장
             EmailToken emailToken = EmailToken.createEmailToken(id);
+            // 만료날짜는 현재시간 + 1시간으로
+            emailToken.setExpirationDate(LocalDateTime.now().plusHours(1));
             emailTokenRepository.save(emailToken);
 
             // 이메일 전송
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(receiverEmail);
             mailMessage.setSubject("회원가입 이메일 인증");
-            mailMessage.setText("http://localhost:8099/confirm/"+emailToken.getEmailTokenId());
+            mailMessage.setText("http://localhost:3000/email/confirm/"+emailToken.getEmailTokenId());
             mailMessage.setFrom(from + "@naver.com"); // 이거 해줘야 오류안남
             emailSenderService.sendEmail(mailMessage);
 
