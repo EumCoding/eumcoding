@@ -2,6 +2,7 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.*;
 
+import com.latteis.eumcoding.dto.payment.PaymentLectureBadgeDTO;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,8 @@ public class MemberService {
     private final MyLectureListService myLectureListService;
 
     private final QuestionRepository questionRepository;
+
+    private final PaymentRepository paymentRepository;
 
     @Value("${file.path}")
     private String filePath;
@@ -495,6 +498,41 @@ public class MemberService {
         return studentProgressList.isEmpty() ? 0 : (float) totalProgress / studentProgressList.size();
     }
 
+    /**
+     * 결제한 강좌 배너 모음,count포함
+     */
+    public PaymentLectureBadgeDTO paymentLectureBadge(int memberId) {
+
+        try {
+            Member member = memberRepository.findByIdAndRole(memberId, 0);
+            if (member == null) {
+                throw new RuntimeException("로그인이 필요합니다.");
+            }
+
+            List<Object[]> payment = paymentRepository.findByPaymentLectureBadge(memberId);
+            if(payment == null){
+                throw new IllegalArgumentException("결제한 강좌가 없습니다.");
+            }
+            long count = paymentRepository.countPaymentBadge(memberId);
+            List<PaymentLectureBadgeDTO.PayLectureBadgeDTO> payments = new ArrayList<>();
+            for(Object[] paymentBadge : payment){
+                PaymentLectureBadgeDTO.PayLectureBadgeDTO paymentLectureBadgeDTO = PaymentLectureBadgeDTO.PayLectureBadgeDTO.builder()
+                        .badge(domain + port + "/eumCodingImgs/lecture/badge/" + String.valueOf(paymentBadge[0]))
+                        .lecutreid(Integer.parseInt(String.valueOf(paymentBadge[1])))
+                        .build();
+                payments.add(paymentLectureBadgeDTO);
+            }
+            return PaymentLectureBadgeDTO.builder()
+                    .count(count)
+                    .payLectureBadgeDTO(payments)
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("MemberService.PaymentLectureBadge : 에러 발생.");
+        }
+
+    }
 
 
 }
