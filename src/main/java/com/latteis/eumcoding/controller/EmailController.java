@@ -27,6 +27,7 @@ public class EmailController {
             ResponseDTO responseDTO = ResponseDTO.builder().error("success").build();
             return ResponseEntity.ok().body(responseDTO);
         } catch (Exception e) {
+            // 주석
             e.printStackTrace();
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
