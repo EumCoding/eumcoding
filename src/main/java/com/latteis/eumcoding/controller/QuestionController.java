@@ -1,6 +1,8 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.QuestionDTO;
+import com.latteis.eumcoding.dto.TeacherListQuestionDTO;
+import com.latteis.eumcoding.dto.TeacherListReviewDTO;
 import com.latteis.eumcoding.service.QuestionListService;
 import com.latteis.eumcoding.service.QuestionService;
 import com.latteis.eumcoding.service.TeacherQuestionAndReviewListService;
@@ -129,7 +131,7 @@ public class QuestionController {
 
     @ApiOperation(value = "나에게 질문한 목록 가져오기", notes = "나에게 질문한 목록 가져오기")
     @PostMapping("/student/list")
-    public ResponseEntity<List<QuestionDTO.StudentQuestionListDTO>> getStudentQuestions(
+    public ResponseEntity<TeacherListQuestionDTO> getStudentQuestions(
             @ApiIgnore Authentication authentication,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
@@ -138,8 +140,8 @@ public class QuestionController {
             @RequestParam(name = "size", defaultValue = "10") int size) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        List<QuestionDTO.StudentQuestionListDTO> questions = teacherQuestionAndReviewListService.getMyStudentQuestions(memberId, start, end,lectureId, page, size);
-        return ResponseEntity.ok(questions);
+        TeacherListQuestionDTO questionDTO = teacherQuestionAndReviewListService.getMyStudentQuestions(memberId, start, end,lectureId, page, size);
+        return ResponseEntity.ok(questionDTO);
     }
 
 }

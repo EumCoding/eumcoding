@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,6 +86,28 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.lecture.member = :member AND FUNCTION('YEAR', r.createdDay) = FUNCTION('YEAR', CURRENT_DATE) " +
             "AND FUNCTION('MONTH', r.createdDay) = FUNCTION('MONTH', CURRENT_DATE ) ")
     String ratingAvgThisMonth(@Param("member") Member member);
+
+
+
+    // 강사가 자신에 대한 리뷰 가져오기
+    @Query(value = "SELECT r.id,r.lecture_id,r.member_id,student.nickname,r.content,r.rating,r.created_day,r.heart " +
+            "FROM review r " +
+            "JOIN lecture l ON r.lecture_id = l.id " +
+            "JOIN member teacher ON l.member_id = teacher.id " +
+            "JOIN member student ON r.member_id = student.id " +
+            "WHERE teacher.id = :memberId AND r.created_day BETWEEN :start AND :end " +
+            "AND (:lectureId IS NULL OR l.id =:lectureId)", nativeQuery = true)
+    Page<Object[]> getTeacherMyReviewListByDate(@Param("memberId") int memberId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("lectureId") Integer lectureId,Pageable pageable);
+
+
+    @Query(value = "SELECT COUNT(r.id) " +
+            "FROM review r " +
+            "JOIN lecture l ON r.lecture_id = l.id " +
+            "JOIN member teacher ON l.member_id = teacher.id " +
+            "WHERE teacher.id = :memberId AND r.created_day BETWEEN :start AND :end " +
+            "AND (:lectureId IS NULL OR l.id = :lectureId)", nativeQuery = true)
+    long countTeacherReviews(@Param("memberId") int memberId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("lectureId") Integer lectureId);
+
 
 }
 

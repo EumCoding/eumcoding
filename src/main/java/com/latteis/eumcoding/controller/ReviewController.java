@@ -2,13 +2,16 @@ package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.ReviewDTO;
+import com.latteis.eumcoding.dto.TeacherListReviewDTO;
 import com.latteis.eumcoding.service.ReviewService;
+import com.latteis.eumcoding.service.TeacherQuestionAndReviewListService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +31,7 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final TeacherQuestionAndReviewListService teacherQuestionAndReviewListService;
 
     // 리뷰 작성
     @PostMapping(value = "/write")
@@ -98,5 +103,21 @@ public class ReviewController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
+    }
+
+
+    @ApiOperation("나에 대한 리뷰 목록 조회")
+    @GetMapping("/teacher/list")
+    public ResponseEntity<TeacherListReviewDTO> getReviewList(@ApiIgnore Authentication authentication,
+                                                              @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+                                                              @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+                                                              @RequestParam(required = false) Integer lectureId,
+                                                              @RequestParam(name = "page", defaultValue = "1") int page,
+                                                              @RequestParam(name = "size", defaultValue = "10") int size)
+    {
+        int adminId = Integer.parseInt(authentication.getPrincipal().toString());
+        // 나에대한 리뷰 목록 조회
+        TeacherListReviewDTO reviewDTO = teacherQuestionAndReviewListService.getMyLectureReviews(adminId,start,end,lectureId,page,size);
+        return ResponseEntity.ok(reviewDTO);
     }
 }

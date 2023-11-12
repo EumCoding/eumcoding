@@ -4,17 +4,20 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+import org.checkerframework.checker.units.qual.A;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.awt.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @Data
 @Builder
 public class ReviewDTO {
+
 
     @Getter
     @NoArgsConstructor
@@ -132,8 +135,6 @@ public class ReviewDTO {
         public LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
             return timestamp.toLocalDateTime();
         }
-
-
     }
 
     // 내가 작성한 리뷰 목록 응답 DTO
@@ -190,5 +191,7 @@ public class ReviewDTO {
         }
 
     }
+
+
 
 }
