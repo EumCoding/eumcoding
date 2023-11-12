@@ -58,20 +58,18 @@ public class QuestionListService {
         // 해당 멤버가 작성한 질문을 지정된 기간 내에 찾기, 결과는 페이지네이션
         Pageable pageable = PageRequest.of(DefaultPage, size, Sort.by(Sort.Direction.DESC, "title"));
 
-
         Page<Question> questionsPage = questionRepository.findAllByMemberAndCreatedDayBetween(memberId, startDateTime, endDateTime, pageable);
-
 
         List<QuestionDTO.MyQuestionListDTO> myQuestionListDTOS = questionsPage.getContent().stream().map(question -> {
             // 해당 질문에 대한 답변 유무 확인
             int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
             // 닉네임 가져오기
-            String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
+            //String nickname = memberRepository.findById(question.getMember().getId()).get().getNickname();
             // 강의썸네일
             String lectureThumbnail = domain + port + "/eumCodingImgs/lecture/thumb/" + question.getLecture().getThumb();
 
             return QuestionDTO.MyQuestionListDTO.builder()
-                    .nickname(nickname)
+                    //.nickname(nickname)
                     .content(question.getContent())
                     .nickname(question.getMember().getNickname())
                     .qnaId(question.getId())
