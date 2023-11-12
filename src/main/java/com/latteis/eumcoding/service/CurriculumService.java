@@ -157,8 +157,6 @@ public class CurriculumService {
                     finish = true;
                 }
 
-
-
                 SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
                         .sectionId(lectureSection.getId())
                         .lectureId(lectureSection.getLecture().getId())

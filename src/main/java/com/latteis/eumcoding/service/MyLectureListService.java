@@ -63,7 +63,9 @@ public class MyLectureListService {
     }
 
 
-
+    /**
+     *내가 듣는 강좌에 대한 진도율(section별 진도율이랑 다름 getMyPlanInfo랑 다름)
+     */
     public List<MyLectureListDTO> getMyLectureList(int memberId, int page, int size, int sort) {
 
         Member member = memberRepository.findByMemberId(memberId);
@@ -118,6 +120,8 @@ public class MyLectureListService {
             int[] videoCounts = countTotalAndCompletedVideos(memberId, lecture);
             int totalVideos = videoCounts[0];
             int completedVideos = videoCounts[1];
+            //여기서 진도율은 해당 과목을 수강중인 회원들의 progress의 평균
+            //구하는 방법은, 각 회원의 MyLectureList에 progress를 가져와서 총 회원수로 나눔
             int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
 
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());//해당 과목 전체 평균임,각 멤버가준 점수가아니라
