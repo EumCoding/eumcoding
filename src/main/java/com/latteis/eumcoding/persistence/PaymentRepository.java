@@ -33,4 +33,24 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
     @Query("SELECT p FROM Payment p WHERE p.member.id =:memberId")
     Payment findByPaymentMemberId(int memberId);
+
+
+    /**
+     *내가 결제한 강좌의 뱃지 모음
+     */
+    @Query(value = "SELECT DISTINCT l.badge,l.id " +
+            "FROM payment p " +
+            "JOIN pay_lecture pl ON pl.payment_id = p.id " +
+            "JOIN lecture l ON pl.lecture_id = l.id " +
+            "JOIN member m ON p.member_id = m.id " +
+            "WHERE m.id =:memberId", nativeQuery = true)
+    List<Object[]> findByPaymentLectureBadge(@Param("memberId")int memberId);
+
+    @Query(value = "SELECT count(*) " +
+            "FROM payment p " +
+            "JOIN pay_lecture pl ON pl.payment_id = p.id " +
+            "JOIN lecture l ON pl.lecture_id = l.id " +
+            "JOIN member m ON p.member_id = m.id " +
+            "WHERE m.id =:memberId",nativeQuery = true)
+    long countPaymentBadge(@Param("memberId")int memberId);
 }

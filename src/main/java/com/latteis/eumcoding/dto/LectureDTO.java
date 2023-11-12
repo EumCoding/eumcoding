@@ -53,7 +53,7 @@ public class LectureDTO {
         private LocalDateTime createdDay; // 강좌생성일
         private String thumb; // 강좌 썸네일
         private int state; // 0:등록대기중, 1:등록
-        private String badge; // 프로필 이미지가 들어있는 경로
+        private String badge; // 뱃지 경로
     }
 
     // 강의 생성 요청 DTO
@@ -328,7 +328,6 @@ public class LectureDTO {
         @PositiveOrZero(message = "리뷰작성여부")
         @ApiModelProperty(value = "리뷰작성여부", example = "리뷰작성여부")
         private String reviewStatus;
-
 
     }
 

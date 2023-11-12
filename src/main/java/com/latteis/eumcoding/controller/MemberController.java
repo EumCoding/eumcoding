@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.*;
+import com.latteis.eumcoding.dto.payment.PaymentLectureBadgeDTO;
 import com.latteis.eumcoding.model.Curriculum;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.MemberRepository;
@@ -259,10 +260,12 @@ public class MemberController {
         return new ResponseEntity<>(teacherMyPageDTO, HttpStatus.OK);
     }
 
-
-
-
-
-
+    @GetMapping("/payment/lecture/badge")
+    @ApiOperation(value = "결제한 강좌 배너 목록")
+    public ResponseEntity<PaymentLectureBadgeDTO> getBadgeList(@ApiIgnore Authentication authentication) {
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        PaymentLectureBadgeDTO paymentLectureBadgeDTO = memberService.paymentLectureBadge(memberId);
+        return new ResponseEntity<>(paymentLectureBadgeDTO, HttpStatus.OK);
+    }
 
 }

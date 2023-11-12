@@ -2,8 +2,13 @@ package com.latteis.eumcoding.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.latteis.eumcoding.dto.LectureDTO;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.*;
+
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,10 +37,8 @@ public class PaymentDTO {
     private List<LectureDTO.PayLectureIdNameDTO> lectureDTOList;
 
     public static class PaymentState {
-
         // 실패
         public static final int  FAILED = 0;
-
         // 성공
         public static final int  SUCCESS = 1;
 
