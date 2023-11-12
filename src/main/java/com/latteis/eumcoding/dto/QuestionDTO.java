@@ -135,4 +135,22 @@ public class QuestionDTO {
         private String lectureName;
         private int isMyQuestion; // 내가 쓴 질문인지 확인
     }
+
+    //강사입장에서, 자신한테 달린 질문들 모음
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class StudentQuestionListDTO{
+        private String nickname;
+        private int qnaId;
+        private String title;
+        private int answer;// 0:안달림, 1:달림
+        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+        private LocalDateTime date;
+        private int lectureId;
+        private String lectureName;
+        private String lectureThumb;
+    }
 }

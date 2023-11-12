@@ -3,6 +3,7 @@ package com.latteis.eumcoding.controller;
 import com.latteis.eumcoding.dto.QuestionDTO;
 import com.latteis.eumcoding.service.QuestionListService;
 import com.latteis.eumcoding.service.QuestionService;
+import com.latteis.eumcoding.service.TeacherQuestionAndReviewListService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class QuestionController {
 
     private final QuestionService questionService;
     private final QuestionListService questionListService;
+    private final TeacherQuestionAndReviewListService teacherQuestionAndReviewListService;
     @ApiOperation(value = "질문 등록", notes = "질문을 등록합니다.")
     @PostMapping(value = "/write")
     public ResponseEntity<?> writeQuestion(
@@ -76,7 +78,7 @@ public class QuestionController {
     }
     @ApiOperation(value = "내가 작성한 질문 가져오기", notes = "내가 작성한 질문 가져오기")
     @PostMapping("/mylist")
-    public List<QuestionDTO.MyQuestionListDTO> getMyQuestions(
+    public ResponseEntity<List<QuestionDTO.MyQuestionListDTO>> getMyQuestions(
             @ApiIgnore Authentication authentication,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
@@ -84,7 +86,8 @@ public class QuestionController {
             @RequestParam(name = "size", defaultValue = "10") int size) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        return questionListService.getMyQuestions(memberId, start, end, page,size);
+        List<QuestionDTO.MyQuestionListDTO> questions = questionListService.getMyQuestions(memberId, start, end, page, size);
+        return ResponseEntity.ok(questions);
     }
 
 
@@ -121,4 +124,22 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+
+
+    @ApiOperation(value = "나에게 질문한 목록 가져오기", notes = "나에게 질문한 목록 가져오기")
+    @PostMapping("/student/list")
+    public ResponseEntity<List<QuestionDTO.StudentQuestionListDTO>> getStudentQuestions(
+            @ApiIgnore Authentication authentication,
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(required = false) Integer lectureId,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        List<QuestionDTO.StudentQuestionListDTO> questions = teacherQuestionAndReviewListService.getMyStudentQuestions(memberId, start, end,lectureId, page, size);
+        return ResponseEntity.ok(questions);
+    }
+
 }

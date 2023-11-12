@@ -34,6 +34,12 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
     @Query("SELECT count(distinct q.id) FROM Question q WHERE q.lecture.id =:lectureId")
     Optional<Integer> countQuestionId(@Param("lectureId") int lectureId);
 
+    @Query(value = "SELECT q.* FROM question q " +
+            "JOIN lecture l ON q.lecture_id = l.id " +
+            "JOIN member m on l.member_id = m.id AND m.role = 1 " +
+            "WHERE m.id =:memberId AND q.created_day BETWEEN :start AND :end " +
+            "AND (:lectureId IS NULL OR l.id = :lectureId)",nativeQuery = true)
+    Page<Question> findAllByMemberAndMonthCreatedDayBetween(@Param("memberId") int memberId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end,@Param("lectureId") Integer lectureId,Pageable pageable);
 
 
 }
