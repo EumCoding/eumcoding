@@ -27,29 +27,31 @@ public class VideoTestLogService {
 
     // 동영상 테스트 로그 추가
     public void addTestLog(int memberId, VideoTestLogDTO.AddRequestDTO addRequestDTO) {
+        try{
+            // 동영상 문제 정보 가져오기
+            VideoTest videoTest = videoTestRepository.findById(addRequestDTO.getVideoTestId());
+            Preconditions.checkNotNull(videoTest, "등록된 문제가 없습니다. (문제 ID : %s)", addRequestDTO.getVideoTestId());
 
-        // 동영상 문제 정보 가져오기
-        VideoTest videoTest = videoTestRepository.findById(addRequestDTO.getVideoTestId());
-        Preconditions.checkNotNull(videoTest, "등록된 문제가 없습니다. (문제 ID : %s)", addRequestDTO.getVideoTestId());
+            // 등록된 회원인지 검사
+            Member member = memberRepository.findByMemberId(memberId);
+            Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 등록된 회원인지 검사
-        Member member = memberRepository.findByMemberId(memberId);
-        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+            // 해당 동영상을 시청 중인지 검사
+            VideoProgress videoProgress = videoProgressRepository.findByMemberAndVideo(member, videoTest.getVideo());
+            Preconditions.checkNotNull(videoProgress, "해당 학생이 해당 동영상을 시청하고 있지 않습니다. (학생 ID: %s, 동영상 ID: %s)", memberId, videoTest.getVideo().getId());
 
-        // 해당 동영상을 시청 중인지 검사
-        VideoProgress videoProgress = videoProgressRepository.findByMemberAndVideo(member, videoTest.getVideo());
-        Preconditions.checkNotNull(videoProgress, "해당 학생이 해당 동영상을 시청하고 있지 않습니다. (학생 ID: %s, 동영상 ID: %s)", memberId, videoTest.getVideo().getId());
+            // 이미 해당 문제에 대한 로그가 존재하는지 검사
+            Preconditions.checkArgument(!videoTestLogRepository.existsByVideoTestAndMember(videoTest, member), "이미 해당 문제에 대한 답변을 제출했습니다. (동영상 문제 ID : %s)", videoTest.getId());
 
-        // 이미 해당 문제에 대한 로그가 존재하는지 검사
-        Preconditions.checkArgument(!videoTestLogRepository.existsByVideoTestAndMember(videoTest, member), "이미 해당 문제에 대한 답변을 제출했습니다. (동영상 문제 ID : %s)", videoTest.getId());
-
-        VideoTestLog videoTestLog = VideoTestLog.builder()
-                .videoTest(videoTest)
-                .member(member)
-                .subAnswer(addRequestDTO.getSubAnswer())
-                .build();
-        videoTestLogRepository.save(videoTestLog);
-
+            VideoTestLog videoTestLog = VideoTestLog.builder()
+                    .videoTest(videoTest)
+                    .member(member)
+                    .subAnswer(addRequestDTO.getSubAnswer())
+                    .build();
+            videoTestLogRepository.save(videoTestLog);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     // 동영상 테스트 로그 가져오기
