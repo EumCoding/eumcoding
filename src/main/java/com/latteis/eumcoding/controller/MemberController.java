@@ -214,6 +214,7 @@ public class MemberController {
 
         }catch(Exception e)
         {
+            e.printStackTrace();
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
