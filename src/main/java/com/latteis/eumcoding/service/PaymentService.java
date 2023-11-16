@@ -73,63 +73,68 @@ public class PaymentService {
 
 
     /**
-     * 강좌 결제
+     * 강좌 결제, 여러개 구매할수있게 List로
      * 11.12 -> lectureId로 결제하는걸 basketId로 결제하도록 변경
      */
     @Transactional
-    public void completePayment(int memberId, int basketId) throws Exception {
+    public void completePayment(int memberId, List<Integer> basketIds) throws Exception {
 
         Member member = memberRepository.findByMemberId(memberId);
-
-        Basket basket = basketRepository.findByBasketId(memberId,basketId);
-        if (basket == null) {
-            throw new Exception("해당 강의가 장바구니에 없습니다.");
-        }else {
-            basketRepository.delete(basket);
-        }
-
-        Lecture lecture = basket.getLecture();
-
-        // lecture의 state가 1이 아니라면 예외 처리 0:미승인강좌
-        if (lecture.getState() != 1) {
-            throw new Exception("등록 되지 않은 강좌입니다.");
-        }
-
-        List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, lecture.getId());
-        if (existingPayLecture != null && !existingPayLecture.isEmpty()) {  //빈문자열이 들어올경우에 이미 결제완료된 강좌입니다로 표시된다 이를방지해야함
-            throw new Exception("이미 결제 완료된 강좌입니다.");
-        }
-
         Payment payment = new Payment();
-
         payment.setMember(member);
         payment.setPayDay(LocalDateTime.now());
         payment.setState(1); // 결제 완료 상태로 설정
-
         // Payment 저장
         Payment savedPayment = paymentRepository.save(payment);
 
-        // 새로운 PayLecture 생성
-        PayLecture payLecture = new PayLecture();
-        payLecture.setPayment(savedPayment);
-        payLecture.setLecture(lecture);
-        payLecture.setPrice(lecture.getPrice());
+        for (Integer basketId : basketIds) {
+            Basket basket = basketRepository.findByBasketId(memberId, basketId);
 
-        // PayLecture 저장
-        payLectureRepository.save(payLecture);
+            if (basket == null) {
+                throw new Exception("해당 강의가 장바구니에 없습니다.");
+            }
+            Lecture lecture = basket.getLecture();
+            // lecture의 state가 1이 아니라면 예외 처리 0:미승인강좌
+            if (lecture.getState() != 1) {
+                throw new Exception("등록 되지 않은 강좌입니다.");
+            }
 
-        //Curriculum에 해당 lecture에 속한 section들 저장
-        List<Section> sections = sectionRepository.findAllByLecture(payLecture.getLecture());
-        for(Section section : sections){
-            Curriculum curriculum = new Curriculum();
-            curriculum.setSection(section);
-            curriculum.setMember(member);
-            curriculum.setTimeTaken(10);
-            curriculum.setScore(0);
-            curriculum.setCreateDate(LocalDate.now());
-            curriculum.setEdit(0);
-            curriculum.setStartDay(LocalDateTime.now());
-            curriculumRepository.save(curriculum);
+            List<PayLecture> existingPayLecture = payLectureRepository.findByMemberAndLecture(memberId, lecture.getId());
+            if (existingPayLecture != null && !existingPayLecture.isEmpty()) {  //빈문자열이 들어올경우에 이미 결제완료된 강좌입니다로 표시된다 이를방지해야함
+                throw new Exception("이미 결제 완료된 강좌입니다.");
+            }
+
+            // 새로운 PayLecture 생성
+            PayLecture payLecture = new PayLecture();
+            payLecture.setPayment(savedPayment);
+            payLecture.setLecture(lecture);
+            payLecture.setPrice(lecture.getPrice());
+
+            // PayLecture 저장
+            payLectureRepository.save(payLecture);
+            //Curriculum에 해당 lecture에 속한 section들 저장
+            List<Section> sections = sectionRepository.findAllByLecture(payLecture.getLecture());
+
+            // 섹션을 저장할 때 첫 섹션의 시작 날짜를 오늘로 설정
+            LocalDateTime currentStartDay = LocalDateTime.now();
+
+            for (Section section : sections) {
+                Curriculum curriculum = new Curriculum();
+                curriculum.setSection(section);
+                curriculum.setMember(member);
+                curriculum.setTimeTaken(section.getTimeTaken());
+                curriculum.setScore(0);
+                curriculum.setCreateDate(LocalDate.now());
+                curriculum.setEdit(0);
+                curriculum.setStartDay(currentStartDay);
+                curriculumRepository.save(curriculum);
+
+                // 다음 섹션의 startDay는 현재 섹션의 startDay에 timeTaken만큼 더한 날짜
+                currentStartDay = currentStartDay.plusDays(curriculum.getTimeTaken());
+
+            }
+            basketRepository.delete(basket); // 장바구니에서 해당 항목 제거
+
         }
     }
 

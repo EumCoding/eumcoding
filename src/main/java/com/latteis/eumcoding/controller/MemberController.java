@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -193,12 +197,18 @@ public class MemberController {
     }*/
 
     //내 커리큘럼 진행상황 확인하기
-    @GetMapping("/myplan/list/info")
+    @PostMapping("/myplan/list/info")
     @ApiOperation(value = "내 커리큘럼에 해당하는 섹션 진도율 및 정보", notes = "내 커리큘럼에 해당하는 섹션 진도율 및 정보")
-    public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication) {
+    public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication,
+                                          @RequestParam(defaultValue = "2023-01-01T00:00:00") String startDateStr,
+                                          @RequestParam(defaultValue = "2023-09-30T23:59:59") String endDateStr) {
         try{
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-            List<MyPlanInfoDTO> myPlan = curriculumService.getMyPlanInfo(memberId);
+            // 문자열을 LocalDateTime으로 변환
+            LocalDateTime startDate = LocalDateTime.parse(startDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+            LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+
+            List<MyPlanInfoDTO> myPlan = curriculumService.getMyPlanInfo(memberId,startDate,endDate);
             //return new ResponseEntity<>(myPlanList, HttpStatus.OK);
             return ResponseEntity.ok().body(myPlan);
 

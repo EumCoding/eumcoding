@@ -45,7 +45,7 @@ public class PaymentController {
     @ApiOperation(value = "결제 완료", notes = "강의 결제를 완료하고 결제 정보를 등록")
     @PostMapping("/ok")
     public ResponseEntity<?> completePayment(@ApiIgnore Authentication authentication,
-                                             @RequestParam int basketId) throws Exception {
+                                             @RequestParam List<Integer> basketId) throws Exception {
 
         try {
             int memberId = Integer.parseInt(authentication.getPrincipal().toString());

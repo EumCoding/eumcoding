@@ -97,7 +97,7 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
                     "WHERE s.id = :sectionId AND m.id = :memberId " +
                     "ORDER BY v.id DESC, s.id desc " +
                     "LIMIT 1", nativeQuery = true)
-    List<VideoProgress> findVideoProgressEndDay(@Param("memberId")int memberId,@Param("sectionId") int sectionId);
+    VideoProgress findVideoProgressEndDay(@Param("memberId")int memberId,@Param("sectionId") int sectionId);
 
 }
 
