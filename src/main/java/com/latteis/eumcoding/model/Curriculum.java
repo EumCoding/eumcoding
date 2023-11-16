@@ -47,4 +47,7 @@ public class Curriculum {
     @Column(name="start_day")
     private LocalDateTime startDay;
 
+    @Column(name="edit_day")
+    private LocalDateTime editDay;
+
 }

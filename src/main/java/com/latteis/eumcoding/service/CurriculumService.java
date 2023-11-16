@@ -6,16 +6,19 @@ import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
 import org.hibernate.tool.schema.internal.exec.ScriptTargetOutputToFile;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -98,14 +101,23 @@ public class CurriculumService {
 
     //기존 getMyPlanList랑 다른점은 해당 커리큘럼에 있는 섹션을 기한내에 다들었는지
     //혹은 이번에 들어야하는 섹션인지 표시해주는게 들어가있음
-    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId) {
-        boolean finish = true;  // 이전 섹션이 완료되었는지 표시
-        boolean message = false;  // 메시지가 설정되었는지 확인
+    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId, LocalDateTime startDate, LocalDateTime endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("시작 날짜는 종료 날짜보다 이후일 수 없습니다.");
+        }
 
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
-        List<Curriculum> curriculums = curriculumRepository.findByMemberId(memberId);
+        List<Curriculum> curriculums = curriculumRepository.findByMemberIdAndMonthYear(memberId, startDate, endDate);
+
+        // 커리큘럼 정보가 없으면 예외를 던짐
+        if (curriculums.isEmpty()) {
+            throw new RuntimeException("해당 날짜에는 커리큘럼 정보가 없습니다.");
+        }
+
+
         //사용자의 학습 진행 상황을 나타내는 DTO
         List<MyPlanInfoDTO> myPlanInfoList = new ArrayList<>();
+        LocalDateTime today = LocalDateTime.now();
 
         for (Curriculum curriculum : curriculums) {
             List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists = new ArrayList<>();
@@ -113,7 +125,6 @@ public class CurriculumService {
             //현재 커리큘럼의 id에 대응하는 섹션을 가져옴
             List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
 
-            //커리큘럼에 statDay + timeTaken 값이 필요
 
             //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
             for (Section lectureSection : lectureSections) {
@@ -122,39 +133,33 @@ public class CurriculumService {
                 long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
 
                 List<VideoProgress> videoProgresses = videoProgressRepository.findByMemberId(memberId);
-                int over = checkOver(lectureSection.getId(), memberId,videoProgresses);
+
+                LocalDateTime sectionStartDay = curriculum.getStartDay();
 
                 // 전체 비디오 수와 완료된 비디오 수 계산
-                int[] videoCounts = countTotalAndCompletedVideos(memberId,lectureSection);
+                int[] videoCounts = countTotalAndCompletedVideos(memberId, lectureSection);
                 int totalVideoss = videoCounts[0];
                 int completedVideoss = videoCounts[1];
                 int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
+                int over = checkOver(memberId, lectureSection.getLecture().getId());
+
+/*
+
+                Curriculum previousSectionCurriculum = findPreviousSection(curriculums, curriculum, memberId, lectureSection.getLecture().getId());
+                boolean isPreviousSectionComplete = previousSectionCurriculum == null || checkIfSectionIsComplete(previousSectionCurriculum, memberId);
+*/
 
                 String overMessage = "";
                 String checkMessage = "";
                 String finishMessage = "";
 
-                //over가 1일경우
-                //해당 커리큘럼에있는 섹션을 기한내에 다 듣지 못함 -> 기한을 넘겼습니다. 표시
-                //이번에 들어야할 섹션입니다.는 주차별로 표시를 할것
-                if(progress == 100 && over == 1){
-                    overMessage = lectureSection.getName() + " 기한을 넘겼습니다.";
-
-                    // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
-                    updateLectureProgressState(memberId, lectureSection.getLecture().getId());
-                    finish = false;
-                }else if(over == 0 && progress != 100 && !message){
-                    //전 섹션을 다듣지못하면 그다음 섹션의 영상은 볼 수 없으니
-                    //전 섹션을 다들었을 경우 그다음 섹션에는 해당 메시지가 표시될수 있게 하면됨
-                    checkMessage = lectureSection.getName() + " 이번에 들어야할 섹션입니다.";
-                    finish = false;
-                    message = true;
-
-                }else if(progress == 100 && over == 0) {
-                    finishMessage = lectureSection.getName() + " 해당 섹션의 비디오들을 다 수강하셨습니다.";
-                    // 현재 섹션의 모든 비디오 체크 후 해당 섹션에 연결된 강의의 진행 상태 업데이트
-                    updateLectureProgressState(memberId, lectureSection.getLecture().getId());
-                    finish = true;
+                // 각 섹션별로 메시지 설정 로직
+                if (over == 0 && curriculum.getEditDay() != null) {
+                    // 기한이 연장되었을 때
+                    overMessage = "기한 내에 못들었습니다. " + curriculum.getEditDay().toLocalDate() + "로 연장되었습니다.";
+                } else if (over == 0 && progress == 100) {
+                    // 기한 내에 섹션을 완료했을 때
+                    overMessage = "기한 내에 다 들었습니다.";
                 }
 
                 SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
@@ -175,7 +180,7 @@ public class CurriculumService {
 
             MyPlanInfoDTO myPlanInfoDTO = MyPlanInfoDTO.builder()
                     .curriculumId(curriculum.getId())
-                    .date(curriculum.getCreateDate())
+                    .date(curriculum.getStartDay())
                     .sectionDTOList(sectionDTOMessageLists)
                     .build();
 
@@ -185,108 +190,114 @@ public class CurriculumService {
         return myPlanInfoList;
     }
 
+    @Transactional
+    public int checkOver(int memberId, int lectureId) {
+        // 현재 날짜를 구함
+        LocalDate today = LocalDate.now();
+        // 회원 ID와 강의 ID에 해당하는 모든 커리큘럼을 조회
+        List<Curriculum> curriculums = curriculumRepository.findByMemberIdAndLectureId(memberId, lectureId);
 
-    /**
-     * vpr.get(0).getEndDay로 비교하는 이유는, 쿼리보면 알겠지만, desc해서 가장 마지막에 들을 비디오의 endDay를 가져오기때문에 get(0)씀.
-     * 어차피 비디오 수강은 순차적으로 1->2->3..들어야하기 때문에 (건너뛰기 불가능 1->3 x) 그래서 이렇게함
-     */
-    //Curriculum에 timeTaken에 설정한 시간안에 VideoProgress에 state가 1이안되면 over는 1:기한넘김
-    //videoProgress에 state는 last_View를 가지고 Video에 playTime이랑 일치할 경우 state는 1로 바뀌도록
-    //밑에 메서드에 표시해놨음  updateVideoProgressState <- 이부분 주석처리함, 어차피 여기서 할 행위가아니기떄문
-    private int checkOver(int sectionId,int memberId, List<VideoProgress> videoProgresses) {
+        // 각 커리큘럼에 대해 처리
+        for (Curriculum curriculum : curriculums) {
+            // 해당 섹션의 마감일 계산
+            LocalDate sectionEndDay = curriculum.getStartDay().toLocalDate().plusDays(curriculum.getTimeTaken());
+            // 해당 섹션의 비디오 진행 상태를 확인
+            VideoProgress progress = videoProgressRepository.findVideoProgressEndDay(memberId, curriculum.getSection().getId());
+            // 다음 섹션의 시작일 계산
+            LocalDate nextSectionStart = calculateNextSectionStartDay(memberId, lectureId, curriculum.getStartDay(), curriculums);
+            // 연장된 기한이 있으면 그것을 사용하고, 그렇지 않으면 원래 마감일을 사용
+            LocalDate deadline = curriculum.getEditDay() != null ? curriculum.getEditDay().toLocalDate() : sectionEndDay;
 
-        //section_id로 curriculum찾기
-        Curriculum curriculum = curriculumRepository.findBySectionId(sectionId,memberId);
-        LocalDateTime newDate = curriculum.getStartDay().plusDays(curriculum.getTimeTaken());
-
-        //curriculum에 section_id에 설정되지 않은 섹션 아이디는 일단은 over 0으로 할거임
-        //즉 설정하지 않은 것에 대해선 다 0으로 기간지나지않음으로 처리
-        if (curriculum == null) {
-            return 0; // Curriculum이 없는 경우 over는 0
-
-        }
-
-        List<VideoProgress> vpr = videoProgressRepository.findVideoProgressEndDay(sectionId,memberId);
-        //curriculum timetaken에 설정된 일을 StartDay에 더해서 endDay구할수있음 -> startDay + timeTaken = endDay
-        //videoProgress에 해당 section에 속한 video들의 videoProgress에 endDay가 curriculum에 startDay + timetaken > endDay 이면 over 0 반대면 1
-        //여기서 vpr에 endDay는 lastView 즉 해당 강의를 다들었을 경우 endDay
-
-        //videoProgresses테이블에 video에대한 정보가없을경우(아직 안들었을경우)
-        //단, newDate의 기한을 넘기지 않아야함
-        if (!vpr.isEmpty()) {
-            if (newDate.isAfter(vpr.get(0).getEndDay())) {
-                return 0; // 마지막 비디오의 진행 상태가 기한 내에 완료됨
-            } else if (newDate.isBefore(vpr.get(0).getEndDay())) {
-                return 1; // 마지막 비디오의 진행 상태가 기한을 넘김
+            // 기한 내에 완료되었는지 확인
+            if (progress.getState() == 1 && (nextSectionStart == null || today.isBefore(nextSectionStart))) {
+                // 기한 내에 완료됨
+                return 0;
             }
-        } else {
-            // vpr 리스트가 비어 있으므로, 아직 어떤 비디오도 완료되지 않음
-            // 이 경우에 newDate와 현재 날짜를 비교
-            if (newDate.isAfter(LocalDateTime.now())) {
-                return 0; // 아직 기한이 남음
-            } else {
-                return 1; // 기한을 넘김
+            // 기한을 넘겼는지 확인
+            else if (progress.getState() == 0 && (nextSectionStart != null && today.isAfter(nextSectionStart))) {
+                // 기한을 넘겼으면 editDay와 뒤따르는 섹션들의 startDay 업데이트
+                LocalDateTime newEditDay = LocalDateTime.of(today, LocalTime.now());
+                updateEditDay(curriculum.getId(), newEditDay);
+                updateStartDaysForFollowingSections(curriculums, curriculum.getSection().getId(), today.plusDays(curriculum.getTimeTaken()).atStartOfDay());
+                // 기한 초과
+                return 1;
             }
-        }
-
-        // Curriculum에 연결된 모든 비디오를 가져옴
-        List<Video> videos = videoRepository.findByCurriculum(curriculum);
-
-        boolean allVideosCompleted = true; //섹션에 있는 비디오가 완료되었는지 확인
-
-        for (Video video : videos) {
-            boolean videoCompleted = false; //각 비디오가 완료되엇는지 확인
-            for (VideoProgress vp : vpr) {
-                if (vp.getVideo().getId() == video.getId() && vp.getState() == 1) {
-                    videoCompleted = true; //비디오 완료
-                    allVideosCompleted = true;
-                    break;
-                }
-                else if (!videoCompleted) {
-                    allVideosCompleted = false;
+            // 연장된 기한을 넘겼는지 확인
+            else if (progress == null || progress.getState() == 0) {
+                if (today.isAfter(deadline)) {
+                    // 연장된 기한까지 완료하지 못했으면 editDay와 뒤따르는 섹션들의 startDay 업데이트
+                    LocalDateTime newEditDay = LocalDateTime.of(today, LocalTime.now());
+                    updateEditDay(curriculum.getId(), newEditDay);
+                    updateStartDaysForFollowingSections(curriculums, curriculum.getSection().getId(), newEditDay.plusDays(curriculum.getTimeTaken()));
+                    // 기한 초과
+                    return 1;
                 }
             }
+            // 비디오를 한 번도 시청하지 않은 경우 처리
+            if (progress == null) {
+                // 아직 섹션 비디오를 시청하지 않았으므로 진행 중으로 처리
+                return 0;
+            }
         }
-
-        //섹션에 포함된 모든 비디오가 다 state가 1이아니면 over 1
-        //1:실패 0:성공
-        if(!allVideosCompleted || newDate.isBefore(vpr.get(0).getEndDay()))
-        {
-            return 1;
-        }
-        // 그 외의 경우에는 over는 0
-        else {
-            return 0;
-        }
-
+        // 섹션의 강의를 시작하지 않았거나, 기한 내에 완료한 경우
+        return 0;
     }
 
-    //video_progress에 state 상태를 해당 조건에 맞게 변경
-    //50% 수강중, 100%수강 완료 0->1변경
-  /*  private void updateVideoProgressState(VideoProgress videoProgress, Video video) {
-        //비디오의 전체 재생 시간(playTime)과 마지막으로 본 시간(lastView)을 초 단위로 변환 한다.
-        //비디오가 얼마나 재생되었는지 백분율로 계산 한다.
-        //계산된 비율(playedPercentage)에 따라 VideoProgress의 상태(state)를 업데이트 한다.
-        long playTimeSeconds = ChronoUnit.SECONDS.between(LocalTime.MIDNIGHT, video.getPlayTime());
-        long lastViewSeconds = ChronoUnit.SECONDS.between(LocalTime.MIDNIGHT, videoProgress.getLastView());
-        double playedPercentage = ((double) lastViewSeconds / playTimeSeconds) * 100;
+    //다음 섹션 startDay찾는 메서드
+    private LocalDate calculateNextSectionStartDay(int memberId, int lectureId, LocalDateTime currentSectionEndDay, List<Curriculum> curriculums) {
+        // 현재 섹션의 마감일 이후에 시작하는 섹션 중 가장 빠른 시작일을 가진 섹션을 찾아서 반환
+        LocalDate nextSectionStartDay = null;
 
-        //
-        if (playedPercentage >= 100) {
-            videoProgress.setState(1); // 수강 종료
-
-        } else {
-            videoProgress.setState(0); // 수강 전
+        for (Curriculum curriculum : curriculums) {
+            if (curriculum.getMember().getId() == memberId && curriculum.getSection().getLecture().getId() == lectureId) {
+                LocalDate startDay = curriculum.getStartDay().toLocalDate();
+                // 현재 섹션의 종료일 이후에 시작하는 섹션 중에서 가장 빠른 시작일
+                // nextSectionStartDay가 null이거나 현재 섹션의 startDay가 더 이른 날짜인 경우에만 갱신
+                if (startDay.isAfter(currentSectionEndDay.toLocalDate()) && (nextSectionStartDay == null || startDay.isBefore(nextSectionStartDay))) {
+                    nextSectionStartDay = startDay;
+                }
+            }
         }
+        return nextSectionStartDay; // 다음 섹션이 있으면 그 섹션의 시작 날짜, 없으면 null 반환
+    }
 
-        videoProgressRepository.save(videoProgress);
-    }*/
+
+    @Transactional
+    public void updateEditDay(int curriculumId, LocalDateTime newEditDateTime) {
+        Curriculum curriculum = curriculumRepository.findById(curriculumId).orElse(null);
+        if (curriculum != null) {
+            curriculum.setEditDay(newEditDateTime);
+            curriculumRepository.save(curriculum);
+        }
+    }
+
+    //섹션별 startDay 업데이트
+    @Transactional
+    public void updateStartDaysForFollowingSections(List<Curriculum> curriculums, int currentSectionId, LocalDateTime newStartDayForNextSections) {
+        // 모든 커리큘럼을 순회하면서 각 섹션의 시작일을 업데이트
+        for (Curriculum curriculum : curriculums) {
+            if (curriculum.getSection().getId() > currentSectionId) {
+                LocalDateTime currentStartDay = curriculum.getStartDay();
+                if (newStartDayForNextSections.isAfter(currentStartDay)) {
+                    curriculum.setStartDay(newStartDayForNextSections);
+                    curriculumRepository.save(curriculum);
+                    // 다음 섹션의 시작일을 준비
+                    newStartDayForNextSections = newStartDayForNextSections.plusDays(curriculum.getTimeTaken());
+                }
+            }
+        }
+    }
+
+
+
+
+
 
     //내 커리큘럼 timetaken 수정하는 메서드
     public Curriculum updateTimeTaken(int memberId, int curriculumId, int newTimeTaken) {
 
         //커리큘럼 id로 커리큘럼 찾기
-        Curriculum curriculum = curriculumRepository.findByCurriculumId(memberId,curriculumId)
+        Curriculum curriculum = curriculumRepository.findByCurriculumId(memberId, curriculumId)
                 .orElseThrow(() -> new RuntimeException("회원님의 커리큘럼이 없거나, 타 계정 커리큘럼에 접근해 권한이없습니다.."));
 
         if (curriculum.getEdit() == 1) {
@@ -294,7 +305,7 @@ public class CurriculumService {
             curriculum.setTimeTaken(newTimeTaken);
             //변경사항 저장하고 업데이트된 커리큘럼 반환
             return curriculumRepository.save(curriculum);
-        } else{
+        } else {
             throw new RuntimeException("커리큘럼을 수정할 수 없습니다.");
         }
     }
@@ -305,13 +316,13 @@ public class CurriculumService {
         // Member와 Lecture 객체를 가져옵니다.
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException("없는 회원입니다."));
         Lecture lecture = lectureRepository.findById(lectureId);
-        if(lecture == null){
+        if (lecture == null) {
             throw new RuntimeException("없는 강의입니다.");
         }
 
         // 해당 회원의 수강중인 Lecture 에대한  LectureProgress를 가져옴
         List<LectureProgress> lectureProgress = lectureProgressRepository.findByMemberLecture(member, lecture);
-        if(lectureProgress.isEmpty()){
+        if (lectureProgress.isEmpty()) {
             throw new RuntimeException("해당 강의의 진행 상황을 찾을 수 없습니다.");
         }
 
@@ -343,7 +354,7 @@ public class CurriculumService {
 
         // 모든 Video들이 완료되면 LectureProgress state를 1로 업데이트
         if (allVideosCompleted) {
-            for(LectureProgress lp : lectureProgress){
+            for (LectureProgress lp : lectureProgress) {
                 lp.setState(1);
                 lectureProgressRepository.save(lp);
             }
@@ -360,14 +371,14 @@ public class CurriculumService {
         List<Section> sections = sectionRepository.findBySectionsId(s.getId());
 
         for (Section section : sections) {
-            List<Object[]> videoCounts  = videoRepository.findTotalAndCompletedVideosForSection(memberId, section.getId());
+            List<Object[]> videoCounts = videoRepository.findTotalAndCompletedVideosForSection(memberId, section.getId());
             if (!videoCounts.isEmpty()) {
                 Object[] counts = videoCounts.get(0);
                 totalVideos += toInt(counts[0]);
                 completedVideos += toInt(counts[1]);
             }
         }
-        return new int[] { totalVideos, completedVideos };
+        return new int[]{totalVideos, completedVideos};
     }
 
     //형변환 에러방지
@@ -382,6 +393,7 @@ public class CurriculumService {
             throw new IllegalArgumentException("Unsupported number type: " + obj.getClass().getName());
         }
     }
+
 
 
 }

@@ -1,11 +1,14 @@
 package com.latteis.eumcoding.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -14,7 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class MyPlanInfoDTO {
     private int curriculumId;
-    private LocalDate date;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime date; //커리큘럼 섹션 시작일
     //plan
     private List<SectionDTO.SectionDTOMessageList> sectionDTOList;
 }

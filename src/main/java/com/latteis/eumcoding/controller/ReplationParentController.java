@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,13 +70,18 @@ public class ReplationParentController {
     //인증이 성공적으로 되면 자녀 커리큘럼 확인가능
     @GetMapping("/children/curriculum")
     public ResponseEntity<?> getChildrenCurriculum(@ApiIgnore Authentication authentication,
-                                                   @RequestParam(required = false) Integer childId) {
+                                                   @RequestParam(required = false) Integer childId,
+                                                   @RequestParam(defaultValue = "2023-01-01T00:00:00") String startDateStr,
+                                                   @RequestParam(defaultValue = "2023-09-30T23:59:59") String endDateStr) {
         try {
+            LocalDateTime startDate = LocalDateTime.parse(startDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+            LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+
             int parentId = Integer.parseInt(authentication.getPrincipal().toString());
             if (childId == null) {
                 return ResponseEntity.badRequest().body("자녀 ID를 제공해야 합니다.");
             }
-            List<MyPlanInfoDTO> curriculumList = replationParentService.getChildByParent(parentId, childId);
+            List<MyPlanInfoDTO> curriculumList = replationParentService.getChildByParent(parentId, childId,startDate,endDate);
 
             return ResponseEntity.ok().body(curriculumList);
 

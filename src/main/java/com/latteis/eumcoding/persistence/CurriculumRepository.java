@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,8 +15,23 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s where m.id = :memberId ")
     List<Curriculum> findByMemberId(@Param("memberId") int memberId);
 
-    @Query("SELECT c FROM Curriculum c WHERE c.section.id = :sectionId AND c.member.id = :memberId")
-    Curriculum findBySectionId(@Param("sectionId")int sectionId ,@Param("memberId") int memberId);
+    
+    //커리큘럼 날짜 입력해서 결과 보이게
+    @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s " +
+            "WHERE m.id = :memberId " +
+            "AND c.startDay BETWEEN :startDate AND :endDate " +
+            "ORDER BY c.startDay desc")
+    List<Curriculum> findByMemberIdAndMonthYear(@Param("memberId") int memberId,
+                                                @Param("startDate") LocalDateTime startDate,
+                                                @Param("endDate") LocalDateTime endDate);
+
+
+
+
+
+    @Query("SELECT c FROM Curriculum c JOIN c.section s WHERE s.lecture.id =:lectureId AND c.member.id = :memberId ORDER BY c.startDay ASC")
+    List<Curriculum> findByMemberIdAndLectureId(@Param("memberId") int memberId, @Param("lectureId")int lectureId);
+
 
     @Query("SELECT c FROM Curriculum c JOIN Member m ON c.member.id = m.id WHERE c.id = :curriculumId AND c.member.id = :memberId AND c.member.role = 0")
     Optional<Curriculum> findByCurriculumId(@Param("memberId")int memberId,@Param("curriculumId")int curriculumId);
@@ -47,4 +64,6 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
             "WHERE p.state IN(0,2) AND m.id =:memberId", nativeQuery = true)
     List<Curriculum> findByDeleteMemberId(@Param("memberId") int memberId);
 
+
+    Curriculum findBySectionId(int sectionId);
 }

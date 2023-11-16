@@ -113,10 +113,11 @@ public class ReplationParentService {
     }
 
     //부모가 자녀 계정 연동 성공 시 자녀 커리큘럼 볼 수 있음.
-    public List<MyPlanInfoDTO> getChildByParent(int parentId, int childId) {
+
+    public List<MyPlanInfoDTO> getChildByParent(int parentId, int childId, LocalDateTime startDate, LocalDateTime endDate) {
         ReplationParent member = relationParentRepository.findByParentIdChildId(parentId, childId)
                 .orElseThrow(() -> new IllegalArgumentException("해당하는 자녀가 없습니다."));
-        List<MyPlanInfoDTO> curriculumList = curriculumService.getMyPlanInfo(member.getChild().getId());
+        List<MyPlanInfoDTO> curriculumList = curriculumService.getMyPlanInfo(member.getChild().getId(),startDate,endDate);
         return curriculumList;
     }
 

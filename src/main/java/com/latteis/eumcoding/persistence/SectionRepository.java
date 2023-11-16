@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.persistence;
 
+import com.latteis.eumcoding.model.Curriculum;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.Section;
@@ -74,4 +75,6 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
 
     @Query("SELECT s FROM Section s JOIN s.lecture l WHERE l IN (SELECT pl.lecture FROM PayLecture pl WHERE pl.lecture =:lecture)")
     List<Section> findAllByLecture(@Param("lecture") Lecture lecture);
+
+
 }
