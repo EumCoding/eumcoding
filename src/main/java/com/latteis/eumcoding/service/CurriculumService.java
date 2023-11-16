@@ -203,8 +203,21 @@ public class CurriculumService {
             LocalDate sectionEndDay = curriculum.getStartDay().toLocalDate().plusDays(curriculum.getTimeTaken());
             // 해당 섹션의 비디오 진행 상태를 확인
             VideoProgress progress = videoProgressRepository.findVideoProgressEndDay(memberId, curriculum.getSection().getId());
+            // progress가 null인 경우 처리
+            if (progress == null) {
+                // 아직 섹션 비디오를 시청하지 않았으므로 진행 중으로 처리... 예외처리 메시지 발생
+                log.info("아직 섹션 비디오를 시청하지 않았으므로 진행 중으로 처리");
+                return 0;
+            }
+
             // 다음 섹션의 시작일 계산
             LocalDate nextSectionStart = calculateNextSectionStartDay(memberId, lectureId, curriculum.getStartDay(), curriculums);
+            // 기한 내에 완료되었는지 확인
+            if (progress.getState() == 1 && (nextSectionStart == null || today.isBefore(nextSectionStart))) {
+                // 기한 내에 완료됨
+                log.info("기한 내에 완료됨");
+                return 0;
+            }
             // 연장된 기한이 있으면 그것을 사용하고, 그렇지 않으면 원래 마감일을 사용
             LocalDate deadline = curriculum.getEditDay() != null ? curriculum.getEditDay().toLocalDate() : sectionEndDay;
 
