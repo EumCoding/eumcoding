@@ -163,9 +163,8 @@ public class SectionDTO {
         private String sectionName;
         private int progress;
         private int over;
-        private String overMessage;
-        private String checkMessage;
-        private String finishMessage;
+        private int timetaken;
+        private String message;
 
     }
 }

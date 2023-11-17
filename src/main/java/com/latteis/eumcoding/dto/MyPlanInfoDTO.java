@@ -17,8 +17,11 @@ import java.util.List;
 @AllArgsConstructor
 public class MyPlanInfoDTO {
     private int curriculumId;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd-HH:mm:ss")
     private LocalDateTime date; //커리큘럼 섹션 시작일
+
+    @JsonFormat(pattern = "yyyy-MM-dd-HH:mm:ss")
+    private LocalDateTime editDay; //커리큘럼 섹션 시작일
     //plan
     private List<SectionDTO.SectionDTOMessageList> sectionDTOList;
 }

@@ -84,20 +84,23 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
 
 
     @Query(value =
-            "SELECT vp.* " +
-                    "FROM video_progress vp " +
-                    "RIGHT JOIN video v ON vp.video_id = v.id " +
-                    "JOIN section s ON v.section_id = s.id " +
-                    "JOIN lecture l ON s.lecture_id = l.id " +
-                    "JOIN curriculum c ON c.section_id = s.id " +
-                    "JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
-                    "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
-                    "JOIN payment p ON pl.payment_id = p.id " +
-                    "JOIN member m ON p.member_id = m.id " +
-                    "WHERE s.id = :sectionId AND m.id = :memberId " +
-                    "ORDER BY v.id DESC, s.id desc " +
-                    "LIMIT 1", nativeQuery = true)
-    VideoProgress findVideoProgressEndDay(@Param("memberId")int memberId,@Param("sectionId") int sectionId);
+            "SELECT subquery.* " +
+                    "FROM (" +
+                    "  SELECT vp.*, " +
+                    "         ROW_NUMBER() OVER (PARTITION BY s.id ORDER BY v.id DESC) AS rn " +
+                    "  FROM video_progress vp " +
+                    "  RIGHT JOIN video v ON vp.video_id = v.id " +
+                    "  JOIN section s ON v.section_id = s.id " +
+                    "  JOIN lecture l ON s.lecture_id = l.id " +
+                    "  JOIN curriculum c ON c.section_id = s.id " +
+                    "  JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
+                    "  JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+                    "  JOIN payment p ON pl.payment_id = p.id " +
+                    "  JOIN member m ON p.member_id = m.id " +
+                    "  WHERE s.id = :sectionId AND m.id = :memberId " +
+                    ") AS subquery " +
+                    "WHERE rn = 1 ", nativeQuery = true)
+    List<VideoProgress> findVideoProgressEndDay(@Param("memberId") int memberId,@Param("sectionId") int sectionId);
 
 }
 

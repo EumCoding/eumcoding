@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CurriculumRepository extends JpaRepository<Curriculum, Integer> {
+
+
     @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s where m.id = :memberId ")
     List<Curriculum> findByMemberId(@Param("memberId") int memberId);
 
@@ -19,8 +21,8 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     //커리큘럼 날짜 입력해서 결과 보이게
     @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s " +
             "WHERE m.id = :memberId " +
-            "AND c.startDay BETWEEN :startDate AND :endDate " +
-            "ORDER BY c.startDay desc")
+            "AND ( (c.editDay IS NOT NULL AND c.editDay BETWEEN :startDate AND :endDate) OR " +
+            "      (c.editDay IS NULL AND c.startDay BETWEEN :startDate AND :endDate) )")
     List<Curriculum> findByMemberIdAndMonthYear(@Param("memberId") int memberId,
                                                 @Param("startDate") LocalDateTime startDate,
                                                 @Param("endDate") LocalDateTime endDate);
@@ -65,5 +67,7 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     List<Curriculum> findByDeleteMemberId(@Param("memberId") int memberId);
 
 
-    Curriculum findBySectionId(int sectionId);
+    // Lecture ID를 기반으로 최대 Section ID 조회
+    @Query("SELECT MAX(c.section.id) FROM Curriculum c WHERE c.section.lecture.id = :lectureId")
+    Integer findMaxSectionIdByLectureId(@Param("lectureId") int lectureId);
 }
