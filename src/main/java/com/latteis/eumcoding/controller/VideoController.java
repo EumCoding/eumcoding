@@ -123,6 +123,7 @@ public class VideoController {
             VideoDTO.ViewResponseDTO viewResponseDTO = videoService.getVideoInfo(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
             return ResponseEntity.ok().body(viewResponseDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 
@@ -140,6 +141,7 @@ public class VideoController {
             videoService.saveViewedResult(Integer.parseInt(authentication.getPrincipal().toString()), viewedResultRequestDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 

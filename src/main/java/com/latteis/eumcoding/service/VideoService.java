@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
@@ -204,6 +205,7 @@ public class VideoService {
     /*
     * 비디오 정보 가져오기
     */
+    @Transactional
     public VideoDTO.ViewResponseDTO getVideoInfo(int memberId, VideoDTO.IdRequestDTO idRequestDTO) {
 
         // 등록된 회원인지 검사
@@ -228,12 +230,29 @@ public class VideoService {
         }
 
         // 비디오 시청 기록 가져와서 추가
-        VideoProgress videoProgress = videoProgressRepository.findByMemberAndVideo(member, video);
+        List<VideoProgress> videoProgressList = videoProgressRepository.findByMemberAndVideo(member, video);
+        if(videoProgressList.size() > 1){
+            for(int i = 1 ; i < videoProgressList.size() ; i++) {
+                videoProgressRepository.deleteById(videoProgressList.get(i).getId());
+            }
+        }
+        VideoProgress videoProgress = (videoProgressList == null || videoProgressList.size() == 0) ? null : videoProgressList.get(0);
         VideoProgressDTO.ViewedResultResponseDTO viewedResultResponseDTO = (videoProgress == null) ? null : new VideoProgressDTO.ViewedResultResponseDTO(videoProgress);
         viewResponseDTO.setViewedResultResponseDTO(viewedResultResponseDTO);
 
+        LectureProgress lectureProgress = null;
         // 해당 강의를 구매한 이력은 있고 수강 기록은 없다면 수강기록과 비디오 기록 생성
-        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+        List<LectureProgress> lectureProgressList = lectureProgressRepository.findByMemberAndLecture(member, lecture);
+        if(lectureProgressList != null && lectureProgressList.size() == 0){
+            Preconditions.checkNotNull("해당 강의를 수강중인 학생이 아닙니다. (학생 ID : %s)", member.getId());
+        }else{
+            lectureProgress = lectureProgressList.get(0);
+        }
+        if(lectureProgressList.size() >= 2) {
+            for(int i = 1 ; i < lectureProgressList.size() ; i++) {
+                lectureProgressRepository.deleteById(lectureProgressList.get(i).getId());
+            }
+        }
         if (payLecture != null && lectureProgress == null) {
             // lectureProgress 생성 후 저장
             LectureProgress newLectureProgress = LectureProgress.builder()
@@ -241,15 +260,22 @@ public class VideoService {
                             .state(LectureProgressDTO.LectureProgressState.STUDYING)
                             .startDay(LocalDateTime.now())
                             .build();
-            lectureProgressRepository.save(newLectureProgress);
+            List<LectureProgress> tempLectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+            if(tempLectureProgress.size() == 0)
+                lectureProgressRepository.save(newLectureProgress);
 
-            // videoProgress 생성 후 저장
-            videoProgressRepository.save(VideoProgress.builder()
+            VideoProgress newVideoProgress = VideoProgress.builder()
                     .lectureProgress(newLectureProgress)
                     .video(video)
                     .state(LectureProgressDTO.LectureProgressState.STUDYING)
                     .startDay(LocalDateTime.now())
-                    .build());
+                    .build();
+
+            List<VideoProgress> tempVideoProgress = videoProgressRepository.findByVideoAndLectureProgress(video, newLectureProgress);
+            if(tempVideoProgress.size() == 0){
+                videoProgressRepository.save(newVideoProgress);
+            }
+
         }
         // 해당 강의를 구매한 이력은 있고 해당 비디오 시청 기록이 없다면
         else if (payLecture != null && lectureProgress != null && videoProgressRepository.findByVideoAndLectureProgress(video, lectureProgress) == null) {
@@ -519,19 +545,88 @@ public class VideoService {
         Video video = videoRepository.findById(viewedResultRequestDTO.getVideoId());
         Preconditions.checkNotNull(video, "등록된 비디오가 아닙니다. (video ID : %s)", viewedResultRequestDTO.getVideoId());
 
-        // 수강 중인 강의인지 검사
-        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
-        Preconditions.checkNotNull(lectureProgress, "해당 강의를 수강하고 있지 않습니다. (강의 ID : %s)", video.getSection().getLecture().getId());
+        // 수강 중인 강의인지 검사(List로받아오기)
+        List<LectureProgress> lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
 
-        // 해당 비디오 시청 기록 가져오기
-        VideoProgress videoProgress = videoProgressRepository.findByVideoAndLectureProgress(video, lectureProgress);
-        // 받아온 마지막 영상 위치가 비디오 전체 시간과 같다면 수강 완료
-        if (video.getPlayTime().equals(viewedResultRequestDTO.getLastView())) {
-            videoProgress.setState(VideoProgressDTO.VideoProgressState.COMPLETION);
-            videoProgress.setEndDay(LocalDateTime.now());
+        // lectureProgress가 여러개있으면 하나만 남기고 지우기
+        if(lectureProgress.size() > 1){
+            for(int i = 1 ; i < lectureProgress.size() ; i++) {
+                lectureProgressRepository.deleteById(lectureProgress.get(i).getId());
+            }
         }
-        videoProgress.setLastView(viewedResultRequestDTO.getLastView());
-        videoProgressRepository.save(videoProgress);
+
+        // video와 member로 조회
+        List<VideoProgress> videoProgressList = videoProgressRepository.findByVideoIdAndMemberId(video.getId(), member.getId());
+
+        // videoProgressList가 여러개 있으면 하나만 남기고 지우기
+        if(videoProgressList.size() > 1){
+            for(int i = 1 ; i < videoProgressList.size() ; i++) {
+                videoProgressRepository.deleteById(videoProgressList.get(i).getId());
+            }
+        }
+
+        // videoProgress가 없으면 생성
+        if(videoProgressList.size() == 0){
+            // videoProgress 생성
+            VideoProgress newVideoProgress = VideoProgress.builder()
+                    .lectureProgress(lectureProgress.get(0))
+                    .video(video)
+                    .state(LectureProgressDTO.LectureProgressState.STUDYING)
+                    .startDay(LocalDateTime.now())
+                    .build();
+            videoProgressRepository.save(newVideoProgress);
+            Preconditions.checkNotNull("해당 강의를 수강중인 학생이 아닙니다. (학생 ID : %s)", member.getId());
+        }
+
+//        if(lectureProgress.size() == 0){
+//            log.info("수강중인 강의가 없음... progress 생성")
+//            // lectureProgress와 videoProgress 생성
+//            LectureProgress newLectureProgress = LectureProgress.builder()
+//                    .payLecture(payLectureRepository.findByMemberAndLectureAndState(member, video.getSection().getLecture(), PaymentDTO.PaymentState.SUCCESS))
+//                    .state(LectureProgressDTO.LectureProgressState.STUDYING)
+//                    .startDay(LocalDateTime.now())
+//                    .build();
+//            lectureProgressRepository.save(newLectureProgress);
+//            // videoProgress 생성
+//            VideoProgress newVideoProgress = VideoProgress.builder()
+//                    .lectureProgress(newLectureProgress)
+//                    .video(video)
+//                    .state(LectureProgressDTO.LectureProgressState.STUDYING)
+//                    .startDay(LocalDateTime.now())
+//                    .build();
+//            videoProgressRepository.save(newVideoProgress);
+//            Preconditions.checkNotNull("해당 강의를 수강중인 학생이 아닙니다. (학생 ID : %s)", member.getId());
+//        }
+//        // 수강 중인 강의인지 검사
+//        List<LectureProgress> lectureProgress = lectureProgressRepository.findByMemberAndLecture(member, video.getSection().getLecture());
+//        Preconditions.checkNotNull(lectureProgress, "해당 강의를 수강하고 있지 않습니다. (강의 ID : %s)", video.getSection().getLecture().getId());
+
+        VideoProgress videoProgress1 = null;
+        // 해당 비디오 시청 기록 가져오기
+        List<VideoProgress> videoProgress = videoProgressRepository.findByVideoIdAndMemberId(video.getId(), member.getId());
+        if(videoProgress.size() == 0){
+            Preconditions.checkNotNull("해당 비디오를 시청하고 있지 않습니다. (비디오 ID : %s)", video.getId());
+        }else{
+             videoProgress1 = videoProgress.get(0);
+        }
+        if(videoProgress.size() > 1) {
+            for(int i = 1 ; i < videoProgress.size() ; i++) {
+                videoProgressRepository.deleteById(videoProgress.get(i).getId());
+            }
+        }
+        // 받아온 마지막 영상 위치가 비디오 전체 시간과 같다면 수강 완료
+//        if (video.getPlayTime().equals(viewedResultRequestDTO.getLastView())) {
+//            videoProgress1.setState(VideoProgressDTO.VideoProgressState.COMPLETION);
+//            videoProgress1.setEndDay(LocalDateTime.now());
+//        }
+
+        // 받아온 마지막 영상 위치가 비디오 전체 시간의 90% 이상이라면 수강 완료
+        if (video.getPlayTime().toSecondOfDay() * 0.9 <= viewedResultRequestDTO.getLastView().toSecondOfDay()) {
+            videoProgress1.setState(VideoProgressDTO.VideoProgressState.COMPLETION);
+            videoProgress1.setEndDay(LocalDateTime.now());
+        }
+        videoProgress1.setLastView(viewedResultRequestDTO.getLastView());
+        videoProgressRepository.save(videoProgress1);
 
     }
 
