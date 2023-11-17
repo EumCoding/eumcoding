@@ -361,14 +361,20 @@ public class StatsService {
             Comparator<StatsDTO.RevenueDistributionDTO> comparator = Comparator.comparing(StatsDTO.RevenueDistributionDTO::getLectureId, Comparator.naturalOrder());
             List<StatsDTO.RevenueDistributionDTO> newRevenueDistributionDTOList = revenueDistributionDTOList.stream().sorted(comparator).collect(Collectors.toList());
 
+
             // 반환 DTO에 강의별 데이터 List 담기
             responseDTO.setRevenueDistributionDTOList(newRevenueDistributionDTOList);
             // 반환 DTO List에 반환 DTO 담기
             responseDTOList.add(responseDTO);
 
         }
+
+        // 날짜로 정렬
+        Comparator<StatsDTO.RevenueDistributionResponseDTO> comparatorList = Comparator.comparing(StatsDTO.RevenueDistributionResponseDTO::getDate, Comparator.naturalOrder());
+        List<StatsDTO.RevenueDistributionResponseDTO> newresponseDTOList = responseDTOList.stream().sorted(comparatorList).collect(Collectors.toList());
+
         // 최종 응답 DTO List
-        return responseDTOList;
+        return newresponseDTOList;
 
     }
 
@@ -591,8 +597,13 @@ public class StatsService {
 */
                 currentDate = tempDate;
             }
-                // 반환 DTO에 강의별 데이터 List 담기
-                responseDTO.setCompareLectureSalesVolumeDTOList(compareLectureSalesVolumeDTOList);
+
+            // 날짜로 정렬
+            Comparator<StatsDTO.CompareLectureSalesVolumeDTO> comparator = Comparator.comparing(StatsDTO.CompareLectureSalesVolumeDTO::getDate, Comparator.naturalOrder());
+            List<StatsDTO.CompareLectureSalesVolumeDTO> newDTOList = compareLectureSalesVolumeDTOList.stream().sorted(comparator).collect(Collectors.toList());
+
+            // 반환 DTO에 강의별 데이터 List 담기
+                responseDTO.setCompareLectureSalesVolumeDTOList(newDTOList);
                 responseDTO.setLectureName1(lecture1.getName());
                 responseDTO.setLectureName2(lecture2.getName());
             // 최종 응답 DTO List
