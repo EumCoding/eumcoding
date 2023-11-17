@@ -1,3 +1,5 @@
+// videoProgressRepository
+
 package com.latteis.eumcoding.persistence;
 
 import com.latteis.eumcoding.model.*;
@@ -7,11 +9,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
+
 public interface VideoProgressRepository extends JpaRepository<VideoProgress, Integer> {
+
+
 
     @Query("SELECT vp FROM VideoProgress vp JOIN vp.lectureProgress lp JOIN lp.payLecture pl JOIN pl.payment p JOIN p.member m WHERE m.id = :memberId AND vp.video.id = :videoId AND p.state = 1")
     Optional<VideoProgress> findByMemberIdAndVideoId(@Param("memberId") int memberId, @Param("videoId") int videoId);
@@ -55,23 +62,23 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
 
     @Query(value =
             "SELECT vp.* FROM video_progress vp " +
-            "RIGHT JOIN video v ON vp.video_id = v.id " +
-            "JOIN section s ON v.section_id = s.id " +
-            "JOIN curriculum c ON c.section_id = s.id " +
-            "WHERE s.id =:sectionId", nativeQuery = true)
+                    "RIGHT JOIN video v ON vp.video_id = v.id " +
+                    "JOIN section s ON v.section_id = s.id " +
+                    "JOIN curriculum c ON c.section_id = s.id " +
+                    "WHERE s.id =:sectionId", nativeQuery = true)
     List<VideoProgress> findBySectionsId(@Param("sectionId") int sectionId);
 
 
     /*
-    * Member, Video에 맞는 Entity 가져오기
-    */
+     * Member, Video에 맞는 Entity 가져오기
+     */
     @Query("SELECT vp FROM VideoProgress vp WHERE vp.video = :video AND vp.lectureProgress.payLecture.payment.member = :member")
-    VideoProgress findByMemberAndVideo(@Param("member") Member member, @Param("video") Video video);
+    List<VideoProgress> findByMemberAndVideo(@Param("member") Member member, @Param("video") Video video);
 
     /*
-    * Video, Member에 맞는 videoProgress 가져오기
-    */
-    VideoProgress findByVideoAndLectureProgress(Video video, LectureProgress lectureProgress);
+     * Video, Member에 맞는 videoProgress 가져오기
+     */
+    List<VideoProgress> findByVideoAndLectureProgress(Video video, LectureProgress lectureProgress);
 
     @Query(value = "SELECT * " +
             "FROM video_progress vp " +
@@ -121,5 +128,16 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
                     "and p.state = 1 " +
                     "group by p.member_id ", nativeQuery = true)
     List<Object[]> getLectureProgress(@Param("lectureId") int lectureId);
+
+    //video id와 member id로 videoProgress 가져오기
+    @Query(value = "SELECT vp.* " +
+            "FROM video_progress vp " +
+            "JOIN lecture_progress lp ON vp.lecture_progress_id = lp.id " +
+            "JOIN pay_lecture pl ON lp.pay_lecture_id = pl.id " +
+            "JOIN payment p ON pl.payment_id = p.id " +
+            "JOIN member m ON p.member_id = m.id " +
+            "WHERE vp.video_id = :videoId AND m.id = :memberId", nativeQuery = true)
+    List<VideoProgress> findByVideoIdAndMemberId(@Param("videoId") int videoId, @Param("memberId") int memberId);
+
 }
 

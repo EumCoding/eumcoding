@@ -1,3 +1,5 @@
+// lectureStudentService
+
 package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
@@ -81,10 +83,55 @@ public class LectureStudentService {
 
     }
 
+    /*
+     * 학생 비디오 정보 가져오기
+     */
+    public List<LectureStudentDTO.StudentVideoInfoDTO> getStudentVideoInfo(Authentication authentication, LectureStudentDTO.StudentVideoInfoRequestDTO requestDTO) {
+
+        // 받아온 파라미터 값으로 Member, Video 생성
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member teacher = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberId(requestDTO.getMemberId());
+        Video video = videoRepository.findById(requestDTO.getVideoId());
+
+        // 등록된 회원인지 검사
+        if (teacher == null || member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (teacher.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+        // videoId에 유효한 값이 넘어왔는지 검사
+        if (video == null) {
+            throw new ResponseMessageException(ErrorCode.VIDEO_NOT_FOUND);
+        }
+
+        // 비디오 문제 리스트 가져오기
+        List<VideoTestDTO.ListResponseDTO> videoTestDTOList = videoTestService.getTestList(member.getId(), new VideoDTO.IdRequestDTO(video.getId()));
+        // 반환 DTO List 생성
+        List<LectureStudentDTO.StudentVideoInfoDTO> responseDTOList = new ArrayList<>();
+
+        // 비디오 문제 하나씩
+        for (VideoTestDTO.ListResponseDTO videoListDTO : videoTestDTOList) {
+            int studentScore = 0;
+            // 학생의 문제 답안 기록 가져오기
+            VideoTestLogDTO.ResponseDTO videoTestLogDTO = videoTestLogService.getTestLog(member.getId(), new VideoTestLogDTO.InfoRequestDTO(videoListDTO.getId(), member.getId()));
+            // 답안이 같다면 점수 추가
+            if (videoListDTO.getTestAnswerDTO().getAnswer().equals(videoTestLogDTO.getSubAnswer())) studentScore = videoListDTO.getScore();
+            // 반환 DTO 에 저장
+            LectureStudentDTO.StudentVideoInfoDTO responseDTO = new LectureStudentDTO.StudentVideoInfoDTO(videoListDTO, videoTestLogDTO, studentScore);
+            // 반환 DTO List에 DTO 저장
+            responseDTOList.add(responseDTO);
+        }
+        // 반환
+        return responseDTOList;
+    }
+
 
     /*
-    * 학생 정보 가져오기
-    */
+     * 학생 정보 가져오기
+     */
     public LectureStudentDTO.InfoResponseDTO getStudentInfo(int memberId, LectureStudentDTO.InfoRequestDTO infoRequestDTO) {
 
         // 등록된 강사인지 검사
@@ -102,8 +149,16 @@ public class LectureStudentService {
         Member student = memberRepository.findByMemberId(infoRequestDTO.getMemberId());
         Preconditions.checkNotNull(student, "등록된 학생이 아닙니다. (학생 ID : %s)", infoRequestDTO.getMemberId());
 
-        LectureProgress lectureProgress = lectureProgressRepository.findByMemberAndLecture(student, lecture);
-        Preconditions.checkNotNull(lectureProgress, "해당 강의를 수강중인 학생이 아닙니다. (학생 ID : %s)", student.getId());
+        List<LectureProgress> lectureProgressList = lectureProgressRepository.findByMemberAndLecture(student, lecture);
+        if(lectureProgressList.size() >= 2) {
+            for(int i = 1 ; i < lectureProgressList.size() ; i++) {
+                lectureProgressRepository.deleteById(lectureProgressList.get(i).getId());
+            }
+        }
+        if(lectureProgressList.size() == 0){
+            Preconditions.checkNotNull("해당 강의를 수강중인 학생이 아닙니다. (학생 ID : %s)", student.getId());
+        }
+        LectureProgress lectureProgress = lectureProgressList.get(0);
 
         LectureStudentDTO.InfoResponseDTO infoResponseDTO = new LectureStudentDTO.InfoResponseDTO();
         infoResponseDTO.setNickname(memberRepository.getNicknameByMember(student));
@@ -146,51 +201,6 @@ public class LectureStudentService {
         infoResponseDTO.setSectionListResponseDTOS(sectionDTOList);
 
         return infoResponseDTO;
-    }
-
-    /*
-    * 학생 비디오 정보 가져오기
-    */
-    public List<LectureStudentDTO.StudentVideoInfoDTO> getStudentVideoInfo(Authentication authentication, LectureStudentDTO.StudentVideoInfoRequestDTO requestDTO) {
-
-        // 받아온 파라미터 값으로 Member, Video 생성
-        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
-        Member teacher = memberRepository.findByMemberId(memberId);
-        Member member = memberRepository.findByMemberId(requestDTO.getMemberId());
-        Video video = videoRepository.findById(requestDTO.getVideoId());
-
-        // 등록된 회원인지 검사
-        if (teacher == null || member == null) {
-            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
-        }
-        // 강사 회원인지 검사
-        if (teacher.getRole() != MemberDTO.MemberRole.TEACHER) {
-            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
-        }
-        // videoId에 유효한 값이 넘어왔는지 검사
-        if (video == null) {
-            throw new ResponseMessageException(ErrorCode.VIDEO_NOT_FOUND);
-        }
-
-        // 비디오 문제 리스트 가져오기
-        List<VideoTestDTO.ListResponseDTO> videoTestDTOList = videoTestService.getTestList(member.getId(), new VideoDTO.IdRequestDTO(video.getId()));
-        // 반환 DTO List 생성
-        List<LectureStudentDTO.StudentVideoInfoDTO> responseDTOList = new ArrayList<>();
-
-        // 비디오 문제 하나씩
-        for (VideoTestDTO.ListResponseDTO videoListDTO : videoTestDTOList) {
-            int studentScore = 0;
-            // 학생의 문제 답안 기록 가져오기
-            VideoTestLogDTO.ResponseDTO videoTestLogDTO = videoTestLogService.getTestLog(member.getId(), new VideoTestLogDTO.InfoRequestDTO(videoListDTO.getId(), member.getId()));
-            // 답안이 같다면 점수 추가
-            if (videoListDTO.getTestAnswerDTO().getAnswer().equals(videoTestLogDTO.getSubAnswer())) studentScore = videoListDTO.getScore();
-            // 반환 DTO 에 저장
-            LectureStudentDTO.StudentVideoInfoDTO responseDTO = new LectureStudentDTO.StudentVideoInfoDTO(videoListDTO, videoTestLogDTO, studentScore);
-            // 반환 DTO List에 DTO 저장
-            responseDTOList.add(responseDTO);
-        }
-        // 반환
-        return responseDTOList;
     }
 
 }
