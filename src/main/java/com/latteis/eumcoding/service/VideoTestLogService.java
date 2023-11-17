@@ -59,20 +59,22 @@ public class VideoTestLogService {
 
         // 동영상 테스트 정보 가져오기
         VideoTest videoTest = videoTestRepository.findById(infoRequestDTO.getVideoTestId());
-        Preconditions.checkNotNull(videoTest, "등록된 동영상 문제가 없습니다. (동영상 문제 ID : %s)", infoRequestDTO.getVideoTestId());
+        log.info("ff");
+//        Preconditions.checkNotNull(videoTest, "등록된 동영상 문제가 없습니다. (동영상 문제 ID : %s)", infoRequestDTO.getVideoTestId());
 
         // 동영상 테스트 로그 정보 가져오기
         VideoTestLog videoTestLog = videoTestLogRepository.findByVideoTestAndMemberId(videoTest ,infoRequestDTO.getMemberId());
-        Preconditions.checkNotNull(videoTestLog, "등록된 테스트 로그가 없습니다. (동영상 문제 ID : %s, 문제 답변 작성자 ID : %s)", videoTest.getId(), infoRequestDTO.getMemberId());
+//        Preconditions.checkNotNull(videoTestLog, "등록된 테스트 로그가 없습니다. (동영상 문제 ID : %s, 문제 답변 작성자 ID : %s)", videoTest.getId(), infoRequestDTO.getMemberId());
 
         // 등록된 회원인지 검사
         Member member = memberRepository.findByMemberId(memberId);
         Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
         // 본인 체크
-        int lectureUploader = videoTest.getVideo().getSection().getLecture().getMember().getId();
-        Preconditions.checkArgument(memberId == lectureUploader || memberId == infoRequestDTO.getMemberId(), "해당 정보에 접근할 권한이 없습니다. (현재 회원 ID: %s)", memberId);
+//        int lectureUploader = videoTest.getVideo().getSection().getLecture().getMember().getId();
+//        Preconditions.checkArgument(memberId == lectureUploader || memberId == infoRequestDTO.getMemberId(), "해당 정보에 접근할 권한이 없습니다. (현재 회원 ID: %s)", memberId);
 
+        if (videoTestLog == null) return new VideoTestLogDTO.ResponseDTO();
         return new VideoTestLogDTO.ResponseDTO(videoTestLog);
 
     }

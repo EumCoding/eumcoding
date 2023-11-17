@@ -1,7 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.LectureDTO;
-import com.latteis.eumcoding.dto.StatsDTO;
+import com.latteis.eumcoding.dto.stats.StatsDTO;
 import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.service.StatsService;
@@ -94,6 +94,20 @@ public class StatsController {
 
     }
 
+    // 총 수강생 수
+    @PostMapping(value = "/total-student")
+    @ApiOperation(value = "총 수강생 수")
+    public ResponseEntity<?> getTotalStudent(@ApiIgnore Authentication authentication) {
+
+        try {
+            long studentCnt = statsService.getTotalStudent(authentication);
+            return ResponseEntity.ok().body(studentCnt);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
+
     // 이번 달 강의 총 수익
     @PostMapping(value = "/total-volume-percentage")
     @ApiOperation(value = "이번 달 총 판매량 비율")
@@ -161,11 +175,11 @@ public class StatsController {
     */
     @PostMapping(value = "/lecture-progress")
     @ApiOperation(value = "수강율 구간별 추이")
-    public ResponseEntity<List<StatsDTO.LectureProgressDTO>> getLectureProgress(@ApiIgnore Authentication authentication, @RequestBody LectureDTO.IdRequestDTO idRequestDTO) {
+    public ResponseEntity<StatsDTO.LectureProgressDTO> getLectureProgress(@ApiIgnore Authentication authentication, @RequestBody LectureDTO.IdRequestDTO idRequestDTO) {
 
         try {
-            List<StatsDTO.LectureProgressDTO> responseDTOList = statsService.getLectureProgress(authentication, idRequestDTO);
-            return ResponseEntity.ok().body(responseDTOList);
+            StatsDTO.LectureProgressDTO lectureProgressDTO = statsService.getLectureProgress(authentication, idRequestDTO);
+            return ResponseEntity.ok().body(lectureProgressDTO);
         } catch (Exception e) {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }

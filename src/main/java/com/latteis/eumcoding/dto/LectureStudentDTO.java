@@ -168,4 +168,36 @@ public class LectureStudentDTO {
         }
     }
 
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "학생 비디오 정보 요청 DTO")
+    public static class StudentVideoInfoRequestDTO {
+
+        @Positive(message = "양수만 가능합니다")
+        @ApiModelProperty(value = "비디오 ID", example = "1")
+        private int videoId;
+
+        @Positive(message = "양수만 가능합니다")
+        @ApiModelProperty(value = "유저 ID", example = "1")
+        private int memberId;
+
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel(value = "학생 비디오 정보 응답 DTO")
+    public static class StudentVideoInfoDTO {
+
+        // 비디오의 문제 + 답
+        VideoTestDTO.ListResponseDTO listResponseDTO;
+
+        // 학생의 답안 기록
+        VideoTestLogDTO.ResponseDTO videoTestLogDTO;
+
+        // 학생이 받은 점수
+        private int studentScore;
+
+    }
+
 }

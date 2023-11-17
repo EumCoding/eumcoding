@@ -2,7 +2,7 @@ package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MemberDTO;
-import com.latteis.eumcoding.dto.StatsDTO;
+import com.latteis.eumcoding.dto.stats.StatsDTO;
 import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.model.Lecture;
@@ -10,17 +10,14 @@ import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -252,6 +249,25 @@ public class StatsService {
 
     }
 
+    // 이번 달 총 판매량 비율
+    public long getTotalStudent(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 강사 회원인지 검사
+        if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
+            throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
+        }
+
+        long studentCnt = payLectureRepository.getTotalStudent(member);
+        return studentCnt;
+
+    }
+
     // 기간별 강의별 수익 분포
     public List<StatsDTO.RevenueDistributionResponseDTO> getRevenueDistribution(Authentication authentication, StatsDTO.PeriodOptionRequestDTO periodOptionRequestDTO) {
 
@@ -268,10 +284,10 @@ public class StatsService {
         }
         // dateOption에 유효한 값이 넘어왔는지 검사
         if (periodOption > StatsDTO.PeriodOption.YEAR) {
-            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+            throw new ResponseMessageException(ErrorCode.PERIOD_OPTION_NOT_FOUND);
         }
 
-        // 받아온 기간 옵션에 맞는 기간 저장
+        // 받아온 기간옵션에 맞는 기간 저장
         int dateOption = getDateOption(periodOption);
 
         // 현재 날짜
@@ -393,7 +409,7 @@ public class StatsService {
             }
             // dateOption에 유효한 값이 넘어왔는지 검사
             if (periodOption > StatsDTO.PeriodOption.YEAR) {
-                throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+                throw new ResponseMessageException(ErrorCode.PERIOD_OPTION_NOT_FOUND);
             }
 
             // 받아온 기간 옵션에 맞는 기간 저장
@@ -457,7 +473,7 @@ public class StatsService {
             List<StatsDTO.SalesVolumeProgressResponseDTO> newresponseDTOList = responseDTOList.stream().sorted(comparator).collect(Collectors.toList());
 
             return newresponseDTOList;
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
             throw new RuntimeException();
         }
@@ -486,9 +502,13 @@ public class StatsService {
             if (member.getRole() != MemberDTO.MemberRole.TEACHER) {
                 throw new ResponseMessageException(ErrorCode.TEACHER_INVALID_PERMISSION);
             }
-            // dateOption과 lectureId에 유효한 값이 넘어왔는지 검사
-            if (periodOption > StatsDTO.PeriodOption.YEAR || lecture1 == null || lecture2 == null) {
-                throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+            // dateOption에 유효한 값이 넘어왔는지 검사
+            if (periodOption > StatsDTO.PeriodOption.YEAR) {
+                throw new ResponseMessageException(ErrorCode.PERIOD_OPTION_NOT_FOUND);
+            }
+            // lectureId에 유효한 값이 넘어왔는지 검사
+            if (lecture1 == null || lecture2 == null) {
+                throw new ResponseMessageException(ErrorCode.LECTURE_NOT_FOUND);
             }
             int year = 0;
             int month = 0;
@@ -586,7 +606,7 @@ public class StatsService {
     /*
     * 구간별 수강률 추이
     */
-    public List<StatsDTO.LectureProgressDTO> getLectureProgress(Authentication authentication, LectureDTO.IdRequestDTO idRequestDTO) {
+    public StatsDTO.LectureProgressDTO getLectureProgress(Authentication authentication, LectureDTO.IdRequestDTO idRequestDTO) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         Member member = memberRepository.findByMemberId(memberId);
@@ -601,58 +621,28 @@ public class StatsService {
         }
         // lectureId에 유효한 값이 넘어왔는지 검사
         if (lecture == null) {
-            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+            throw new ResponseMessageException(ErrorCode.LECTURE_NOT_FOUND);
         }
 
+        // 해당 강의를 수강하는 학생들의 진행도 리스트 가져오기
+        List<Object[]> objects = videoProgressRepository.getLectureProgress(lecture.getId());
 
-        int intFrom0to9 = 0;
-        int intFrom10to19 = 0;
-        int intFrom20to29 = 0;
-        int intFrom30to39 = 0;
-        int intFrom40to49 = 0;
-        int intFrom50to59 = 0;
-        int intFrom60to69 = 0;
-        int intFrom70to79 = 0;
-        int intFrom80to89 = 0;
-        int intFrom90to100 = 0;
-        // 해당 강의의 모든 동영상 갯수
-        long totalVideoCount = videoRepository.countByLectureId(lecture.getId());
-        // 반환 DTO list 생성
-        List<StatsDTO.LectureProgressDTO> lectureProgressDTOList = new ArrayList<>();
-        // 해당 강의를 듣는 학생 List 가져오기
-        List<Member> memberList = lectureProgressRepository.getStudentList(lecture.getId());
-            StatsDTO.LectureProgressDTO dto = new StatsDTO.LectureProgressDTO();
-        for (Member member1 : memberList) {
-            // 시청 완료한 비디오 갯수 가져옴
-            long videoProgressCount = videoProgressRepository.countByMemberIdAndLectureId(member1.getId(), lecture.getId(), 1);
-            // 총 몇 퍼센트 들었는지 계산
-            double progress = ((double) videoProgressCount / (double) totalVideoCount) * 100;
-            // 소수점 첫번째 자리에서 반올림 후 학생 DTO에 progress 저장
-            int intProgress = (int) Math.round(progress);
+        // 구간별 진행도 수를 저장할 배열 생성
+        int[] progress = new int[10];
 
-            if (intProgress < 10) intFrom0to9 += 1;
-            else if (intProgress < 20) intFrom10to19 += 1;
-            else if (intProgress < 30) intFrom20to29 += 1;
-            else if (intProgress < 40) intFrom30to39 += 1;
-            else if (intProgress < 50) intFrom40to49 += 1;
-            else if (intProgress < 60) intFrom50to59 += 1;
-            else if (intProgress < 70) intFrom60to69 += 1;
-            else if (intProgress < 80) intFrom70to79 += 1;
-            else if (intProgress < 90) intFrom80to89 += 1;
-            else if (intProgress <= 100) intFrom90to100 += 1;
-
+        // 가져온 오브젝트 리스트 1개씩 처리
+        for (Object[] object : objects) {
+            // 난
+            int i = Integer.parseInt(String.valueOf(object[1])) / 10;
+            if (i >= 9) {
+                progress[9]++;
+            }
+            else {
+                progress[i]++;
+            }
         }
+        StatsDTO.LectureProgressDTO lectureProgressDTO = new StatsDTO.LectureProgressDTO(progress);
 
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom0to9));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom10to19));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom20to29));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom30to39));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom40to49));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom50to59));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom60to69));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom70to79));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom80to89));
-        lectureProgressDTOList.add(new StatsDTO.LectureProgressDTO(intFrom90to100));
-        return lectureProgressDTOList;
+        return lectureProgressDTO;
     }
 }
