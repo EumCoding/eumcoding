@@ -102,5 +102,24 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
                     "WHERE rn = 1 ", nativeQuery = true)
     List<VideoProgress> findVideoProgressEndDay(@Param("memberId") int memberId,@Param("sectionId") int sectionId);
 
+    /*
+     * 각 MEMBER별 해당 강의에 대한 진도율 퍼센트 가져오기
+     */
+    @Query(value =
+            "select p.member_id, " +
+                    "round(count(vp.id) / (SELECT count(v.id) from video v " +
+                    "join section s on v.section_id = s.id " +
+                    "join lecture l2 on l2.id = s.lecture_id " +
+                    "                             where l2.id = 3) * 100) " +
+                    "from video_progress vp " +
+                    "    join lecture_progress lp on vp.lecture_progress_id = lp.id " +
+                    "    join pay_lecture pl on pl.id = lp.pay_lecture_id " +
+                    "    join lecture l on l.id = pl.lecture_id " +
+                    "    join payment p on pl.payment_id = p.id " +
+                    "where l.id = :lectureId " +
+                    "and vp.state = 1 " +
+                    "and p.state = 1 " +
+                    "group by p.member_id ", nativeQuery = true)
+    List<Object[]> getLectureProgress(@Param("lectureId") int lectureId);
 }
 

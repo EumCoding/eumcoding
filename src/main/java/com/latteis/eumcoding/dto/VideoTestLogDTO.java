@@ -43,6 +43,7 @@ public class VideoTestLogDTO {
     }
 
     @Data
+    @AllArgsConstructor
     @NoArgsConstructor
     @ApiModel(value = "동영상 테스트 로그 가져오기 요청 DTO")
     public static class InfoRequestDTO {

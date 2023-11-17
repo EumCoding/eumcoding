@@ -1,4 +1,4 @@
-package com.latteis.eumcoding.dto;
+package com.latteis.eumcoding.dto.stats;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,12 +8,9 @@ import org.springframework.util.ObjectUtils;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 @AllArgsConstructor
@@ -358,7 +355,7 @@ public class StatsDTO {
     public static class LectureProgressDTO {
 
         @ApiModelProperty(value = "해당 구간 수 (0~9%부터)", example = "1")
-        private int count;
+        private int[] progress;
 
     }
 

@@ -1,6 +1,5 @@
 package com.latteis.eumcoding.persistence;
 
-import com.latteis.eumcoding.dto.StatsDTO;
 import com.latteis.eumcoding.model.Lecture;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.model.PayLecture;
@@ -8,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -175,5 +173,6 @@ public interface PayLectureRepository extends JpaRepository<PayLecture, Integer>
     )
     List<Object[]> getLectureSalesVolumeByMonth(@Param("lecture1") Lecture lecture1, @Param("lecture2") Lecture lecture2, @Param("year") int year, @Param("month") int month);
 
-
+    @Query(value = "SELECT COUNT(DISTINCT pl.payment.member) FROM PayLecture pl WHERE pl.lecture.member = :member AND pl.payment.state = 1")
+    long getTotalStudent(@Param("member") Member member);
 }
