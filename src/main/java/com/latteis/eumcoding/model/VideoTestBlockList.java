@@ -25,4 +25,7 @@ public class VideoTestBlockList {
 
     @Column(name = "block")
     private String block; // 제공될 블럭
+
+    @Column(name = "value")
+    private String value; // 제공될 블럭의 값(변수인 경우)
 }

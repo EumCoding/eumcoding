@@ -2,12 +2,10 @@ package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.*;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.Video;
-import com.latteis.eumcoding.model.VideoTest;
-import com.latteis.eumcoding.model.VideoTestAnswer;
+import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.persistence.VideoRepository;
+import com.latteis.eumcoding.persistence.VideoTestBlockListRepository;
 import com.latteis.eumcoding.persistence.VideoTestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +31,8 @@ public class VideoTestService {
     private final VideoTestAnswerService videoTestAnswerService;
 
     private final VideoTestBlockListService videoTestBlockListService;
+
+    private final VideoTestBlockListRepository videoTestBlockListRepository;
 
     // 동영상 문제 추가
     public void addTest(int memberId, VideoTestDTO.AddRequestDTO addRequestDTO) {
@@ -84,6 +84,18 @@ public class VideoTestService {
 
             log.info("코드 블럭 저장");
 
+            // 코드 블럭 저장
+            for (VideoTestBlockListDTO.BlockList blockRequestDTO : addRequestDTO.getVideoTestBlockList()) {
+                // DB에 바로 저장합니다. 단, value 값이 있고, block이 [number], [String] 인 경우에는 value값을 저장합니다
+                VideoTestBlockList videoTestBlockList = VideoTestBlockList.builder()
+                        .videoTest(videoTest)
+                        .block(blockRequestDTO.getBlock())
+                        .build();
+                if (blockRequestDTO.getValue() != null && (blockRequestDTO.getBlock().equals("[number]") || blockRequestDTO.getBlock().equals("[String]"))) {
+                    videoTestBlockList.setValue(blockRequestDTO.getValue());
+                }
+                videoTestBlockListRepository.save(videoTestBlockList);
+            }
         }
 
         // 문제 답안 저장
