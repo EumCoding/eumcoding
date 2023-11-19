@@ -53,9 +53,11 @@ public class VideoTestDTO {
         @ApiModelProperty(value = "점수", example = "20")
         private int score; // 문제의 점수
 
-        List<VideoTestMultipleListDTO.AddRequestDTO> videoTestMultipleList;
+        List<VideoTestMultipleListDTO.AddRequestDTO> videoTestMultipleList; // 객관식으로 들어온 경우
 
-        VideoTestAnswerDTO.AddRequestDTO testAnswerDTO;
+        List<VideoTestBlockListDTO.BlockList> videoTestBlockList; // 블럭으로 들어온 경우
+
+        VideoTestAnswerDTO.AddRequestDTO testAnswerDTO; // 답
 
     }
 
@@ -156,6 +158,37 @@ public class VideoTestDTO {
 
         // 블록 문제
         public static final int CODE_BLOCK = 1;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @ApiModel(value = "동영상 문제 생성 DTO")
+    public static class VideoTestCreateDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "동영상 ID", example = "1")
+        private int videoId;
+
+        @ApiModelProperty(value = "문제가 배치된 시간", example = "00:05:20")
+        private String testTime; // 테스트가 배치된 시간
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "문제 유형", example = "0")
+        private int type; // 0:객관식 1:블록코딩
+
+        @NotBlank(message = "필수 입력 값입니다.")
+        @ApiModelProperty(value = "문제 제목", example = "문제 제목입니다")
+        private String title; // 문제 제목
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "점수", example = "20")
+        private int score; // 문제의 점수
+
+        List<VideoTestMultipleListDTO.AddRequestDTO> videoTestMultipleList;
+
+        VideoTestAnswerDTO.AddRequestDTO testAnswerDTO;
 
     }
 }
