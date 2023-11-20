@@ -91,7 +91,7 @@ public class VideoTestService {
                         .videoTest(videoTest)
                         .block(blockRequestDTO.getBlock())
                         .build();
-                if (blockRequestDTO.getValue() != null && (blockRequestDTO.getBlock().equals("[number]") || blockRequestDTO.getBlock().equals("[String]"))) {
+                if (blockRequestDTO.getValue() != null && (blockRequestDTO.getBlock().equals("[number]") || blockRequestDTO.getBlock().equals("[String]") || blockRequestDTO.getBlock().equals("[StringVal]") || blockRequestDTO.getBlock().equals("[numberVal]"))) {
                     videoTestBlockList.setValue(blockRequestDTO.getValue());
                 }
                 videoTestBlockListRepository.save(videoTestBlockList);
