@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-//myplan/list, myplan/update
+//myplan/list, myplan/updatelectureProgress
 public class CurriculumService {
 
     private final CurriculumRepository curriculumRepository;
@@ -88,7 +88,6 @@ public class CurriculumService {
 
                 // 현재 섹션 처리
                 if (over == 1) {
-
                     // 현재 날짜가 editDay 이후이거나, editDay가 없는데 섹션 종료일 이후라면,
                     // 현재 섹션의 editDay를 업데이트하고, 다음 섹션들의 startDay를 업데이트
                     if ((curriculum.getEditDay() != null && today.isAfter(effectiveDeadline)) ||
@@ -100,14 +99,16 @@ public class CurriculumService {
                         // 다음 섹션들의 startDay만 업데이트해야 하므로, 현재 섹션의 ID보다 큰 섹션들을 찾습니다.
                         updateStartDaysForFollowingSections(curriculums, lectureSection.getId(), newEditDay.plusDays(curriculum.getTimeTaken()));
 
-                    } else if (curriculum.getStartDay().isAfter(today)) {
-                        message = "해당 섹션을 들을 기간이 아닙니다.";
                     }
-                } else if (over == 0 && curriculum.getEditDay() == null && (nextSectionStart == null || sectionDeadline.isBefore(nextSectionStart))) {
+                }else if (over == 2 && curriculum.getStartDay().isAfter(today)) {
+                    message = "해당 섹션을 들을 기간이 아닙니다.";
+                }else if (over == 0 && curriculum.getEditDay() == null && (nextSectionStart == null || sectionDeadline.isBefore(nextSectionStart))) {
                     System.out.println(curriculum.getSection().getId() + ": over 가 0인경우");
                     message = "해당 섹션 수강을 기한 내 완료";
-                } else if (over == 0 && curriculum.getEditDay() != null) {
+                }else if (over == 0 && curriculum.getEditDay() != null) {
                     over = 1;
+                }else if (over == 2 && curriculum.getStartDay().isBefore(sectionDeadline)){
+                    message = "현재 들어야할 섹션 입니다.";
                 }
 
                 SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
@@ -154,10 +155,10 @@ public class CurriculumService {
          * videoPRogress테이블에 video에대한 정보는 있는데 state가 0일경우 ->1
          */
         for (VideoProgress progress : lastProgress) {
-            if (progress == null) {
+            if (progress == null) { //강의를 듣지않은상태(구매후 아예 안들었거나 or 섹션 1를 다안들어서 섹션 2의 대한 vp정보가 없을경우
                 // 비디오 진행 정보가 없거나 state가 NULL인 경우
                 isAnyVideoNotStarted = 0;
-                log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다.");
+                log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다. 혹은 아무런 강의를 듣고 있지 않은 상황입니다.");
             } else if (progress.getState() == 1) {
                 // 비디오가 완료된 상태
                 log.info("Section " + progress.getVideo().getSection().getId() + " over 0");
@@ -173,7 +174,7 @@ public class CurriculumService {
         if (isAnyVideoNotStarted == 0) {
             log.info("아직 섹션를 들을 순서가 아닙니다.");
             // 아직 시작하지 않은 비디오가 있으면 기한 초과로 간주
-            return 1;
+            return 2;
         } else if (isAnyVideoNotStarted == 1) {
             // 하나라도 완료되지 않은 비디오가 있으면 기한 초과
             return 1;
