@@ -65,6 +65,8 @@ public class VideoProgressDTO {
         }
     }
 
+    private int id;
+
     private int videoProgressId; // 사용자에게 고유하게 부여되는 값
 
     private int lectureProgressId;

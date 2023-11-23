@@ -139,5 +139,13 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "WHERE vp.video_id = :videoId AND m.id = :memberId", nativeQuery = true)
     List<VideoProgress> findByVideoIdAndMemberId(@Param("videoId") int videoId, @Param("memberId") int memberId);
 
+    /*
+     * member와 section에 해당하는 videoProressList 가져오기
+     */
+    @Query(value = "SELECT vp FROM VideoProgress vp " +
+            "WHERE vp.lectureProgress.payLecture.payment.member = :member " +
+            "AND vp.video.section = :section " +
+            "ORDER BY vp.video.sequence")
+    List<VideoProgress> findByMemberIdAndSectionIdOrderByVideoSequence(@Param("member") Member member, @Param("section") Section section);
 }
 
