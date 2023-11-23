@@ -1,6 +1,7 @@
 package com.latteis.eumcoding.controller;
 
 import com.latteis.eumcoding.dto.VideoTestAnswerDTO;
+import com.latteis.eumcoding.dto.VideoTestBlockListDTO;
 import com.latteis.eumcoding.dto.VideoTestMultipleListDTO;
 import com.latteis.eumcoding.service.VideoTestMultipleListService;
 import io.swagger.annotations.Api;
@@ -68,6 +69,20 @@ public class VideoTestMultipleListController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+
+    }
+
+    /*
+     * 객관식 테스트 결과 가져오기
+     * 정답이면 true 아니면 false
+     */
+    @PostMapping(value = "/result")
+    @ApiOperation(value = "객관식 테스트 결과")
+    public ResponseEntity<Boolean> getStudentList(@ApiIgnore Authentication authentication,
+                                                  @Valid @RequestBody VideoTestMultipleListDTO.TestResultRequestDTO requestDTO) {
+
+        Boolean result = videoTestMultipleListService.getTestResult(authentication, requestDTO);
+        return ResponseEntity.ok().body(result);
 
     }
 

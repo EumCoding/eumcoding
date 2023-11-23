@@ -13,6 +13,7 @@ public enum ErrorCode {
 
     // 401 UNAUTHORIZED 권한 없음
     USER_UNREGISTERED(HttpStatus.UNAUTHORIZED, "등록되지 않은 사용자입니다."),
+    TEST_MEMBER_UNREGISTERED(HttpStatus.UNAUTHORIZED, "해당 테스트 멤버는 등록되지 않은 사용자입니다."),
     STUDENT_INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "학생 권한이 없습니다."),
     TEACHER_INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "강사 권한이 없습니다."),
     ADMIN_INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "관리자 권한이 없습니다."),
@@ -23,6 +24,7 @@ public enum ErrorCode {
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 섹션 ID 입니다."),
     VIDEO_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 비디오 ID 입니다."),
     PERIOD_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 기간 옵션 입니다."),
+    VIDEO_TEST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 비디오 테스트 입니다."),
 
     // 409 CONFLICT 중복된 리소스
     ALREADY_SAVED_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),

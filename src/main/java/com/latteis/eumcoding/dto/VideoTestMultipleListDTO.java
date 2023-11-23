@@ -1,12 +1,15 @@
 package com.latteis.eumcoding.dto;
 
+import com.latteis.eumcoding.model.VideoTestLog;
 import com.latteis.eumcoding.model.VideoTestMultipleList;
+import com.latteis.eumcoding.util.blockCoding.Block;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
+import java.util.List;
 
 @Data
 @Builder
@@ -90,6 +93,21 @@ public class VideoTestMultipleListDTO {
             this.content = videoTestMultipleList.getContent();
             this.sequence = videoTestMultipleList.getSequence();
         }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @ApiModel(value = "객관식 문제 결과 요청 DTO")
+    public static class TestResultRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "테스트 멤버 ID", example = "1")
+        private int testMemberId;
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "문제 ID", example = "1")
+        private int videoTestId;
+
     }
 
 
