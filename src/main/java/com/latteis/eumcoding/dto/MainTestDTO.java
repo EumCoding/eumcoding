@@ -1,5 +1,6 @@
 package com.latteis.eumcoding.dto;
 
+import com.latteis.eumcoding.model.MainTest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -39,6 +40,28 @@ public class MainTestDTO {
 
         // 최종 평가
         public static final int FINAL_EXAM = 1;
+
+    }
+
+    // 메인 평가 정보 가져오기 DTO
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "메인 평가 정보 가져오기 요청 DTO")
+    public static class MainTestInfoRequestDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "섹션 ID", example = "1")
+        private int sectionId;
+
+        @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
+        @ApiModelProperty(value = "문제 유형", example = "0")
+        private int type;
+
+        // 생성자
+        public MainTestInfoRequestDTO(MainTest mainTest) {
+            this.sectionId = mainTest.getSection().getId();
+            this.type = mainTest.getType();
+        }
 
     }
 
