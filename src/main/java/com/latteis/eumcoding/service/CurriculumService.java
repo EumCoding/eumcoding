@@ -94,7 +94,7 @@ public class CurriculumService {
                             (curriculum.getEditDay() == null && today.isAfter(sectionDeadline))) {
 
                         updateEditDay(curriculum.getId(), newEditDay); // 현재 섹션의 editDay 업데이트
-                        System.out.println(curriculum.getSection().getId() + ": over 가 1인경우");
+                        //System.out.println(curriculum.getSection().getId() + ": over 가 1인경우");
                         message = "해당 섹션 수강 기한 초과" + curriculum.getEditDay().toLocalDate() + "일로 연장";
                         // 다음 섹션들의 startDay만 업데이트해야 하므로, 현재 섹션의 ID보다 큰 섹션들을 찾습니다.
                         updateStartDaysForFollowingSections(curriculums, lectureSection.getId(), newEditDay.plusDays(curriculum.getTimeTaken()));
@@ -103,7 +103,7 @@ public class CurriculumService {
                 }else if (over == 2 && curriculum.getStartDay().isAfter(today)) {
                     message = "해당 섹션을 들을 기간이 아닙니다.";
                 }else if (over == 0 && curriculum.getEditDay() == null && (nextSectionStart == null || sectionDeadline.isBefore(nextSectionStart))) {
-                    System.out.println(curriculum.getSection().getId() + ": over 가 0인경우");
+                    //System.out.println(curriculum.getSection().getId() + ": over 가 0인경우");
                     message = "해당 섹션 수강을 기한 내 완료";
                 }else if (over == 0 && curriculum.getEditDay() != null) {
                     over = 1;
@@ -158,21 +158,21 @@ public class CurriculumService {
             if (progress == null) { //강의를 듣지않은상태(구매후 아예 안들었거나 or 섹션 1를 다안들어서 섹션 2의 대한 vp정보가 없을경우
                 // 비디오 진행 정보가 없거나 state가 NULL인 경우
                 isAnyVideoNotStarted = 0;
-                log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다. 혹은 아무런 강의를 듣고 있지 않은 상황입니다.");
+                //log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다. 혹은 아무런 강의를 듣고 있지 않은 상황입니다.");
             } else if (progress.getState() == 1) {
                 // 비디오가 완료된 상태
-                log.info("Section " + progress.getVideo().getSection().getId() + " over 0");
+                //log.info("Section " + progress.getVideo().getSection().getId() + " over 0");
                 isAnyVideoNotStarted = 2;
             } else if (progress.getState() == 0) {
                 // 비디오 진행 상태가 0인 경우 (완료되지 않음)
                 isAnyVideoNotStarted = 1;
-                log.info("Section " + progress.getVideo().getSection().getId() + " over 1");
+                //log.info("Section " + progress.getVideo().getSection().getId() + " over 1");
             }
         }
 
 
         if (isAnyVideoNotStarted == 0) {
-            log.info("아직 섹션를 들을 순서가 아닙니다.");
+            //log.info("아직 섹션를 들을 순서가 아닙니다.");
             // 아직 시작하지 않은 비디오가 있으면 기한 초과로 간주
             return 2;
         } else if (isAnyVideoNotStarted == 1) {

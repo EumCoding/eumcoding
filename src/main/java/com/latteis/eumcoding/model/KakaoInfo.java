@@ -46,5 +46,4 @@ public class KakaoInfo {
     private LocalDateTime accessTokenExpires;
 
 
-
 }

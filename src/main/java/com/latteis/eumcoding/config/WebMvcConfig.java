@@ -1,7 +1,9 @@
 
 package com.latteis.eumcoding.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -25,5 +27,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowCredentials(true) // 인증에 관한 정보 허용
                 .maxAge(MAX_AGE_SECS);
     }
+
 }
 
