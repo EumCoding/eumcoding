@@ -28,6 +28,21 @@ public class LectureController {
 
     private final LectureService lectureService;
 
+    // 내 강의 리스트 페이징 없이 가져오기
+    @GetMapping(value = "/list")
+    @ApiOperation(value = "내 강의 리스트 페이징 없이 가져오기")
+    public ResponseEntity<List<LectureDTO.MyListResponseDTO>> getLectureList(@ApiIgnore Authentication authentication) {
+
+        try {
+            List<LectureDTO.MyListResponseDTO> listResponseDTOList = lectureService.getMyLectureList(Integer.parseInt(authentication.getPrincipal().toString()));
+            return ResponseEntity.ok().body(listResponseDTOList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+    }
+
     // 강의 생성
     @PostMapping(value = "/create")
     @ApiOperation(value = "강의 생성")

@@ -83,6 +83,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 //    @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
     Page<Lecture> findAllByMember(Member member, Pageable pageable);
 
+    List<Lecture> findAllByMember(Member member);
+
 
     // 기간별 통계
     @Query(value = "SELECT sum(pl3.price) AS salesRevenue, " +

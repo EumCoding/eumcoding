@@ -78,6 +78,27 @@ public class LectureService {
         return file;
     }
 
+    // 내 강의목록의 아이디와 이름만 가져오기
+    public List<LectureDTO.MyListResponseDTO> getMyLectureList(int memberId) {
+
+        // 등록된 회원인지 검사
+        Member member = memberRepository.findByMemberId(memberId);
+        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 가이드 회원인지 검사
+        Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
+
+        // 내 강의목록의 아이디와 이름만 가져오기
+        List<Lecture> lectureList = lectureRepository.findAllByMember(member);
+        List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
+        for (Lecture lecture : lectureList) {
+            LectureDTO.MyListResponseDTO myListResponseDTO = new LectureDTO.MyListResponseDTO(lecture);
+            myListResponseDTOList.add(myListResponseDTO);
+        }
+        return myListResponseDTOList;
+
+    }
+
     // 강의 생성
     public void createLecture(int memberId,
                               LectureDTO.CreateRequestDTO createRequestDTO,
