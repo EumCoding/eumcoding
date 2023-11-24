@@ -73,15 +73,15 @@ public class VideoTestMultipleListController {
     }
 
     /*
-     * 객관식 테스트 결과 가져오기
+     *
      * 정답이면 true 아니면 false
      */
     @PostMapping(value = "/result")
-    @ApiOperation(value = "객관식 테스트 결과")
-    public ResponseEntity<Boolean> getStudentList(@ApiIgnore Authentication authentication,
+    @ApiOperation(value = "답안 저장 후 채점")
+    public ResponseEntity<Boolean> saveAnswerAndGetScoring(@ApiIgnore Authentication authentication,
                                                   @Valid @RequestBody VideoTestMultipleListDTO.TestResultRequestDTO requestDTO) {
 
-        Boolean result = videoTestMultipleListService.getTestResult(authentication, requestDTO);
+        Boolean result = videoTestMultipleListService.saveAnswerAndGetScoring(authentication, requestDTO);
         return ResponseEntity.ok().body(result);
 
     }

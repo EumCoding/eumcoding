@@ -108,7 +108,7 @@ public class StatsController {
 
     }
 
-    // 이번 달 강의 총 수익
+    // 이번 달 총 판매량 비율
     @PostMapping(value = "/total-volume-percentage")
     @ApiOperation(value = "이번 달 총 판매량 비율")
     public ResponseEntity<StatsDTO.TotalVolumePercentageResponseDTO> getTotalVolumePercentageListThisMonth(@ApiIgnore Authentication authentication) {

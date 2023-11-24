@@ -75,10 +75,6 @@ public class VideoTestBlockListDTO {
     public static class TestResultRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
-        @ApiModelProperty(value = "테스트 멤버 ID", example = "1")
-        private int testMemberId;
-
-        @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "문제 ID", example = "1")
         private int videoTestId;
 

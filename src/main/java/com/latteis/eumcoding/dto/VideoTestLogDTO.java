@@ -40,6 +40,13 @@ public class VideoTestLogDTO {
         @ApiModelProperty(value = "답변", example = "답변입니다")
         private String subAnswer;
 
+        private boolean scoring;
+
+        public AddRequestDTO(int videoTestId, String testAnswerString, boolean scoring) {
+            this.videoTestId = videoTestId;
+            this.subAnswer = testAnswerString;
+            this.scoring = scoring;
+        }
     }
 
     @Data

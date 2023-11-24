@@ -9,6 +9,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Data
@@ -101,12 +102,11 @@ public class VideoTestMultipleListDTO {
     public static class TestResultRequestDTO {
 
         @Positive(message = "양수만 가능합니다.")
-        @ApiModelProperty(value = "테스트 멤버 ID", example = "1")
-        private int testMemberId;
-
-        @Positive(message = "양수만 가능합니다.")
         @ApiModelProperty(value = "문제 ID", example = "1")
         private int videoTestId;
+
+        @ApiModelProperty(value = "답안 번호", example = "1")
+        private List<Integer> answerList;
 
     }
 
