@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface MainTestRepository extends JpaRepository<MainTest, Integer> {
 
     MainTest findById(int id);
@@ -17,4 +19,8 @@ public interface MainTestRepository extends JpaRepository<MainTest, Integer> {
 
     boolean existsByTypeAndSectionLecture(int type, Lecture lecture);
     boolean existsBySection(Section section);
+
+    //findAllBySectionLectureId
+    // 해당 강의의 메인 평가 정보 가져오기
+    List<MainTest> findAllBySectionLectureId(int lectureId);
 }

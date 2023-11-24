@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,15 @@ public class MainTestService {
 
     private final SectionRepository sectionRepository;
 
+    // 메인 평가 정보 리스트 가져오기 getMainTest
+    public List<MainTestDTO.MainTestInfoRequestDTO> getMainTest(int lectureId) {
+        // 해당 강의의 메인 평가 정보 가져오기
+        List<MainTest> mainTestList = mainTestRepository.findAllBySectionLectureId(lectureId);
+        // MainTestDTO.MainTestInfoRequestDTO로 변환
+        List<MainTestDTO.MainTestInfoRequestDTO> responseDTO = mainTestList.stream().map(MainTestDTO.MainTestInfoRequestDTO::new).collect(java.util.stream.Collectors.toList());
+        // 리턴
+        return responseDTO;
+    }
     // 메인 평가 등록
     public void addMainTest(int memberId, MainTestDTO.AddRequestDTO addRequestDTO) {
 
