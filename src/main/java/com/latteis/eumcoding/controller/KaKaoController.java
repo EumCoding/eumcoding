@@ -44,7 +44,7 @@ public class KaKaoController {
     public ResponseEntity<?> getKakaoAccessToken(@RequestParam String code) {
         try {
             System.out.println("code : " + code);
-            return ResponseEntity.ok(kakaoMemberService.getKakaoAccessToken(code));
+            return ResponseEntity.ok(kakaoMemberService.getAccessToken(code));
         } catch (Exception e) {
             log.error("카카오 에세스 토큰 에러: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 액세스 토큰을 가져오는 중 오류가 발생했습니다.");
@@ -71,6 +71,7 @@ public class KaKaoController {
         }
     }
 
+
     @PostMapping("/createUser")
     @ApiOperation("카카오 계정과 일반 계정 연동")
     public ResponseEntity<String> createKakaoAccountLink(@RequestParam String code, @ApiIgnore Authentication authentication, HttpServletResponse response) {
@@ -78,12 +79,12 @@ public class KaKaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일반계정 로그인을 해야 연동을 할 수 있습니다");
         }
         Integer userId = Integer.parseInt(authentication.getPrincipal().toString());
-        String status = kakaoMemberService.createKakaoAccountLink(code,userId,response);
+        String status = kakaoMemberService.createKakaoAccountLinks(code,userId);
         switch(status) {
             case "SUCCESS":
                 return ResponseEntity.ok("인증번호를 성공적으로 보냈습니다.");
             case "ALREADY_LINKED":
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 인증이 완료된 계쩡입니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 인증이 완료된 계정입니다.");
             default:
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류가 발생했습니다. 다시 시도해주세요.");
         }
@@ -92,8 +93,7 @@ public class KaKaoController {
 
 
     // 카카오 로그인,swagger에서 테스트하기위해 해놓은 임시방편
-
-   @GetMapping("/auth/kakao/callback")
+   @GetMapping("/auth/kakao/login")
     public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
         try {
             String jwtToken = kakaoMemberService.kakaoLogin(code,response);

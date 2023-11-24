@@ -46,6 +46,11 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 	implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
 
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.json:json:20210307'
+
+
+
 
 
 
