@@ -28,7 +28,7 @@ import javax.validation.Valid;
 public class VideoTestLogController {
 
     private final VideoTestLogService videoTestLogService;
-
+/*
     @PostMapping(value = "/add")
     @ApiOperation(value = "동영상 테스트 로그 추가")
     public ResponseEntity<Object> addTestLog(@ApiIgnore Authentication authentication,
@@ -41,7 +41,7 @@ public class VideoTestLogController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
-    }
+    }*/
 
     @PostMapping(value = "/view")
     @ApiOperation(value = "동영상 테스트 로그 가져오기")
