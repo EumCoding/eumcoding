@@ -19,6 +19,9 @@ repositories {
 }
 
 dependencies {
+	// com.sun:tools:1.8 의존성을 systemPath를 사용하여 참조
+	implementation files("${System.properties['java.home']}/../lib/tools.jar")
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-security'

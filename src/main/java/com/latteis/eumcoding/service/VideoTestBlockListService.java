@@ -9,6 +9,7 @@ import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import com.latteis.eumcoding.util.blockCoding.Block;
 import com.latteis.eumcoding.util.blockCoding.BlockCodeToJavaConverter;
+import com.latteis.eumcoding.util.blockCoding.JavaCodeExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -33,6 +34,8 @@ public class VideoTestBlockListService {
     private final VideoTestLogRepository videoTestLogRepository;
 
     private final BlockCodeToJavaConverter blockCodeToJavaConverter;
+
+    private final JavaCodeExecutor javaCodeExecutor = new JavaCodeExecutor();
 
 
     /*
@@ -79,16 +82,45 @@ public class VideoTestBlockListService {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
-        // 학생 답안을 자바 코드로 변환
-        String testAnswerString = blockCodeToJavaConverter.convertToJavaCode(requestDTO.getBlockList());
-
-        // 변환된 답안을 문제 답과 비교
-        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
-        boolean scoring = true;
-        if (testAnswerString.equals(videoTestAnswer.getAnswer())) {
-            scoring = true;
+        log.info("들어온 블록리스트...");
+        for(Block block : requestDTO.getBlockList()) {
+            log.info(block.getBlock() + "  " + block.getValue());
         }
-        else {
+
+        // 학생 답안을 자바 코드로 변환
+        String testString = blockCodeToJavaConverter.convertToJavaCode(requestDTO.getBlockList());
+
+        log.info("변환된 자바 코드...");
+        log.info(testString.toString());
+
+        // 변환된 답안을 컴파일
+        String testAnswerString = null;
+
+        try{
+            testAnswerString = javaCodeExecutor.executeJavaCode(testString);
+        }catch(Exception e){
+            e.printStackTrace();
+            log.info("컴파일 에러");
+        }
+
+        log.info("컴파일된 답안...");
+        log.info(testAnswerString.toString());
+
+// 변환된 답안을 문제 답과 비교
+        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
+        log.info("정답...");
+        log.info(videoTestAnswer.getAnswer());
+        boolean scoring = true;
+
+// 문자열의 공백을 제거하고 비교
+        String formattedTestAnswer = testAnswerString.toString().trim();
+        String formattedCorrectAnswer = videoTestAnswer.getAnswer().trim();
+
+        if (formattedTestAnswer.equals(formattedCorrectAnswer)) {
+            log.info("정답");
+            scoring = true;
+        } else {
+            log.info("오답");
             scoring = false;
         }
 
