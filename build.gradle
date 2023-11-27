@@ -19,9 +19,6 @@ repositories {
 }
 
 dependencies {
-	// com.sun:tools:1.8 의존성을 systemPath를 사용하여 참조
-	implementation files("${System.properties['java.home']}/../lib/tools.jar")
-
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -49,12 +46,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 	implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
 
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.json:json:20210307'
-
-
-
-
+	implementation "org.openjfx:javafx-controls:11.0.2"
+	implementation "org.openjfx:javafx-fxml:11.0.2"
 
 
 }
