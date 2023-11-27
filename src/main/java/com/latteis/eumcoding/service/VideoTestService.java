@@ -52,7 +52,7 @@ public class VideoTestService {
             // 받아온 시간이 유효하거나 겹치지 않는지 검사
             LocalTime testTime = LocalTime.parse(addRequestDTO.getTestTime());
 
-            Preconditions.checkArgument(testTime != null && testTime.getSecond() > 0,"알맞은 문제 시간을 입력하세요.");
+            //Preconditions.checkArgument(testTime != null && testTime.getSecond() > 0,"알맞은 문제 시간을 입력하세요.");
             Preconditions.checkArgument(!videoTestRepository.existsByVideoIdAndTestTime(video.getId(), testTime),"입력한 시간에 존재하는 문제가 있습니다.");
 
             // videoTest 저장
