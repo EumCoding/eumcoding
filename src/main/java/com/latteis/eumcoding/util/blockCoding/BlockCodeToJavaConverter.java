@@ -63,7 +63,7 @@ public class BlockCodeToJavaConverter {
                     }
                     if (i + 1 < blocks.size()) {
                         Block nextBlock = blocks.get(i + 1);
-                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock())) {
                             javaCode.append(block.getValue() + ";\n");
                             break;
                         }
@@ -105,7 +105,7 @@ public class BlockCodeToJavaConverter {
                     }
                     if (i + 1 < blocks.size()) {
                         Block nextBlock = blocks.get(i + 1);
-                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock())) {
                             javaCode.append(block.getValue() + ";\n");
                             break;
                         }
@@ -116,10 +116,10 @@ public class BlockCodeToJavaConverter {
                 case "[for]":
                     //javaCode.append("for (int i = 0; i < 2; i++) {\n");
                     javaCode.append("for (int i = 0; i < ");
-                    //그 다음 블럭이 [number] 또는 [String]이면 그 값을 추가
+                    //그 다음 블럭이 [number] 또는 [numberVal]이면 그 값을 추가
                     if (i + 1 < blocks.size()) {
                         Block nextBlock = blocks.get(i + 1);
-                        if ("[number]".equals(nextBlock.getBlock()) || "[String]".equals(nextBlock.getBlock())) {
+                        if ("[number]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
                             javaCode.append(nextBlock.getValue());
                             i++; // 다음 블록을 처리했으므로 인덱스 증가
                         }
