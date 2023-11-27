@@ -29,4 +29,8 @@ public class VideoTestLog {
 
     @Column(name = "sub_answer")
     private String subAnswer; // 제출한 답변
+
+    @Column(name = "scoring")
+    private boolean scoring; // 제출한 답변
+
 }

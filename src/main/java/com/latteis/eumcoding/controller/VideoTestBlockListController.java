@@ -30,15 +30,15 @@ public class VideoTestBlockListController {
     private final VideoTestBlockListService videoTestBlockListService;
 
     /*
-    * 블록 테스트 결과 가져오기
+    * 답안 저장 후 답변 비교해서 채점하기
     * 정답이면 true 아니면 false
     */
     @PostMapping(value = "/result")
-    @ApiOperation(value = "블록 테스트 결과")
-    public ResponseEntity<Boolean> getStudentList(@ApiIgnore Authentication authentication,
+    @ApiOperation(value = "답안 저장 후 채점")
+    public ResponseEntity<Boolean> saveAnswerAndGetScoring(@ApiIgnore Authentication authentication,
                                                   @Valid @RequestBody VideoTestBlockListDTO.TestResultRequestDTO requestDTO) {
 
-        Boolean result = videoTestBlockListService.getBlockTestResult(authentication, requestDTO);
+        Boolean result = videoTestBlockListService.saveAnswerAndGetScoring(authentication, requestDTO);
         return ResponseEntity.ok().body(result);
 
     }

@@ -2,18 +2,14 @@ package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.VideoTestBlockListDTO;
+import com.latteis.eumcoding.dto.VideoTestLogDTO;
 import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.model.VideoTest;
-import com.latteis.eumcoding.model.VideoTestAnswer;
-import com.latteis.eumcoding.model.VideoTestBlockList;
-import com.latteis.eumcoding.persistence.MemberRepository;
-import com.latteis.eumcoding.persistence.VideoTestAnswerRepository;
-import com.latteis.eumcoding.persistence.VideoTestBlockListRepository;
-import com.latteis.eumcoding.persistence.VideoTestRepository;
+import com.latteis.eumcoding.model.*;
+import com.latteis.eumcoding.persistence.*;
 import com.latteis.eumcoding.util.blockCoding.Block;
 import com.latteis.eumcoding.util.blockCoding.BlockCodeToJavaConverter;
+import com.latteis.eumcoding.util.blockCoding.JavaCodeExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -35,7 +31,11 @@ public class VideoTestBlockListService {
 
     private final VideoTestAnswerRepository videoTestAnswerRepository;
 
+    private final VideoTestLogRepository videoTestLogRepository;
+
     private final BlockCodeToJavaConverter blockCodeToJavaConverter;
+
+    private final JavaCodeExecutor javaCodeExecutor = new JavaCodeExecutor();
 
 
     /*
@@ -62,21 +62,16 @@ public class VideoTestBlockListService {
 
 
     /*
-    * 답안과 답변 비교해서 채점하기
+    * 답안 저장 후 답변 비교해서 채점하기
     */
-    public Boolean getBlockTestResult(Authentication authentication, VideoTestBlockListDTO.TestResultRequestDTO requestDTO) {
+    public Boolean saveAnswerAndGetScoring(Authentication authentication, VideoTestBlockListDTO.TestResultRequestDTO requestDTO) {
 
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         Member member = memberRepository.findByMemberId(memberId);
-        Member tester = memberRepository.findByMemberId(requestDTO.getTestMemberId());
         VideoTest videoTest = videoTestRepository.findById(requestDTO.getVideoTestId());
         // 등록된 회원인지 검사
         if (member == null) {
             throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
-        }
-        // tester가 등록된 회원인지 검사
-        if (tester == null) {
-            throw new ResponseMessageException(ErrorCode.TEST_MEMBER_UNREGISTERED);
         }
         // 등록된 videoTest인지 검사
         if (videoTest == null) {
@@ -87,17 +82,58 @@ public class VideoTestBlockListService {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
-        // 학생 답안을 자바 코드로 변환
-        String testAnswerString = blockCodeToJavaConverter.convertToJavaCode(requestDTO.getBlockList());
-        // 변환된 답안을 문제 답과 비교
-        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
+        log.info("들어온 블록리스트...");
+        for(Block block : requestDTO.getBlockList()) {
+            log.info(block.getBlock() + "  " + block.getValue());
+        }
 
-        if (testAnswerString.equals(videoTestAnswer.getAnswer())) {
-            return true;
+        // 학생 답안을 자바 코드로 변환
+        String testString = blockCodeToJavaConverter.convertToJavaCode(requestDTO.getBlockList());
+
+        log.info("변환된 자바 코드...");
+        log.info(testString.toString());
+
+        // 변환된 답안을 컴파일
+        String testAnswerString = null;
+
+        try{
+            testAnswerString = javaCodeExecutor.executeJavaCode(testString);
+        }catch(Exception e){
+            e.printStackTrace();
+            log.info("컴파일 에러");
         }
-        else {
-            return false;
+
+        log.info("컴파일된 답안...");
+        log.info(testAnswerString.toString());
+
+// 변환된 답안을 문제 답과 비교
+        VideoTestAnswer videoTestAnswer = videoTestAnswerRepository.findByVideoTest(videoTest);
+        log.info("정답...");
+        log.info(videoTestAnswer.getAnswer());
+        boolean scoring = true;
+
+// 문자열의 공백을 제거하고 비교
+        String formattedTestAnswer = testAnswerString.toString().trim();
+        String formattedCorrectAnswer = videoTestAnswer.getAnswer().trim();
+
+        if (formattedTestAnswer.equals(formattedCorrectAnswer)) {
+            log.info("정답");
+            scoring = true;
+        } else {
+            log.info("오답");
+            scoring = false;
         }
+
+        // 학생 답변 저장
+        VideoTestLog videoTestLog = VideoTestLog.builder()
+                .videoTest(videoTest)
+                .member(member)
+                .subAnswer(testAnswerString)
+                .scoring(scoring)
+                .build();
+        videoTestLogRepository.save(videoTestLog);
+
+        return scoring;
 
     }
 

@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface MainTestRepository extends JpaRepository<MainTest, Integer> {
 
+    List<MainTest> findAllBySectionIdAndType(int sectionId, int type);
+
     MainTest findById(int id);
 
 
@@ -22,5 +24,9 @@ public interface MainTestRepository extends JpaRepository<MainTest, Integer> {
 
     //findAllBySectionLectureId
     // 해당 강의의 메인 평가 정보 가져오기
-    List<MainTest> findAllBySectionLectureId(int lectureId);
+    List<MainTest> findAllBySection(Section section);
+
+    //findAllByLectureIdAndType
+    // 해당 강의의 메인 평가 정보 가져오기
+    List<MainTest> findAllBySectionLectureIdAndType(int lectureId, int type);
 }

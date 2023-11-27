@@ -28,6 +28,7 @@ public class VideoTestLogService {
     private final VideoTestRepository videoTestRepository;
 
     private final VideoProgressRepository videoProgressRepository;
+/*
 
     // 동영상 테스트 로그 추가
     public void addTestLog(int memberId, VideoTestLogDTO.AddRequestDTO addRequestDTO) {
@@ -59,6 +60,7 @@ public class VideoTestLogService {
             e.printStackTrace();
         }
     }
+*/
 
     // 동영상 테스트 로그 가져오기
     public VideoTestLogDTO.ResponseDTO getTestLog(int memberId, VideoTestLogDTO.InfoRequestDTO infoRequestDTO) {
