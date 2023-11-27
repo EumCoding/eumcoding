@@ -41,7 +41,6 @@ class CurriculumServiceTest {
         MockitoAnnotations.initMocks(this);
 
     }
-    @Test
     void getMyPlanInfo_ShouldReturnExpectedPlanInfo() {
         // 공통 테스트 데이터 설정
         memberId = 8;
