@@ -1,12 +1,16 @@
 package com.latteis.eumcoding.service;
 
 import com.google.common.base.Preconditions;
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MainTestDTO;
+import com.latteis.eumcoding.exception.ErrorCode;
+import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import javafx.scene.canvas.GraphicsContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,11 +34,17 @@ public class MainTestService {
 
     private final MainTestBlockRepository mainTestBlockRepository;
 
+    private final VideoRepository videoRepository;
+
+    private final VideoProgressRepository videoProgressRepository;
+
     //lectureRepository
     private final LectureRepository lectureRepository;
 
     //mainTestAnswerRepository
     private final MainTestAnswerRepository mainTestAnswerRepository;
+
+    private final MainTestLogRepository mainTestLogRepository;
 
 
     // main test 문제 리스트 가져오기 getMainTestQuestion
@@ -318,4 +328,75 @@ public class MainTestService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * @param authentication 로그인 정보
+     * @param idDTO MainTest ID DTO
+     * @return 자격 충족 : 0 / 불충족 : 1 / 응시함 : 2
+     */
+    public Integer confirmationOfEligibility(Authentication authentication, MainTestDTO.IdDTO idDTO) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        MainTest mainTest = mainTestRepository.findById(idDTO.getMainTestId());
+
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 등록된 MainTest인지 검사
+        if (mainTest == null) {
+            throw new ResponseMessageException(ErrorCode.MAIN_TEST_NOT_FOUND);
+        }
+
+        // mainTestQuestion 수와 mainTestLog 수가 같다면 
+        long mainTestQuestionCnt = mainTestQuestionRepository.countByMainTest(mainTest);
+        long mainTestLog = mainTestLogRepository.countByMemberAndMainTestQuestionMainTest(member, mainTest);
+        if (mainTestQuestionCnt == mainTestLog) {
+            return 2; // 응시함
+        }
+
+        Video video = videoRepository.findTopBySectionIdOrderBySequenceDesc(mainTest.getSection().getId());
+        boolean satisfy = videoProgressRepository.existsByVideoAndStateAndLectureProgressPayLecturePaymentMember(video, 1, member);
+
+        if (satisfy) {
+            return 0; // 자격 충족
+        }
+        else {
+            return 1; // 자격 불충족
+        }
+
+    }
+
+    /**
+     * 해당 강의에 해당하는 MainTest 리스트
+     * @param authentication 로그인 정보
+     * @param lectureIdDTO 강의 ID
+     * @return MainTestId List
+     */
+    public List<Integer> getIDs(Authentication authentication, LectureDTO.IdRequestDTO lectureIdDTO) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+        Lecture lecture = lectureRepository.findById(lectureIdDTO.getId());
+
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 등록된 Lecture인지 검사
+        if (lecture == null) {
+            throw new ResponseMessageException(ErrorCode.LECTURE_NOT_FOUND);
+        }
+
+        List<MainTest> mainTestList = mainTestRepository.findBySectionLecture(lecture);
+        List<Integer> mainTestIds = new ArrayList<>();
+        for (MainTest mainTest : mainTestList) {
+            mainTestIds.add(mainTest.getId());
+        }
+
+        return mainTestIds;
+
+    }
+
 }

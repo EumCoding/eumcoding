@@ -147,5 +147,16 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
             "AND vp.video.section = :section " +
             "ORDER BY vp.video.sequence")
     List<VideoProgress> findByMemberIdAndSectionIdOrderByVideoSequence(@Param("member") Member member, @Param("section") Section section);
+
+    /**
+     * 마지막으로 시청한 영상 ID 반환
+     * @param member 회원 Entity
+     * @return VideoID
+     */
+    VideoProgress findTopByLectureProgressPayLecturePaymentMemberOrderByStartDayDesc(@Param("member") Member member);
+
+    boolean existsByVideoAndStateAndLectureProgressPayLecturePaymentMember(@Param("video") Video video,
+                                                                           @Param("state") int state,
+                                                                           @Param("member") Member member);
 }
 

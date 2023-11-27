@@ -29,4 +29,10 @@ public interface MainTestRepository extends JpaRepository<MainTest, Integer> {
     //findAllByLectureIdAndType
     // 해당 강의의 메인 평가 정보 가져오기
     List<MainTest> findAllBySectionLectureIdAndType(int lectureId, int type);
+
+    /**
+     * @param lecture Lecture Entity
+     * @return MainTest List
+     */
+    List<MainTest> findBySectionLecture(Lecture lecture);
 }
