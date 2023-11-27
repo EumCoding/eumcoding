@@ -1,9 +1,13 @@
 package com.latteis.eumcoding.controller;
 
+import com.latteis.eumcoding.dto.LectureDTO;
 import com.latteis.eumcoding.dto.MainTestDTO;
+import com.latteis.eumcoding.exception.ErrorCode;
+import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.service.MainTestService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -96,6 +100,40 @@ public class MainTestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    /*
+     * MainTest 응시 자격 확인
+     */
+    @PostMapping(value = "/confirmation-of-ofeligibility")
+    @ApiOperation(value = "MainTest 응시 자격 확인")
+    public ResponseEntity<Integer> confirmationOfEligibility(@ApiIgnore Authentication authentication, @Valid @RequestBody MainTestDTO.IdDTO idDTO) {
+
+        try {
+            int satisfy = mainTestService.confirmationOfEligibility(authentication, idDTO);
+            return ResponseEntity.ok().body(satisfy);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
+        }
+
+    }
+
+    /*
+     * Lecture에 맞는 MainTestID 리스트 반환
+     */
+    @PostMapping(value = "/ids")
+    @ApiOperation(value = "Lecture에 맞는 MainTestID 리스트 반환")
+    public ResponseEntity<List<Integer>> getIDs(@ApiIgnore Authentication authentication, @Valid @RequestBody LectureDTO.IdRequestDTO lectureIdDTO) {
+
+        try {
+            List<Integer> ids = mainTestService.getIDs(authentication, lectureIdDTO);
+            return ResponseEntity.ok().body(ids);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
     }

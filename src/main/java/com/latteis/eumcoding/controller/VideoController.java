@@ -3,6 +3,8 @@ package com.latteis.eumcoding.controller;
 import com.latteis.eumcoding.dto.SectionDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.dto.VideoProgressDTO;
+import com.latteis.eumcoding.exception.ErrorCode;
+import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.service.VideoService;
 import com.latteis.eumcoding.util.ProgressEntity;
 import io.swagger.annotations.Api;
@@ -175,6 +177,23 @@ public class VideoController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    /*
+    * 마지막으로 들은 영상ID 가져오기
+    * 기록이 없으면 0 리턴
+    */
+    @PostMapping(value = "/last-view")
+    @ApiOperation(value = "마지막으로 들은 영상 ID 가져오기")
+    public ResponseEntity<Integer> getLastViewVideoID(@ApiIgnore Authentication authentication) {
+
+        try {
+            int lastViewVideoID = videoService.getLastViewVideoID(authentication);
+            return ResponseEntity.ok().body(lastViewVideoID);
+        } catch (Exception e) {
+            throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
 
     }

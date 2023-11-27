@@ -87,4 +87,11 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "WHERE vp.lectureProgress.payLecture.payment.member = :member) >= v.sequence " +
             "ORDER BY v.sequence")
     List<Video> getLectureStudentVideo(@Param("member") Member member, @Param("section") Section section);
+
+    /**
+     * 해당 섹션의 마지막 비디오 반환
+     * @param sectionId 섹션 ID
+     * @return Video Entity
+     */
+    Video findTopBySectionIdOrderBySequenceDesc(@Param("sectionId") int sectionId);
 }

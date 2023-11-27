@@ -20,13 +20,13 @@ public class MainTestLog {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "member")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "main_test_question")
+    @JoinColumn(name = "main_test_question_id")
     private MainTestQuestion mainTestQuestion;
     
     @Column(name = "sub_answer")
-    private String snbAnswer; // 제출한 답변 기록
+    private String subAnswer; // 제출한 답변 기록
 }

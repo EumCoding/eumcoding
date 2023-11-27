@@ -16,7 +16,17 @@ import java.util.List;
 @Builder
 public class MainTestDTO {
 
-    // BlockDTO
+    @Getter
+    @NoArgsConstructor
+    @ApiModel(value = "메인 평가 ID 요청 DTO")
+    public static class IdDTO {
+
+        @Positive(message = "양수만 가능합니다.")
+        @ApiModelProperty(value = "메인 평가 ID", example = "1")
+        private int mainTestId;
+
+    }
+        // BlockDTO
     @Getter
     @Setter
     @NoArgsConstructor

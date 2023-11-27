@@ -6,6 +6,8 @@ import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.VideoDTO;
 import com.latteis.eumcoding.dto.VideoProgressDTO;
 import com.latteis.eumcoding.dto.payment.PaymentDTO;
+import com.latteis.eumcoding.exception.ErrorCode;
+import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
 import com.latteis.eumcoding.util.FileUploadProgressListener;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +32,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * The type Video service.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -680,6 +686,32 @@ public class VideoService {
         long durationMillis = (long) (durationInSeconds * 1000);
         // LocalTime으로 변환
         return LocalTime.ofNanoOfDay(durationMillis * 1_000_000);
+
+    }
+
+
+    /**
+     * 마지막으로 시청한 영상 ID를 반환
+     * @param authentication 로그인 정보
+     * @return Video ID (기록이 없으면 0 return)
+     */
+    public int getLastViewVideoID(Authentication authentication) {
+
+        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+        Member member = memberRepository.findByMemberId(memberId);
+
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+
+        VideoProgress lastViewVideoID = videoProgressRepository.findTopByLectureProgressPayLecturePaymentMemberOrderByStartDayDesc(member);
+
+        if (lastViewVideoID == null) {
+            return 0;
+        }
+
+        return lastViewVideoID.getVideo().getId();
 
     }
 

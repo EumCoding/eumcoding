@@ -25,6 +25,7 @@ public enum ErrorCode {
     VIDEO_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 비디오 ID 입니다."),
     PERIOD_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 기간 옵션 입니다."),
     VIDEO_TEST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 비디오 테스트 입니다."),
+    MAIN_TEST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 메인 테스트 입니다."),
 
     // 409 CONFLICT 중복된 리소스
     ALREADY_SAVED_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
