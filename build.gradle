@@ -46,8 +46,16 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 	implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
 
-	implementation "org.openjfx:javafx-controls:11.0.2"
+// https://mvnrepository.com/artifact/org.openjfx/javafx-graphics
+	implementation group: 'org.openjfx', name: 'javafx-graphics', version: '22-ea+16'
+	// https://mvnrepository.com/artifact/org.openjfx/javafx-controls
+	implementation group: 'org.openjfx', name: 'javafx-controls', version: '22-ea+16'
+
 	implementation "org.openjfx:javafx-fxml:11.0.2"
+
+	// https://mvnrepository.com/artifact/org.json/json
+	implementation group: 'org.json', name: 'json', version: '20231013'
+
 
 
 }
