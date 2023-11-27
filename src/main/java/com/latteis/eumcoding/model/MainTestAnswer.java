@@ -21,7 +21,7 @@ public class MainTestAnswer {
     private int id; // 사용자에게 고유하게 부여되는 값
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "main_test_question")
+    @JoinColumn(name = "main_test_question_id")
     private MainTestQuestion mainTestQuestion;
 
     @Column(name = "answer")

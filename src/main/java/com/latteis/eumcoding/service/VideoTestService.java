@@ -36,73 +36,76 @@ public class VideoTestService {
 
     // 동영상 문제 추가
     public void addTest(int memberId, VideoTestDTO.AddRequestDTO addRequestDTO) {
+        try{
+            // 동영상 정보 가져오기
+            Video video = videoRepository.findById(addRequestDTO.getVideoId());
+            Preconditions.checkNotNull(video, "등록된 동영상이 없습니다. (동영상 ID : %s)", addRequestDTO.getVideoId());
 
-        // 동영상 정보 가져오기
-        Video video = videoRepository.findById(addRequestDTO.getVideoId());
-        Preconditions.checkNotNull(video, "등록된 동영상이 없습니다. (동영상 ID : %s)", addRequestDTO.getVideoId());
+            // 등록된 회원인지 검사
+            Member member = memberRepository.findByMemberId(memberId);
+            Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 등록된 회원인지 검사
-        Member member = memberRepository.findByMemberId(memberId);
-        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+            // 본인 체크
+            int lectureUploader = video.getSection().getLecture().getMember().getId();
+            Preconditions.checkArgument(memberId == lectureUploader, "해당 강의의 소유자가 아닙니다. (강의 ID: %s, 강의 작성자 ID: %s, 현재 회원 ID: %s)", video.getSection().getLecture().getId(), lectureUploader, memberId);
 
-        // 본인 체크
-        int lectureUploader = video.getSection().getLecture().getMember().getId();
-        Preconditions.checkArgument(memberId == lectureUploader, "해당 강의의 소유자가 아닙니다. (강의 ID: %s, 강의 작성자 ID: %s, 현재 회원 ID: %s)", video.getSection().getLecture().getId(), lectureUploader, memberId);
+            // 받아온 시간이 유효하거나 겹치지 않는지 검사
+            LocalTime testTime = LocalTime.parse(addRequestDTO.getTestTime());
 
-        // 받아온 시간이 유효하거나 겹치지 않는지 검사
-        LocalTime testTime = LocalTime.parse(addRequestDTO.getTestTime());
+            Preconditions.checkArgument(testTime != null && testTime.getSecond() > 0,"알맞은 문제 시간을 입력하세요.");
+            Preconditions.checkArgument(!videoTestRepository.existsByVideoIdAndTestTime(video.getId(), testTime),"입력한 시간에 존재하는 문제가 있습니다.");
 
-        Preconditions.checkArgument(testTime != null && testTime.getSecond() > 0,"알맞은 문제 시간을 입력하세요.");
-        Preconditions.checkArgument(!videoTestRepository.existsByVideoIdAndTestTime(video.getId(), testTime),"입력한 시간에 존재하는 문제가 있습니다.");
+            // videoTest 저장
+            VideoTest videoTest = VideoTest.builder()
+                    .video(video)
+                    .testTime(testTime)
+                    .type(addRequestDTO.getType())
+                    .title(addRequestDTO.getTitle())
+                    .score(addRequestDTO.getScore())
+                    .build();
+            videoTestRepository.save(videoTest);
 
-        // videoTest 저장
-        VideoTest videoTest = VideoTest.builder()
-                .video(video)
-                .testTime(testTime)
-                .type(addRequestDTO.getType())
-                .title(addRequestDTO.getTitle())
-                .score(addRequestDTO.getScore())
-                .build();
-        videoTestRepository.save(videoTest);
+            // 객관식 문제라면 실행
+            if (videoTest.getType() == VideoTestDTO.VideoTestType.MULTIPLE_CHOICE) {
 
-        // 객관식 문제라면 실행
-        if (videoTest.getType() == VideoTestDTO.VideoTestType.MULTIPLE_CHOICE) {
+                // 객관식 문제 보기 저장
+                for (VideoTestMultipleListDTO.AddRequestDTO videoTestMultipleListDTO : addRequestDTO.getVideoTestMultipleList()) {
 
-            // 객관식 문제 보기 저장
-            for (VideoTestMultipleListDTO.AddRequestDTO videoTestMultipleListDTO : addRequestDTO.getVideoTestMultipleList()) {
+                    VideoTestMultipleListDTO.AddDTO addDTO = new VideoTestMultipleListDTO.AddDTO();
+                    addDTO.setVideoTestId(videoTest.getId());
+                    addDTO.setContent(videoTestMultipleListDTO.getContent());
+                    videoTestMultipleListService.add(memberId, addDTO);
 
-                VideoTestMultipleListDTO.AddDTO addDTO = new VideoTestMultipleListDTO.AddDTO();
-                addDTO.setVideoTestId(videoTest.getId());
-                addDTO.setContent(videoTestMultipleListDTO.getContent());
-                videoTestMultipleListService.add(memberId, addDTO);
-
-            }
-
-        }
-        // 코드 블럭 문제라면 실행
-        else if (videoTest.getType() == VideoTestDTO.VideoTestType.CODE_BLOCK) {
-
-            log.info("코드 블럭 저장");
-
-            // 코드 블럭 저장
-            for (VideoTestBlockListDTO.BlockList blockRequestDTO : addRequestDTO.getVideoTestBlockList()) {
-                // DB에 바로 저장합니다. 단, value 값이 있고, block이 [number], [String] 인 경우에는 value값을 저장합니다
-                VideoTestBlockList videoTestBlockList = VideoTestBlockList.builder()
-                        .videoTest(videoTest)
-                        .block(blockRequestDTO.getBlock())
-                        .build();
-                if (blockRequestDTO.getValue() != null && (blockRequestDTO.getBlock().equals("[number]") || blockRequestDTO.getBlock().equals("[String]") || blockRequestDTO.getBlock().equals("[StringVal]") || blockRequestDTO.getBlock().equals("[numberVal]"))) {
-                    videoTestBlockList.setValue(blockRequestDTO.getValue());
                 }
-                videoTestBlockListRepository.save(videoTestBlockList);
-            }
-        }
 
-        // 문제 답안 저장
-        VideoTestAnswerDTO.AddDTO addAnswerDTO = new VideoTestAnswerDTO.AddDTO();
-        addAnswerDTO.setVideoTestId(videoTest.getId());
-        addAnswerDTO.setAnswer(addRequestDTO.getTestAnswerDTO().getAnswer());
-        videoTestAnswerService.addTestAnswer(memberId, addAnswerDTO);
+            }
+            // 코드 블럭 문제라면 실행
+            else if (videoTest.getType() == VideoTestDTO.VideoTestType.CODE_BLOCK) {
+
+                log.info("코드 블럭 저장");
+
+                // 코드 블럭 저장
+                for (VideoTestBlockListDTO.BlockList blockRequestDTO : addRequestDTO.getVideoTestBlockList()) {
+                    // DB에 바로 저장합니다. 단, value 값이 있고, block이 [number], [String] 인 경우에는 value값을 저장합니다
+                    VideoTestBlockList videoTestBlockList = VideoTestBlockList.builder()
+                            .videoTest(videoTest)
+                            .block(blockRequestDTO.getBlock())
+                            .build();
+                    if (blockRequestDTO.getValue() != null && (blockRequestDTO.getBlock().equals("[number]") || blockRequestDTO.getBlock().equals("[String]") || blockRequestDTO.getBlock().equals("[StringVal]") || blockRequestDTO.getBlock().equals("[numberVal]"))) {
+                        videoTestBlockList.setValue(blockRequestDTO.getValue());
+                    }
+                    videoTestBlockListRepository.save(videoTestBlockList);
+                }
+            }
+
+            // 문제 답안 저장
+            VideoTestAnswerDTO.AddDTO addAnswerDTO = new VideoTestAnswerDTO.AddDTO();
+            addAnswerDTO.setVideoTestId(videoTest.getId());
+            addAnswerDTO.setAnswer(addRequestDTO.getTestAnswerDTO().getAnswer());
+            videoTestAnswerService.addTestAnswer(memberId, addAnswerDTO);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -156,45 +159,51 @@ public class VideoTestService {
 
     // 동영상 문제 리스트
     public List<VideoTestDTO.ListResponseDTO> getTestList(int memberId, VideoDTO.IdRequestDTO idRequestDTO) {
+        try{
+            // 동영상 정보 가져오기
+            Video video = videoRepository.findById(idRequestDTO.getId());
+            Preconditions.checkNotNull(video, "등록된 동영상이 없습니다. (동영상 ID : %s)", idRequestDTO.getId());
 
-        // 동영상 정보 가져오기
-        Video video = videoRepository.findById(idRequestDTO.getId());
-        Preconditions.checkNotNull(video, "등록된 동영상이 없습니다. (동영상 ID : %s)", idRequestDTO.getId());
+            // 등록된 회원인지 검사
+            Member member = memberRepository.findByMemberId(memberId);
+            Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
 
-        // 등록된 회원인지 검사
-        Member member = memberRepository.findByMemberId(memberId);
-        Preconditions.checkNotNull(member, "등록된 회원이 아닙니다. (회원 ID : %s)", memberId);
+            // 해당 비디오에 있는 문제 리스트 가져오기
+            List<VideoTest> videoTestList = videoTestRepository.findAllByVideoOrderByTestTime(video);
+            List<VideoTestDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
+            // 반복 작업
+            for (VideoTest videoTest : videoTestList) {
 
-        // 해당 비디오에 있는 문제 리스트 가져오기
-        List<VideoTest> videoTestList = videoTestRepository.findAllByVideoOrderByTestTime(video);
-        List<VideoTestDTO.ListResponseDTO> listResponseDTOList = new ArrayList<>();
-        // 반복 작업
-        for (VideoTest videoTest : videoTestList) {
+                // dto에 담기
+                VideoTestDTO.ListResponseDTO listResponseDTO = new VideoTestDTO.ListResponseDTO(videoTest);
 
-            // dto에 담기
-            VideoTestDTO.ListResponseDTO listResponseDTO = new VideoTestDTO.ListResponseDTO(videoTest);
+                // 테스트 타입이 객관식이라면
+                if (videoTest.getType() == VideoTestDTO.VideoTestType.MULTIPLE_CHOICE) {
+                    // 동영상 객관식 문제 보기 리스트 가져와서 videoTestDTO에 담기
+                    List<VideoTestMultipleListDTO.ListResponseDTO> multipleList = videoTestMultipleListService.getList(memberId, videoTest);
+                    listResponseDTO.setVideoTestMultipleListDTOs(multipleList);
+                }
+                // 블록 코딩이라면
+                else if (videoTest.getType() == VideoTestDTO.VideoTestType.CODE_BLOCK) {
+                    List<VideoTestBlockListDTO.BlockResponseDTO> blockResponseDTOs = videoTestBlockListService.getBlockList(memberId, videoTest);
+                    listResponseDTO.setBlockResponseDTOList(blockResponseDTOs);
+                }
 
-            // 테스트 타입이 객관식이라면
-            if (videoTest.getType() == VideoTestDTO.VideoTestType.MULTIPLE_CHOICE) {
-                // 동영상 객관식 문제 보기 리스트 가져와서 videoTestDTO에 담기
-                List<VideoTestMultipleListDTO.ListResponseDTO> multipleList = videoTestMultipleListService.getList(memberId, videoTest);
-                listResponseDTO.setVideoTestMultipleListDTOs(multipleList);
+                // 문제 답안 가져와서 videoTestDTO에 담기
+                VideoTestAnswerDTO.ResponseDTO videoTestAnswerDTO = videoTestAnswerService.getAnswer(memberId, videoTest);
+                listResponseDTO.setTestAnswerDTO(videoTestAnswerDTO);
+                // 반환할 video test dto list에 추가
+                listResponseDTOList.add(listResponseDTO);
+
             }
-            // 블록 코딩이라면
-            else if (videoTest.getType() == VideoTestDTO.VideoTestType.CODE_BLOCK) {
-                List<VideoTestBlockListDTO.BlockResponseDTO> blockResponseDTOs = videoTestBlockListService.getBlockList(memberId, videoTest);
-                listResponseDTO.setBlockResponseDTOList(blockResponseDTOs);
-            }
 
-            // 문제 답안 가져와서 videoTestDTO에 담기
-            VideoTestAnswerDTO.ResponseDTO videoTestAnswerDTO = videoTestAnswerService.getAnswer(memberId, videoTest);
-            listResponseDTO.setTestAnswerDTO(videoTestAnswerDTO);
-            // 반환할 video test dto list에 추가
-            listResponseDTOList.add(listResponseDTO);
-
+            return listResponseDTOList;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
 
-        return listResponseDTOList;
+
     }
 
 }

@@ -13,9 +13,17 @@ import java.util.Optional;
 
 public interface SectionRepository extends JpaRepository<Section, Integer> {
 
+    //countByLectureId
+    // 해당 강의의 섹션 수 가져오기
+    long countByLectureId(int lectureId);
+
     // Lecture를 기준으로 모든 Section을 찾는 쿼리
     @Query("SELECT s FROM Section s WHERE s.lecture = :lecture")
     List<Section> findByLecture(@Param("lecture") Lecture lecture);
+
+    //findAllByLectureId
+    // 해당 강의의 섹션 모두 List로 가져오기
+    List<Section> findAllByLectureId(int lectureId);
 
 
     @Query(value = "SELECT * FROM section s JOIN lecture l ON s.lecture_id = l.id WHERE l.id =:lectureId", nativeQuery = true)

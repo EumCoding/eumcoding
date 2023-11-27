@@ -32,6 +32,7 @@ public class MainTestController {
             mainTestService.addMainTest(Integer.parseInt(authentication.getPrincipal().toString()), addRequestDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
@@ -52,5 +53,51 @@ public class MainTestController {
 
     }
 
+    // main test 문제 리스트 가져오기
+    @GetMapping(value = "/view/question")
+    @ApiOperation(value = "메인 평가 문제 리스트 가져오기")
+    public ResponseEntity<List<MainTestDTO.MainTestQuestionInfoRequestDTO>> getMainTestQuestion(@ApiIgnore Authentication authentication , @RequestParam int mainTestId) {
+
+        try {
+            List<MainTestDTO.MainTestQuestionInfoRequestDTO> responseDTO = mainTestService.getMainTestQuestion(mainTestId);
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+
+    }
+
+    // 테스트 section 수정하기
+    @PutMapping(value = "/updateSection")
+    @ApiOperation(value = "메인 평가 섹션 수정하기")
+    public ResponseEntity<Object> updateSection(@ApiIgnore Authentication authentication,
+                                                @Valid @RequestBody MainTestDTO.UpdateSectionRequestDTO updateSectionRequestDTO) {
+
+        try {
+            mainTestService.updateSection(Integer.parseInt(authentication.getPrincipal().toString()), updateSectionRequestDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    // 테스트 문제 삭제하기
+    @PostMapping(value = "/deleteQuestion")
+    @ApiOperation(value = "메인 평가 문제 삭제하기")
+    public ResponseEntity<Object> deleteQuestion(@ApiIgnore Authentication authentication,
+                                                 @RequestParam int questionId) {
+
+        try {
+            mainTestService.deleteMainTestQuestion(Integer.parseInt(authentication.getPrincipal().toString()), questionId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
 
 }

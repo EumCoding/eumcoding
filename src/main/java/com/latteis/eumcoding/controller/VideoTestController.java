@@ -39,6 +39,7 @@ public class VideoTestController {
             videoTestService.addTest(Integer.parseInt(authentication.getPrincipal().toString()), addRequestDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
@@ -79,9 +80,13 @@ public class VideoTestController {
     @ApiOperation(value = "동영상 문제 리스트 가져오기")
     public ResponseEntity<List<VideoTestDTO.ListResponseDTO>> getVideoTestList(@ApiIgnore Authentication authentication,
                                                                              @Valid @RequestBody VideoDTO.IdRequestDTO idRequestDTO) {
-
-        List<VideoTestDTO.ListResponseDTO> listResponseDTOList = videoTestService.getTestList(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
-        return ResponseEntity.ok().body(listResponseDTOList);
+        try{
+            List<VideoTestDTO.ListResponseDTO> listResponseDTOList = videoTestService.getTestList(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
+            return ResponseEntity.ok().body(listResponseDTOList);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
 
     }
 
