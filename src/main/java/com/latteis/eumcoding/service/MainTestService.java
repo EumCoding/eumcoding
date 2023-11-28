@@ -79,7 +79,7 @@ public class MainTestService {
                     // 블록코딩인 경우 BlockList 가져와서 저장
                     List<MainTestBlock> mainTestBlockList = mainTestBlockRepository.findAllByMainTestQuestionId(tempResponseDTO.getMainTestQuestionId());
                     List<MainTestDTO.BlockDTO> mainTestBlockDTOList = mainTestBlockList.stream()
-                            .map(block -> new MainTestDTO.BlockDTO(block.getBlock(), block.getValue()))
+                            .map(block -> new MainTestDTO.BlockDTO(block.getBlock(), block.getValue(), block.getId()))
                             .collect(Collectors.toList());
                     // tempResponseDTO에 저장
                     tempResponseDTO.setBlockList(mainTestBlockDTOList);
