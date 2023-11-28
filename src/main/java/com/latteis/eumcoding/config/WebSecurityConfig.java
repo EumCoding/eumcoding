@@ -55,6 +55,7 @@ public class WebSecurityConfig {
                         "/images/menu/**",
                         "/images/**",
                         "/gender/**",
+                        "/lecture/section/test/question/block/block-convert",
                         "/error",
                         "/confirm/**",
                         "/google/**",
