@@ -38,10 +38,13 @@ public class MainTestDTO {
         @ApiModelProperty(value = "값", example = "값입니다")
         private String value;
 
+        private int id;
+
         // Constructors
-        public BlockDTO(String block, String value) {
+        public BlockDTO(String block, String value, int id) {
             this.block = block;
             this.value = value;
+            this.id = id;
         }
     }
 
