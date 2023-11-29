@@ -18,6 +18,9 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     Lecture findById(int id);
 
+    @Query(value = "SELECT * FROM lecture l WHERE l.id =:id AND l.state = 1",nativeQuery = true)
+    Lecture showFindByLectureId(@Param("id") int id);
+
     Optional<Lecture> findByName(String name);
 
 
@@ -44,7 +47,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Lecture> findTop5ByOrderByCreatedDayDesc();
 
     //강좌 이름 검색
-    @Query("SELECT l FROM Lecture l WHERE l.name like %:name%")
+    @Query("SELECT l FROM Lecture l WHERE l.name like %:name% AND l.state = 1")
     List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
 
     //이름갯수세기
@@ -120,7 +123,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     /*
     * memberId로 총 강의 수 가져오기
     */
-    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId")
+    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId AND l.state = 1")
     int countByMemberId(@Param("memberId") int memberId);
 
 }

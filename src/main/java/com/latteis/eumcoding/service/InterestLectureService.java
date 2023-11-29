@@ -37,7 +37,10 @@ public class InterestLectureService {
 
             // 이미 좋아요 한 회원인지 검사
             InterestLecture interestLecture1 = interestLectureRepository.findByLectureIdAndMemberId(idRequestDTO.getLectureId(), memberId);
+
             Preconditions.checkArgument(interestLecture1 == null, "이미 좋아요를 누른 회원입니다. (회원 ID : %s)", memberId);
+            Preconditions.checkArgument(interestLecture1.getMember().getRole() != 0, "일반회원이 아닙니다. (회원 ID : %s)", memberId);
+
 
             InterestLecture interestLecture = InterestLecture.builder()
                     .lecture(lecture)
@@ -45,6 +48,9 @@ public class InterestLectureService {
                     .build();
 
             interestLectureRepository.save(interestLecture);
+
+
+
         }catch(Exception e){
             e.printStackTrace();
         }
