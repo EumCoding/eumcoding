@@ -114,7 +114,7 @@ public class ImgController {
     public ResponseEntity<Resource> getLectureThumbImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = lectureService.getThumbDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
                 throw new Exception();
             }
@@ -133,7 +133,7 @@ public class ImgController {
     public ResponseEntity<Resource> getLectureDescriptionImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = lectureService.getImageDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
                 throw new Exception();
             }
@@ -152,7 +152,7 @@ public class ImgController {
     public ResponseEntity<Resource> getLectureBadgeImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = lectureService.getBadgeDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
                 throw new Exception();
             }
@@ -173,7 +173,7 @@ public class ImgController {
     public ResponseEntity<Resource> getVideoFile(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = videoService.getVideoFileDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
                 throw new Exception();
             }
@@ -194,7 +194,7 @@ public class ImgController {
     public ResponseEntity<Resource> getVideoThumb(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = videoService.getVideoThumbDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
                 throw new Exception();
             }
@@ -214,9 +214,9 @@ public class ImgController {
     public ResponseEntity<Resource> getProfileImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = memberService.getMemberProfileDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -236,9 +236,9 @@ public class ImgController {
     public ResponseEntity<Resource> getSearchMemberImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = searchService.getMemberDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -256,9 +256,9 @@ public class ImgController {
     public ResponseEntity<Resource> getSearchlectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = searchService.getlectureDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -277,9 +277,9 @@ public class ImgController {
     public ResponseEntity<Resource> getProfileMemImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = profileService.getMemberDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -297,9 +297,9 @@ public class ImgController {
     public ResponseEntity<Resource> getProfilelectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = profileService.getLectureDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -317,9 +317,9 @@ public class ImgController {
     public ResponseEntity<Resource> getProfilelectureBadgeImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = profileService.getLectureBadgeDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -338,9 +338,9 @@ public class ImgController {
     public ResponseEntity<Resource> getMylectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = myLectureListService.getLectureDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -359,9 +359,9 @@ public class ImgController {
     public ResponseEntity<Resource> getMainLectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = mainService.getLectureDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -379,9 +379,9 @@ public class ImgController {
     public ResponseEntity<Resource> getMainMemberImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = mainService.getMemberDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -400,9 +400,9 @@ public class ImgController {
     public ResponseEntity<Resource> getBasketLectureImg(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
             String path = basketService.getLectureDirectoryPath().getPath();
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             System.out.println("fileName: " + fileName);
@@ -427,9 +427,9 @@ public class ImgController {
     //공용 이미지 메서드 9월26일 생성
     public ResponseEntity<Resource> common(String path,String fileName) throws Exception{
         try{
-            FileSystemResource resource = new FileSystemResource(path + "\\" +fileName);
+            FileSystemResource resource = new FileSystemResource(path + "/" +fileName);
             if(!resource.exists()){
-                throw new Exception("File not found: " + path + "\\" + fileName);
+                throw new Exception("File not found: " + path + "/" + fileName);
 
             }
             HttpHeaders header = new HttpHeaders();
