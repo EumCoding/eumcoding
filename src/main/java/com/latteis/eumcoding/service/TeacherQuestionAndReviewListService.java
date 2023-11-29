@@ -69,25 +69,31 @@ public class TeacherQuestionAndReviewListService {
         // 해당 멤버가 작성한 질문을 지정된 기간 내에 찾기, 결과는 페이지네이션
         Pageable pageable = PageRequest.of(DefaultPage, size, Sort.by(Sort.Direction.DESC, "title"));
 
-        Page<Question> questionsPage = questionRepository.findAllByMemberAndMonthCreatedDayBetween(memberId, startDateTime, endDateTime,lectureId,pageable);
-        long count = questionRepository.countTeacherQuestions(memberId,startDateTime,endDateTime,lectureId);
-        List<TeacherListQuestionDTO.StudentQuestionListDTO> studentQuestionListDTOS = questionsPage.getContent().stream().map(question -> {
-            // 해당 질문에 대한 답변 유무 확인
-            int questionCommentStatus = questionCommentRepository.existsByQuestion(question.getId()) ? 1 : 0;
-            // 강의썸네일
-            String lectureThumbnail = domain + port + "/eumCodingImgs/lecture/thumb/" + question.getLecture().getThumb();
+        Page<Question> questionsPage = questionRepository.findAllByMemberAndMonthCreatedDayBetween(startDateTime, endDateTime,lectureId,pageable);
+        long count = questionRepository.countTeacherQuestions(startDateTime,endDateTime,lectureId);
 
-            return TeacherListQuestionDTO.StudentQuestionListDTO.builder()
-                    .nickname(question.getMember().getNickname())
-                    .qnaId(question.getId())
-                    .title(question.getTitle())
-                    .answer(questionCommentStatus)
-                    .date(question.getCreatedDay())
-                    .lectureId(question.getLecture().getId())
-                    .lectureName(question.getLecture().getName())
-                    .lectureThumb(lectureThumbnail)
-                    .build();
-        }).collect(Collectors.toList());
+        List<TeacherListQuestionDTO.StudentQuestionListDTO> studentQuestionListDTOS = new ArrayList<>();
+        for(Question questions : questionsPage) {
+            // 해당 질문에 대한 답변 유무 확인
+            int questionCommentStatus = questionCommentRepository.existsByQuestion(questions.getId()) ? 1 : 0;
+            // 강의썸네일
+            String lectureThumbnail = domain + port + "/eumCodingImgs/lecture/thumb/" + questions.getLecture().getThumb();
+
+            if(questions.getLecture().getMember().getId() == memberId){
+                TeacherListQuestionDTO.StudentQuestionListDTO sq = TeacherListQuestionDTO.StudentQuestionListDTO.builder()
+                        .nickname(questions.getMember().getNickname())
+                        .qnaId(questions.getId())
+                        .title(questions.getTitle())
+                        .answer(questionCommentStatus)
+                        .date(questions.getCreatedDay())
+                        .lectureId(questions.getLecture().getId())
+                        .lectureName(questions.getLecture().getName())
+                        .lectureThumb(lectureThumbnail)
+                        .build();
+                studentQuestionListDTOS.add(sq);
+            }
+        }
+
         return TeacherListQuestionDTO.builder()
                 .count(count)
                 .teacherMyReviewList(studentQuestionListDTOS)
@@ -114,10 +120,10 @@ public class TeacherQuestionAndReviewListService {
         LocalDateTime startDateTime = start.atStartOfDay();
         LocalDateTime endDateTime = end.plusDays(1).atStartOfDay();
 
-        // 해당 멤버가 작성한 질문을 지정된 기간 내에 찾기, 결과는 페이지네이션
+
         Pageable pageable = PageRequest.of(DefaultPage, size, Sort.by(Sort.Direction.DESC, "student.nickname"));
 
-        Page<Object[]> reviewPage = reviewRepository.getTeacherMyReviewListByDate(memberId, startDateTime, endDateTime,lectureId,pageable);
+        Page<Object[]> reviewPage = reviewRepository.getTeacherMyReviewListByDate(memberId,startDateTime, endDateTime,lectureId,pageable);
         long count = reviewRepository.countTeacherReviews(memberId,startDateTime,endDateTime,lectureId);
         List<Object[]> studentReviewListDTOS = reviewPage.getContent();
         List<TeacherListReviewDTO.ListTeacherResponseDTO> myListReviewList = new ArrayList<>();

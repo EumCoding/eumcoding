@@ -36,18 +36,18 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
 
     @Query(value = "SELECT q.* FROM question q " +
             "JOIN lecture l ON q.lecture_id = l.id " +
-            "JOIN member m on l.member_id = m.id AND m.role = 1 " +
-            "WHERE m.id =:memberId AND q.created_day BETWEEN (:start IS NULL OR q.created_day =:start) AND :end " +
-            "AND (:lectureId IS NULL OR l.id = :lectureId)",nativeQuery = true)
-    Page<Question> findAllByMemberAndMonthCreatedDayBetween(@Param("memberId") int memberId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end,@Param("lectureId") Integer lectureId,Pageable pageable);
+            "JOIN member m on q.member_id = m.id " +
+            "WHERE q.created_day BETWEEN COALESCE(:start, '2000-01-01T00:00:00') AND COALESCE(:end, '2999-12-31T23:59:59') " +
+            "AND l.id = :lectureId", nativeQuery = true)
+    Page<Question> findAllByMemberAndMonthCreatedDayBetween( @Param("start") LocalDateTime start, @Param("end") LocalDateTime end,@Param("lectureId") Integer lectureId,Pageable pageable);
 
 
     @Query(value = "SELECT count(q.id) FROM question q " +
             "JOIN lecture l ON q.lecture_id = l.id " +
-            "JOIN member m on l.member_id = m.id AND m.role = 1 " +
-            "WHERE m.id =:memberId AND q.created_day BETWEEN :start AND :end " +
-            "AND (:lectureId IS NULL OR l.id = :lectureId)",nativeQuery = true)
-    long countTeacherQuestions(@Param("memberId") int memberId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end,@Param("lectureId") Integer lectureId);
+            "JOIN member m on q.member_id = m.id AND m.role = 0 " +
+            "WHERE q.created_day BETWEEN COALESCE(:start, '2000-01-01T00:00:00') AND COALESCE(:end, '2999-12-31T23:59:59') " +
+            "AND l.id = :lectureId",nativeQuery = true)
+    long countTeacherQuestions(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end,@Param("lectureId") Integer lectureId);
 
 
 }
