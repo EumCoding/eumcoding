@@ -84,10 +84,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     Lecture findByIdAndMemberId(@Param("id") int id, @Param("memberId") int memberId);
 
     // 내가 등록한 강의 리스트 가져오기
-//    @Query(value = "SELECT id, name, created_day FROM lecture WHERE member_id = :memberId", nativeQuery = true)
-    Page<Lecture> findAllByMember(Member member, Pageable pageable);
+    @Query(value = "SELECT * FROM lecture l JOIN member m ON l.member_id = m.id WHERE l.state = 1 AND m.id =:memberId ",nativeQuery = true)
+    Page<Lecture> findAllByMember(@Param("memberId") int memberId, Pageable pageable);
 
-    List<Lecture> findAllByMember(Member member);
+    @Query(value = "SELECT * FROM lecture l JOIN member m ON l.member_id = m.id WHERE l.state = 1 AND m.id =:memberId ",nativeQuery = true)
+    List<Lecture> findAllByMember(@Param("memberId") int memberId);
 
 
     // 기간별 통계
@@ -123,7 +124,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     /*
     * memberId로 총 강의 수 가져오기
     */
-    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId AND l.state = 1")
+    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId")
     int countByMemberId(@Param("memberId") int memberId);
 
 }

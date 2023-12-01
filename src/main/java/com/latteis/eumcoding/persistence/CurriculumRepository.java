@@ -19,13 +19,20 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
 
     
     //커리큘럼 날짜 입력해서 결과 보이게
-    @Query("SELECT c FROM Curriculum c JOIN c.member m JOIN c.section s " +
-            "WHERE m.id = :memberId " +
-            "AND ( (c.editDay IS NOT NULL AND c.editDay BETWEEN :startDate AND :endDate) OR " +
-            "      (c.editDay IS NULL AND c.startDay BETWEEN :startDate AND :endDate) )")
+    @Query(value = "SELECT c.* FROM curriculum c " +
+            "JOIN member m ON c.member_id = m.id " +
+            "JOIN section s ON c.section_id = s.id " +
+            "JOIN lecture l ON s.lecture_id = l.id " +
+            "WHERE m.id =:memberId " +
+            "AND (:lectureId IS NULL OR l.id = :lectureId) " +
+            "AND ( (c.edit_day IS NOT NULL AND c.edit_day BETWEEN :startDate AND :endDate) OR " +
+            "      (c.edit_day IS NULL AND c.start_day BETWEEN :startDate AND :endDate) ) ",
+            nativeQuery = true)
     List<Curriculum> findByMemberIdAndMonthYear(@Param("memberId") int memberId,
+                                                @Param("lectureId") Integer lectureId,
                                                 @Param("startDate") LocalDateTime startDate,
-                                                @Param("endDate") LocalDateTime endDate);
+                                                @Param("endDate") LocalDateTime endDate
+                                                );
 
 
 
@@ -70,4 +77,8 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     // Lecture ID를 기반으로 최대 Section ID 조회
     @Query("SELECT MAX(c.section.id) FROM Curriculum c WHERE c.section.lecture.id = :lectureId")
     Integer findMaxSectionIdByLectureId(@Param("lectureId") int lectureId);
+
+    @Query(value = "SELECT * FROM curriculum c JOIN member m ON c.member_id = m.id JOIN section s ON c.section_id = s.id JOIN lecture l ON s.lecture_id = l.id WHERE m.id = :memberId AND s.id = :sectionId", nativeQuery = true)
+    List<Curriculum> findByMemberSectionId(@Param("memberId") int memberId,@Param("sectionId") int sectionId);
+
 }

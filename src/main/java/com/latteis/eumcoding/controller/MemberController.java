@@ -200,6 +200,7 @@ public class MemberController {
     @PostMapping("/myplan/list/info")
     @ApiOperation(value = "내 커리큘럼에 해당하는 섹션 진도율 및 정보", notes = "내 커리큘럼에 해당하는 섹션 진도율 및 정보")
     public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication,
+                                          @RequestParam(required = false) Integer lectureId,
                                           @RequestParam(defaultValue = "2023-01-01T00:00:00") String startDateStr,
                                           @RequestParam(defaultValue = "2023-09-30T23:59:59") String endDateStr) {
         try{
@@ -208,7 +209,7 @@ public class MemberController {
             LocalDateTime startDate = LocalDateTime.parse(startDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
             LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 
-            List<MyPlanInfoDTO> myPlan = curriculumService.getMyPlanInfo(memberId,startDate,endDate);
+            List<MyPlanInfoDTO> myPlan = curriculumService.getMyPlanInfo(memberId,lectureId,startDate,endDate);
             //return new ResponseEntity<>(myPlanList, HttpStatus.OK);
             return ResponseEntity.ok().body(myPlan);
 

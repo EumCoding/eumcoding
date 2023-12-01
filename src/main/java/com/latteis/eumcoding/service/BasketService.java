@@ -1,12 +1,8 @@
 package com.latteis.eumcoding.service;
 
 import com.latteis.eumcoding.dto.BasketDTO;
-import com.latteis.eumcoding.model.Basket;
-import com.latteis.eumcoding.model.Lecture;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.persistence.BasketRepository;
-import com.latteis.eumcoding.persistence.LectureRepository;
-import com.latteis.eumcoding.persistence.MemberRepository;
+import com.latteis.eumcoding.model.*;
+import com.latteis.eumcoding.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +23,7 @@ public class BasketService {
     private final LectureRepository lectureRepository;
     private final MemberRepository memberRepository;
     private final BasketRepository basketRepository;
+    private final PayLectureRepository payLectureRepository;
 
 
 
@@ -61,6 +58,15 @@ public class BasketService {
         if(existingBasket.isPresent()){
             throw new IllegalArgumentException("장바구니에 있습니다.");
         }
+
+        List<PayLecture> payLectures = payLectureRepository.findByMemberAndLecture(memberId, lecture.getId());
+        for(PayLecture payLecture : payLectures)
+        {
+            if(payLecture.getLecture().getId() == lecture.getId()){
+                throw new IllegalArgumentException("이미 구매한 강좌입니다.");
+            }
+        }
+
 
         Basket basket = Basket.builder()
                 .member(member)
