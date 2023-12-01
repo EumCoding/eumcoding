@@ -90,6 +90,8 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     List<VideoProgress> findByDeleteVideoProgressId(@Param("memberId") int memberId);
 
 
+    //영상은 순차적으로 완료해야 넘어갈 수 있다.(1강을못들으면 2강 시청불가능)
+    //그래서 DESC로 맨 마지막 비디오의 state를 가져와서 1이면 해당 섹션의 모든 비디오를 다 들었다고 판단
     @Query(value =
             "SELECT subquery.* " +
                     "FROM (" +

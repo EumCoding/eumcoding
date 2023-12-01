@@ -89,7 +89,7 @@ public class LectureService {
         Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
 
         // 내 강의목록의 아이디와 이름만 가져오기
-        List<Lecture> lectureList = lectureRepository.findAllByMember(member);
+        List<Lecture> lectureList = lectureRepository.findAllByMember(memberId);
         List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
         for (Lecture lecture : lectureList) {
             LectureDTO.MyListResponseDTO myListResponseDTO = new LectureDTO.MyListResponseDTO(lecture);
@@ -341,8 +341,10 @@ public class LectureService {
         Preconditions.checkArgument((member.getRole() == MemberDTO.MemberRole.TEACHER) || (member.getRole() == MemberDTO.MemberRole.ADMIN), "강사나 관리자 회원이 아닙니다. (회원 ID : %s)", memberId);
 
         // 내가 등록한 강의 리스트 가져오기
-        Page<Lecture> lecturePage = lectureRepository.findAllByMember(member, pageable);
+        Page<Lecture> lecturePage = lectureRepository.findAllByMember(memberId, pageable);
+
         List<Lecture> lectureList = lecturePage.getContent();
+
         // 리스트 DTO 생성
         List<LectureDTO.MyListResponseDTO> myListResponseDTOList = new ArrayList<>();
         for (Lecture lecture : lectureList) {

@@ -71,6 +71,7 @@ public class ReplationParentController {
     @GetMapping("/children/curriculum")
     public ResponseEntity<?> getChildrenCurriculum(@ApiIgnore Authentication authentication,
                                                    @RequestParam(required = false) Integer childId,
+                                                   @RequestParam(required = false) Integer lectureId,
                                                    @RequestParam(defaultValue = "2023-01-01T00:00:00") String startDateStr,
                                                    @RequestParam(defaultValue = "2023-09-30T23:59:59") String endDateStr) {
         try {
@@ -81,7 +82,7 @@ public class ReplationParentController {
             if (childId == null) {
                 return ResponseEntity.badRequest().body("자녀 ID를 제공해야 합니다.");
             }
-            List<MyPlanInfoDTO> curriculumList = replationParentService.getChildByParent(parentId, childId,startDate,endDate);
+            List<MyPlanInfoDTO> curriculumList = replationParentService.getChildByParent(parentId, childId,lectureId,startDate,endDate);
 
             return ResponseEntity.ok().body(curriculumList);
 

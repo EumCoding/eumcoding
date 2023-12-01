@@ -38,13 +38,13 @@ public class CurriculumService {
 
     //기존 getMyPlanList랑 다른점은 해당 커리큘럼에 있는 섹션을 기한내에 다들었는지
     //혹은 이번에 들어야하는 섹션인지 표시해주는게 들어가있음
-    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<MyPlanInfoDTO> getMyPlanInfo(int memberId, Integer lectureId, LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("시작 날짜는 종료 날짜보다 이후일 수 없습니다.");
         }
 
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
-        List<Curriculum> curriculums = curriculumRepository.findByMemberIdAndMonthYear(memberId, startDate, endDate);
+        List<Curriculum> curriculums = curriculumRepository.findByMemberIdAndMonthYear(memberId, lectureId, startDate, endDate);
 
         // 커리큘럼 정보가 없으면 예외를 던짐
         if (curriculums.isEmpty()) {
@@ -61,7 +61,7 @@ public class CurriculumService {
             //다음 섹션 startDay 1초전까지 수강들을수있는 범위
             LocalDateTime sectionDeadline = curriculum.getStartDay().plusDays(curriculum.getTimeTaken()).minusSeconds(1);
             LocalDateTime nextSectionStart = calculateNextSectionStartDay(memberId, curriculum.getSection().getLecture().getId(), curriculum.getStartDay(), curriculums);
-            LocalDateTime effectiveDeadline = (curriculum.getEditDay() != null) ? curriculum.getEditDay() : sectionDeadline.plusDays(curriculum.getTimeTaken()).minusSeconds(1);
+            LocalDateTime effectiveDeadline = (curriculum.getEditDay() != null) ? curriculum.getEditDay() : sectionDeadline;
             LocalDateTime newEditDay = LocalDateTime.of(today.toLocalDate(), LocalTime.now());
 
 
@@ -88,27 +88,24 @@ public class CurriculumService {
 
                 // 현재 섹션 처리
                 if (over == 1) {
-                    // 현재 날짜가 editDay 이후이거나, editDay가 없는데 섹션 종료일 이후라면,
+                    // 현재 날짜가 editDay 이후이거나, editDay가 없는데 다음 섹션 종료일 이후라면,
                     // 현재 섹션의 editDay를 업데이트하고, 다음 섹션들의 startDay를 업데이트
-                    if ((curriculum.getEditDay() != null && today.isAfter(effectiveDeadline)) ||
-                            (curriculum.getEditDay() == null && today.isAfter(sectionDeadline))) {
-
+                    if (today.isAfter(effectiveDeadline)) {
                         updateEditDay(curriculum.getId(), newEditDay); // 현재 섹션의 editDay 업데이트
                         //System.out.println(curriculum.getSection().getId() + ": over 가 1인경우");
                         message = "해당 섹션 수강 기한 초과" + curriculum.getEditDay().toLocalDate() + "일로 연장";
                         // 다음 섹션들의 startDay만 업데이트해야 하므로, 현재 섹션의 ID보다 큰 섹션들을 찾습니다.
-                        updateStartDaysForFollowingSections(curriculums, lectureSection.getId(), newEditDay.plusDays(curriculum.getTimeTaken()));
+                        Integer inputLectureId = lectureId != null ? lectureId : curriculum.getSection().getLecture().getId();
+                        updateStartDaysSections(curriculums, lectureSection.getId(), inputLectureId, newEditDay.plusDays(curriculum.getTimeTaken()));
 
                     }
-                }else if (over == 2 && curriculum.getStartDay().isAfter(today)) {
+                } else if (over == 2) {
                     message = "해당 섹션을 들을 기간이 아닙니다.";
-                }else if (over == 0 && curriculum.getEditDay() == null && (nextSectionStart == null || sectionDeadline.isBefore(nextSectionStart))) {
+                } else if (over == 0 && (nextSectionStart == null || effectiveDeadline.isBefore(nextSectionStart))) {
                     //System.out.println(curriculum.getSection().getId() + ": over 가 0인경우");
                     message = "해당 섹션 수강을 기한 내 완료";
-                }else if (over == 0 && curriculum.getEditDay() != null) {
-                    over = 1;
-                }else if (over == 2 && curriculum.getStartDay().isBefore(sectionDeadline)){
-                    message = "현재 들어야할 섹션 입니다.";
+                }  else if (over == 3) {
+                    message = "현재 들어야하는 섹션입니다.";
                 }
 
                 SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
@@ -149,37 +146,49 @@ public class CurriculumService {
         List<VideoProgress> lastProgress = videoProgressRepository.findVideoProgressEndDay(memberId, sectionId);
         int isAnyVideoNotStarted = 0;
 
+        List<Curriculum> curriculumList = curriculumRepository.findByMemberSectionId(memberId, sectionId);
+        //해당 lectureId에 속한 section들의 startDay를 가져와서
+        //다음 섹션의 startDay.isBefore(LocalDateTime.now() 이런식으로 progress.state() = 0 일때,
+        //이러면 over가 3이라는 새로운 조건 생성 가능할듯
+        for (Curriculum curriculum : curriculumList) {
+            LocalDateTime sectionDeadline = curriculum.getStartDay().plusDays(curriculum.getTimeTaken()).minusSeconds(1);
+            LocalDateTime effectiveDeadline = (curriculum.getEditDay() != null) ? curriculum.getEditDay() : sectionDeadline;
 
-        /**
-         * videoProgress테이블 자체에 해당 video에 대한 컬럼이 없을경우 ->0
-         * videoPRogress테이블에 video에대한 정보는 있는데 state가 0일경우 ->1
-         */
-        for (VideoProgress progress : lastProgress) {
-            if (progress == null) { //강의를 듣지않은상태(구매후 아예 안들었거나 or 섹션 1를 다안들어서 섹션 2의 대한 vp정보가 없을경우
-                // 비디오 진행 정보가 없거나 state가 NULL인 경우
-                isAnyVideoNotStarted = 0;
-                //log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다. 혹은 아무런 강의를 듣고 있지 않은 상황입니다.");
-            } else if (progress.getState() == 1) {
-                // 비디오가 완료된 상태
-                //log.info("Section " + progress.getVideo().getSection().getId() + " over 0");
-                isAnyVideoNotStarted = 2;
-            } else if (progress.getState() == 0) {
-                // 비디오 진행 상태가 0인 경우 (완료되지 않음)
-                isAnyVideoNotStarted = 1;
-                //log.info("Section " + progress.getVideo().getSection().getId() + " over 1");
+
+            /**
+             * videoProgress테이블 자체에 해당 video에 대한 컬럼이 없을경우 ->0
+             * videoPRogress테이블에 video에대한 정보는 있는데 state가 0일경우 ->1
+             */
+            for (VideoProgress progress : lastProgress) {
+                if (progress == null) { //강의를 듣지않은상태(구매후 아예 안들었거나 or 섹션 1를 다안들어서 섹션 2의 대한 vp정보가 없을경우
+                    // 비디오 진행 정보가 없거나 state가 NULL인 경우
+                    isAnyVideoNotStarted = 0;
+                    //log.info("Section " + sectionId + ": 아직 강의들을 순서가 아닙니다. 혹은 아무런 강의를 듣고 있지 않은 상황입니다.");
+                } else if (progress.getState() == 1) {
+                    // 비디오가 완료된 상태
+                    //log.info("Section " + progress.getVideo().getSection().getId() + " over 0");
+                    isAnyVideoNotStarted = 2;
+                } else if (progress.getState() == 0) {
+                    if (LocalDateTime.now().isBefore(effectiveDeadline)) {
+                        isAnyVideoNotStarted = 3; // 진행 중이지만 아직 기한 내
+                    } else {
+                        isAnyVideoNotStarted = 1; // 기한 오버
+                    }
+                }
             }
         }
 
-
         if (isAnyVideoNotStarted == 0) {
             //log.info("아직 섹션를 들을 순서가 아닙니다.");
-            // 아직 시작하지 않은 비디오가 있으면 기한 초과로 간주
+            // 아직 시작하지 않은 비디오
             return 2;
         } else if (isAnyVideoNotStarted == 1) {
-            // 하나라도 완료되지 않은 비디오가 있으면 기한 초과
+            // 기한 오버
             return 1;
+        } else if (isAnyVideoNotStarted == 3) {
+            return 3;
         } else {
-            // 모든 비디오가 기한 내 완료
+            // 기한 내 완료
             return 0;
         }
 
@@ -218,7 +227,7 @@ public class CurriculumService {
 
             // 현재 날짜가 마감 기한을 넘었는지 확인합니다.
             if (localDateTime.isAfter(effectiveDeadline)) {
-                // 넘었다면, editDay를 그 날의 끝 시간으로 설정합니다.
+                // 넘었다면, editDay를 그 날의 끝 시간으로 설정
                 LocalDateTime endOfDay = localDateTime.toLocalDate().atTime(23, 59, 59);
                 curriculum.setEditDay(endOfDay);
                 log.info("editDay업데이트", curriculumId, endOfDay);
@@ -236,17 +245,16 @@ public class CurriculumService {
 
     //섹션별 startDay 업데이트
     @Transactional
-    public void updateStartDaysForFollowingSections(List<Curriculum> curriculums, int currentSectionId, LocalDateTime newStartDayForNextSections) {
-        // 모든 커리큘럼을 순회하면서 섹션 ID가 현재 섹션 ID보다 큰 경우에 한하여 시작일을 업데이트
+    public void updateStartDaysSections(List<Curriculum> curriculums, int currentSectionId, Integer lectureId, LocalDateTime newStartDayForNextSections) {
         for (Curriculum curriculum : curriculums) {
-            if (curriculum.getSection().getId() > currentSectionId) {
-                LocalDateTime currentStartDay = curriculum.getStartDay();
-                // 새로운 시작일이 현재 시작일보다 뒤에 있을 경우에만 업데이트
-                if (newStartDayForNextSections.isAfter(currentStartDay)) {
-                    curriculum.setStartDay(newStartDayForNextSections);
-                    curriculumRepository.save(curriculum);
-                    // 다음 섹션의 시작일은 현재 업데이트된 시작일 이후의 날짜로 설정
-                    newStartDayForNextSections = newStartDayForNextSections.plusDays(curriculum.getTimeTaken());
+            if (lectureId == null || curriculum.getSection().getLecture().getId() == lectureId) {
+                if (curriculum.getSection().getId() > currentSectionId) {
+                    LocalDateTime currentStartDay = curriculum.getStartDay();
+                    if (newStartDayForNextSections.isAfter(currentStartDay)) {
+                        curriculum.setStartDay(newStartDayForNextSections);
+                        curriculumRepository.save(curriculum);
+                        newStartDayForNextSections = newStartDayForNextSections.plusDays(curriculum.getTimeTaken());
+                    }
                 }
             }
         }
@@ -269,9 +277,6 @@ public class CurriculumService {
             throw new RuntimeException("커리큘럼을 수정할 수 없습니다.");
         }
     }
-
-
-
 
 
     //DB에서 해당 과목에 속하는 섹션들의 비디오들의 총 갯수(total), 다들은 비디오 갯수(completed)를 구함
