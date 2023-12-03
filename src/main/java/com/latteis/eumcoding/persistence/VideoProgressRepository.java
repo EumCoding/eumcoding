@@ -160,5 +160,9 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     boolean existsByVideoAndStateAndLectureProgressPayLecturePaymentMember(@Param("video") Video video,
                                                                            @Param("state") int state,
                                                                            @Param("member") Member member);
+
+
+
 }
+
 

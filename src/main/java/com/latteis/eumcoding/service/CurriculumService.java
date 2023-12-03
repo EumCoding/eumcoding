@@ -39,18 +39,18 @@ public class CurriculumService {
      * 오늘 들을 강의
      * checkOver 에서 return 3인것들을 호출하는 메서드
      */
-    public List<MyPlanInfoDTO> getTodayPlanInfo(int memberId, Integer lectureId){
+    public List<MyPlanInfoDTO> getTodayPlanInfo(int memberId, Integer lectureId) {
         //특정 회원이 가지고 있는 모든 커리큘럼을 조회
         List<Curriculum> curriculums = curriculumRepository.findByMemberIdAndLectureId(memberId, lectureId);
 
         List<MyPlanInfoDTO> myPlanInfoDTOS = new ArrayList<>();
 
-        for(Curriculum curriculum : curriculums){
-            List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists= new ArrayList<>();
+        for (Curriculum curriculum : curriculums) {
+            List<SectionDTO.SectionDTOMessageList> sectionDTOMessageLists = new ArrayList<>();
 
             List<Section> lectureSections = sectionRepository.findByCurriculumId(curriculum.getId());
 
-            for(Section lectureSection : lectureSections){
+            for (Section lectureSection : lectureSections) {
                 //각 섹션에 포함된 전체 비디오의 수를 조회
                 long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
                 // 전체 비디오 수와 완료된 비디오 수 계산
@@ -60,7 +60,7 @@ public class CurriculumService {
                 int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideoss * 100 / totalVideoss);
                 int over = checkOver(memberId, lectureSection.getId());
 
-                if(over == 3){
+                if (over == 3) {
                     SectionDTO.SectionDTOMessageList sectionDTO = SectionDTO.SectionDTOMessageList.builder()
                             .sectionId(lectureSection.getId())
                             .lectureId(lectureSection.getLecture().getId())
@@ -75,7 +75,7 @@ public class CurriculumService {
                     sectionDTOMessageLists.add(sectionDTO);
                 }
             }
-            if(!sectionDTOMessageLists.isEmpty()){
+            if (!sectionDTOMessageLists.isEmpty()) {
                 MyPlanInfoDTO myPlanInfoDTO = MyPlanInfoDTO.builder()
                         .curriculumId(curriculum.getId())
                         .date(curriculum.getStartDay())
@@ -125,6 +125,7 @@ public class CurriculumService {
             //현재 커리큘럼에 포함된 강의의 모든 섹션을 조회
             for (Section lectureSection : lectureSections) {
 
+
                 //각 섹션에 포함된 전체 비디오의 수를 조회
                 long totalVideos = videoRepository.countBySectionId(lectureSection.getId());
 
@@ -157,7 +158,7 @@ public class CurriculumService {
                 } else if (over == 0 && (nextSectionStart == null || effectiveDeadline.isBefore(nextSectionStart))) {
                     //System.out.println(curriculum.getSection().getId() + ": over 가 0인경우");
                     message = "해당 섹션 수강을 기한 내 완료";
-                }  else if (over == 3) {
+                } else if (over == 3) {
                     message = "현재 들어야하는 섹션입니다.";
                 }
 
@@ -201,6 +202,7 @@ public class CurriculumService {
         LocalDateTime today = LocalDateTime.now();
         List<Curriculum> curriculumList = curriculumRepository.findByMemberSectionId(memberId, sectionId);
 
+
         //해당 lectureId에 속한 section들의 startDay를 가져와서
         //다음 섹션의 startDay.isBefore(LocalDateTime.now() 이런식으로 progress.state() = 0 일때,
         //이러면 over가 3이라는 새로운 조건 생성 가능할듯
@@ -213,19 +215,13 @@ public class CurriculumService {
              * videoProgress테이블 자체에 해당 video에 대한 컬럼이 없을경우 ->0
              * videoPRogress테이블에 video에대한 정보는 있는데 state가 0일경우 ->1
              */
-            System.out.println("Checking progress for curriculum: " + curriculum.getId());
             for (VideoProgress progress : lastProgress) {
-                System.out.println("Progress: " + progress);
                 //강의를 듣지않은상태(구매후 아예 안들었거나 or 섹션 1를 다안들어서 섹션 2의 대한 vp정보가 없을경우
                 // 비디오 진행 정보가 없거나 state가 NULL인 경우
                 if (progress == null) {
-                    /**
-                     * 12.03 추가, 만약 현재 섹션을 다듣고, 날짜도 그렇고 해당 섹션을 들어야하는 순서임에도 불구하고, progress가 null일경우
-                     * 를 고려해서  이럴 경우에는 over가 3인것처럼 현재 들어야하는 섹션입니다가 표시되게 해야함.
-                     */
-                 /*   if (today.isAfter(curriculum.getStartDay()) && (nextSectionStartDay == null || today.isBefore(nextSectionStartDay))) {
-                        return 3; // 현재 들어야 하는 섹션
-                    }*/
+
+                    isAnyVideoNotStarted = 0; // 진행 중이지만 아직 기한 내
+
 
                 } else if (progress.getState() == 1) {
                     // 비디오가 완료된 상태
@@ -254,8 +250,21 @@ public class CurriculumService {
             // 기한 내 완료
             return 0;
         }
+    }
 
+    public Curriculum findNextCurriculumAfterCompleted(int memberId, int lectureId) {
+        List<Curriculum> curriculums = curriculumRepository.findLatestVideoProgressByLecture(lectureId);
+        for (int i = 0; i < curriculums.size(); i++) {
+            Curriculum current = curriculums.get(i);
+            List<VideoProgress> videoProgresses = videoProgressRepository.findVideoProgressEndDay(memberId, current.getSection().getId());
+            boolean isAllVideosCompleted = videoProgresses.stream().allMatch(vp -> vp.getState() == 1);
 
+            if (isAllVideosCompleted && i < curriculums.size() - 1) {
+                // 모든 비디오가 완료되었고, 다음 커리큘럼이 있으면 반환
+                return curriculums.get(i + 1);
+            }
+        }
+        return null; // 완료된 커리큘럼 다음에 오는 커리큘럼이 없는 경우
     }
 
 
