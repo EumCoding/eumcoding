@@ -84,5 +84,13 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     @Query("SELECT s FROM Section s JOIN s.lecture l WHERE l IN (SELECT pl.lecture FROM PayLecture pl WHERE pl.lecture =:lecture)")
     List<Section> findAllByLecture(@Param("lecture") Lecture lecture);
 
+    @Query(value = "SELECT * FROM section s JOIN lecutre l ON s.lecture_id = l.id WHERE s.id =:sectionId", nativeQuery = true)
+    List<Section> findBySectionLectureId(@Param("sectionId") int sectionId);
+
+    @Query("SELECT MAX(s.id) FROM Section s WHERE s.id < :currentSectionId")
+    Integer findMaxSectionIdLessThanCurrentSectionId(@Param("currentSectionId") int currentSectionId);
+
+    @Query("SELECT s FROM Section s WHERE s.lecture.id = :lectureId AND s.id > :currentSectionId ORDER BY s.id ASC")
+    List<Section> findNextSectionInLecture(@Param("lectureId") int lectureId, @Param("currentSectionId") int currentSectionId);
 
 }

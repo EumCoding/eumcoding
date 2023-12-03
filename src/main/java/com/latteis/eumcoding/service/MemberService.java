@@ -54,6 +54,8 @@ public class MemberService {
 
     private final PaymentRepository paymentRepository;
 
+    private final KakaoInfoRepository kakaoInfoRepository;
+
     @Value("${file.path}")
     private String filePath;
 
@@ -93,6 +95,10 @@ public class MemberService {
         try {
             //Optional<Member> member = memberRepository.findById(memberDTO.getId());
             Member member = memberRepository.findByMemberId(memberDTO.getId());
+            Optional<KakaoInfo> kakaoInfo = kakaoInfoRepository.findByMemberId(member.getId());
+
+            String kakaoConnectStatus = kakaoInfo.isPresent() ? "카카오 계정이랑 연동" : "연동안됨";
+
 
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(member.getEmail())
@@ -105,6 +111,7 @@ public class MemberService {
                     .gender(member.getGender())
                     .address(member.getAddress())
                     .role(member.getRole())
+                    .kakaoConnect(kakaoConnectStatus)
                     .build();
 
             //이미지가 있으면

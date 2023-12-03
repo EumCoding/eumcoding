@@ -202,6 +202,8 @@ public class MemberDTO {
 
     private List<BadgeDTO> badgeDTOList;
 
+    private String kakaoConnect;
+
 
 
 

@@ -82,4 +82,15 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
     @Query(value = "SELECT * FROM curriculum c JOIN member m ON c.member_id = m.id JOIN section s ON c.section_id = s.id JOIN lecture l ON s.lecture_id = l.id WHERE m.id = :memberId AND s.id = :sectionId", nativeQuery = true)
     List<Curriculum> findByMemberSectionId(@Param("memberId") int memberId,@Param("sectionId") int sectionId);
 
+    @Query(value = "SELECT distinct c.* FROM curriculum c " +
+            "JOIN section s ON c.section_id = s.id " +
+            "JOIN lecture l ON s.lecture_id = l.id " +
+            "JOIN video v ON s.id = v.section_id " +
+             "LEFT JOIN video_progress vp ON v.id = vp.video_id "+
+            "WHERE l.id =:lectureId ",nativeQuery = true)
+    List<Curriculum> findLatestVideoProgressByLecture(@Param("lectureId") int lectureId);
+
+
+
+
 }
