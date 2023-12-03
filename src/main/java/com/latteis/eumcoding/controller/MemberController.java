@@ -280,4 +280,24 @@ public class MemberController {
         return new ResponseEntity<>(paymentLectureBadgeDTO, HttpStatus.OK);
     }
 
+
+    //내 커리큘럼 진행상황 확인하기
+    @PostMapping("/myplan/detail")
+    @ApiOperation(value = "오늘 들어야 하는 섹션 표시,lectureId null하면 전부출력", notes = "오늘 들어야 하는 섹션 표시")
+    public ResponseEntity<?> getMyPlaInfo(@ApiIgnore Authentication authentication,
+                                          @RequestParam(required = false) Integer lectureId) {
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+
+            List<MyPlanInfoDTO> myPlan = curriculumService.getTodayPlanInfo(memberId,lectureId);
+            return ResponseEntity.ok().body(myPlan);
+
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 }
