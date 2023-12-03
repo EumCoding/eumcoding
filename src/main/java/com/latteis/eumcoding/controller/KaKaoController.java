@@ -2,6 +2,7 @@
 package com.latteis.eumcoding.controller;
 
 
+import com.latteis.eumcoding.dto.MemberDTO;
 import com.latteis.eumcoding.dto.ResponseDTO;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.EmailNumberService;
@@ -94,14 +95,14 @@ public class KaKaoController {
 
     // 카카오 로그인,swagger에서 테스트하기위해 해놓은 임시방편
    @GetMapping("/auth/kakao/login")
-    public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
+    public ResponseEntity<?> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
         try {
-            String jwtToken = kakaoMemberService.kakaoLogin(code,response);
-            System.out.println("jwt :" + jwtToken);
-            if (jwtToken == null || jwtToken.isEmpty()) {
+            MemberDTO memberDTO = kakaoMemberService.kakaoLogin(code,response);
+            System.out.println("jwt :" + memberDTO.getToken());
+            if (memberDTO.getToken() == null || memberDTO.getToken().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("현재 계정은 연동되지 않았습니다.");
             }
-            return ResponseEntity.ok(jwtToken);
+            return ResponseEntity.ok(memberDTO);
         } catch (Exception e) {
             log.error("카카오 로그인 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
