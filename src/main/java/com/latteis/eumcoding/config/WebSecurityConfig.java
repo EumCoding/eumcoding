@@ -56,6 +56,7 @@ public class WebSecurityConfig {
                         "/images/**",
                         "/gender/**",
                         "/lecture/section/test/question/block/block-convert",
+                        "/member/kakao/auth/kakao/login",
                         "/error",
                         "/confirm/**",
                         "/google/**",

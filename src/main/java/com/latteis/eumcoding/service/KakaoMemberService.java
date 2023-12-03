@@ -57,6 +57,9 @@ public class KakaoMemberService {
     @Value("${kakao.redirectUri}")
     private String REDIRECT_URI;
 
+    @Value("${kakao.loginUri}")
+    private String LOGIN_URI;
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final MemberRepository memberRepository;
     private final KakaoInfoRepository kakaoInfoRepository;
@@ -85,6 +88,33 @@ public class KakaoMemberService {
         parameters.set("grant_type", "authorization_code");
         parameters.set("client_id", CLIENT_ID);
         parameters.set("redirect_uri", REDIRECT_URI);
+        parameters.set("code", code);
+
+        HttpEntity<MultiValueMap<String, Object>> restRequest = new HttpEntity<>(parameters, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(tokenUri, restRequest, String.class);
+
+        KakaoInfoDTO kakaoInfoDTO = extractAccessToken(response.getBody());
+
+        return kakaoInfoDTO;
+    }
+
+    // 카카오 로그인 access_token 리턴 only Login
+    public KakaoInfoDTO getAccessTokenForLogin(String code){
+
+        String tokenUri = "https://kauth.kakao.com/oauth/token";
+        String access_Token = "";
+        String refresh_Token = "";
+        LocalDateTime access_Token_expire_in = null;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded");
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        parameters.set("grant_type", "authorization_code");
+        parameters.set("client_id", CLIENT_ID);
+        parameters.set("redirect_uri", LOGIN_URI);
         parameters.set("code", code);
 
         HttpEntity<MultiValueMap<String, Object>> restRequest = new HttpEntity<>(parameters, headers);
@@ -166,10 +196,11 @@ public class KakaoMemberService {
             kakaoInfo.setMember(member);
             kakaoInfo.setRefreshToken(kakaoInfoDTO.getRefreshToken());
             kakaoInfo.setAccessTokenExpires(kakaoInfoDTO.getExpiresIn());
+            kakaoInfo.setAgree(1);
 
             // KakaoInfo를 DB에 저장
             kakaoInfoRepository.save(kakaoInfo);
-            emailKakaoNumberService.sendVerificationNumber(memberId, memberEmail);
+            //emailKakaoNumberService.sendVerificationNumber(memberId, memberEmail);
             return "SUCCESS";
 
         } catch (IOException e) {
@@ -232,6 +263,7 @@ public class KakaoMemberService {
 
     private String getKakaoEmailFromTokens(String accessToken) {
         try {
+            log.info("들어온 토큰: " + accessToken);
             String reqURL = "https://kapi.kakao.com/v2/user/me";
             ObjectMapper mapper = new ObjectMapper();
 
@@ -248,12 +280,16 @@ public class KakaoMemberService {
             String responseBody = response.getBody();
             JsonNode jsonNode = mapper.readTree(responseBody);
             String kakaoEmail = jsonNode.get("kakao_account").get("email").asText();
+            log.info("카카오 이메일: " + kakaoEmail);
 
             if (kakaoEmail == null) {
                 throw new IllegalArgumentException("해당 카카오 이메일이 없습니다.");
             }
 
             KakaoInfo kakaoInfo = kakaoInfoRepository.findByKakaoEmail(kakaoEmail);
+            if(kakaoInfo == null){
+                throw new IllegalArgumentException("카카오 이메일 검색결과가 null.");
+            }
             if (LocalDateTime.now().isAfter(kakaoInfo.getAccessTokenExpires())) {
                 String refreshToken = kakaoInfo.getRefreshToken();
                 accessToken = handleExpiredAccessTokens(refreshToken);
@@ -263,15 +299,16 @@ public class KakaoMemberService {
 
             return kakaoEmail;
         } catch (Exception e) {
+            e.printStackTrace();
             // 다른 오류 처리
             throw new RuntimeException("API 요청 중 오류 발생", e);
         }
     }
 
 
-    public String kakaoLogin(String code, HttpServletResponse response) {
+    public MemberDTO kakaoLogin(String code, HttpServletResponse response) {
         try {
-            KakaoInfoDTO kakaoInfoDTO = getAccessToken(code);
+            KakaoInfoDTO kakaoInfoDTO = getAccessTokenForLogin(code);
             String accessToken = kakaoInfoDTO.getAccessToken();
             String kakaoEmail = getKakaoEmailFromTokens(accessToken);
 
@@ -281,7 +318,8 @@ public class KakaoMemberService {
             }
 
             // JWT 토큰 생성 및 반환
-            Member member = memberRepository.findByEmail(kakaoEmail);
+            Optional<Member> optionalMember = memberRepository.findById(kakaoInfo.getMember().getId());
+            Member member = optionalMember.get();
             if (member == null) {
                 throw new RuntimeException("해당 이메일을 가진 일반 계정을 찾을 수 없습니다.");
             }
@@ -290,11 +328,20 @@ public class KakaoMemberService {
             String jwtToken = tokenProvider.create(memberDTO);
             response.addHeader("Authorization", "Bearer " + jwtToken);
 
-            return jwtToken;
+            MemberDTO responseMemberDTO = new MemberDTO(member);
+
+            responseMemberDTO.setToken(jwtToken);
+            // role
+            responseMemberDTO.setRole(member.getRole());
+            // memberId
+            responseMemberDTO.setId(member.getId());
+
+            return responseMemberDTO;
 
         } catch (AccessTokenExpiredException e) {
             throw new AccessTokenExpiredException("액세스 토큰 만료");
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("로그인 중 오류 발생: " + e.getMessage(), e);
             throw new RuntimeException("로그인 중 오류 발생", e);
         }
