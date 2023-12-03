@@ -38,8 +38,9 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Integer>
 
 
 
-    @Query("SELECT c FROM Curriculum c JOIN c.section s WHERE s.lecture.id =:lectureId AND c.member.id = :memberId ORDER BY c.startDay ASC")
-    List<Curriculum> findByMemberIdAndLectureId(@Param("memberId") int memberId, @Param("lectureId")int lectureId);
+    @Query("SELECT c FROM Curriculum c JOIN c.section s WHERE c.member.id = :memberId " +
+            "AND (:lectureId IS NULL OR s.lecture.id = :lectureId)")
+    List<Curriculum> findByMemberIdAndLectureId(@Param("memberId") int memberId, @Param("lectureId")Integer lectureId);
 
 
     @Query("SELECT c FROM Curriculum c JOIN Member m ON c.member.id = m.id WHERE c.id = :curriculumId AND c.member.id = :memberId AND c.member.role = 0")
