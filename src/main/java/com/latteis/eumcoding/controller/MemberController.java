@@ -3,15 +3,11 @@ package com.latteis.eumcoding.controller;
 import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.dto.payment.PaymentLectureBadgeDTO;
 import com.latteis.eumcoding.model.Curriculum;
-import com.latteis.eumcoding.model.Member;
-import com.latteis.eumcoding.persistence.MemberRepository;
-import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,12 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -244,6 +237,22 @@ public class MemberController {
         }
     }
 
+    @PostMapping("/mylecture/score/list")
+    @ApiOperation(value = "mainTest 점수까지 나온 정보, 진도율포함")
+    public ResponseEntity<?> getProgressAndTestScore(@ApiIgnore Authentication authentication, @RequestParam int page) {
+        try {
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            List<ProgressAndTestScoreDTO> myLectureList = myLectureListService.getProgressAndTestScore(memberId, page, 10, 0);
+            log.info(myLectureList + "myLectureList");
+
+            return ResponseEntity.ok().body(myLectureList);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+
     @PostMapping("/mylecture/list")
     @ApiOperation(value = "해당 강좌(섹션별이아닌)의 진도율 및 정보", notes = "해당 강좌(섹션별이아닌)의 진도율 및 정보")
     public ResponseEntity<?> getMyLectureList(@ApiIgnore Authentication authentication, @RequestParam int page,@RequestParam int size,@RequestParam int sort) {
@@ -335,6 +344,9 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }*/
+
+
+
 
 
 
