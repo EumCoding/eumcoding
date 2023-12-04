@@ -2,9 +2,7 @@ package com.latteis.eumcoding.service;
 
 
 
-import com.latteis.eumcoding.dto.MyLectureListDTO;
-import com.latteis.eumcoding.dto.ProgressAndTestScoreDTO;
-import com.latteis.eumcoding.dto.SearchMylectureDTO;
+import com.latteis.eumcoding.dto.*;
 
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
@@ -48,6 +46,10 @@ public class MyLectureListService {
 
     private final MainTestLogRepository mainTestLogRepository;
 
+    private final MainTestLogService mainTestLogService;
+
+    private final MainTestRepository mainTestRepository;
+
 
     @Value("${file.path.lecture.image}")
     private String lecturePath;
@@ -72,6 +74,8 @@ public class MyLectureListService {
     public List<ProgressAndTestScoreDTO> getProgressAndTestScore(int memberId, int page, int size, int sort) {
         Member member = memberRepository.findByMemberId(memberId);
         log.info(member + "member");
+
+
 
         Sort sortObj;
         switch (sort) {
@@ -105,6 +109,8 @@ public class MyLectureListService {
 
         List<ProgressAndTestScoreDTO> progressAndTestScoreDTOS = new ArrayList<>();
         for (Lecture lecture : lectures) {
+
+
             int[] videoCounts = countTotalAndCompletedVideos(memberId, lecture);
             int totalVideos = videoCounts[0];
             int completedVideos = videoCounts[1];
@@ -113,10 +119,10 @@ public class MyLectureListService {
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
             if (averageRating == null) averageRating = 0;
 
-            List<Object[]> testScores = mainTestLogRepository.getProgressAndTestScore(memberId, lecture.getId());
+           /* List<Object[]> testScores = mainTestLogRepository.getProgressAndTestScore(memberId, lecture.getId());
             int totalScore = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[0]);
             int correct = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[1]);
-            int fail = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[2]);
+            int fail = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[2]);*/
 
 
             ProgressAndTestScoreDTO progressAndTestScoreDTO = ProgressAndTestScoreDTO.builder()
@@ -128,11 +134,19 @@ public class MyLectureListService {
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
                     .thumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb())
-                    .correct(correct)
-                    .fail(fail)
-                    .totalScore(totalScore)
+//                    .correct(correct)
+//                    .fail(fail)
+//                    .totalScore(totalScore)
                     .build();
 
+            List<MainTest> mainTests = mainTestRepository.findBySectionLecture(lecture);
+            List<MainTestDTO.MainTestScoreDTO> mainTestScoreDTOS = new ArrayList<>();
+            for (MainTest maintest : mainTests) {
+                MainTestLogDTO.ScoringResponseDTO scoringResponseDTO = mainTestLogService.getScore(memberId, new MainTestDTO.IdDTO(maintest.getId()));
+                MainTestDTO.MainTestScoreDTO mainTestScoreDTO = new MainTestDTO.MainTestScoreDTO(maintest.getType(), scoringResponseDTO);
+                mainTestScoreDTOS.add(mainTestScoreDTO);
+            }
+            progressAndTestScoreDTO.setMainTestScoreDTOs(mainTestScoreDTOS);
 
             progressAndTestScoreDTOS.add(progressAndTestScoreDTO);
         }

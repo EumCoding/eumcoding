@@ -171,9 +171,8 @@ public class MainTestLogService {
      * @param idDTO 메인 테스트 ID
      * @return 채점 결과 DTO
      */
-    public MainTestLogDTO.ScoringResponseDTO getScore(Authentication authentication, MainTestDTO.IdDTO idDTO) {
+    public MainTestLogDTO.ScoringResponseDTO getScore(int memberId, MainTestDTO.IdDTO idDTO) {
 
-        int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         Member member = memberRepository.findByMemberId(memberId);
         MainTest mainTest = mainTestRepository.findById(idDTO.getMainTestId());
 

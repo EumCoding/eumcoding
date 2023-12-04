@@ -53,7 +53,7 @@ public class MainTestLogController {
     @ApiOperation(value = "채점 결과 가져오기")
     public ResponseEntity<MainTestLogDTO.ScoringResponseDTO> getScore(@ApiIgnore Authentication authentication, @Valid @RequestBody MainTestDTO.IdDTO idDTO) {
 
-        MainTestLogDTO.ScoringResponseDTO scoringResponseDTO = mainTestLogService.getScore(authentication, idDTO);
+        MainTestLogDTO.ScoringResponseDTO scoringResponseDTO = mainTestLogService.getScore(Integer.parseInt(authentication.getPrincipal().toString()), idDTO);
         return ResponseEntity.ok().body(scoringResponseDTO);
 
     }
