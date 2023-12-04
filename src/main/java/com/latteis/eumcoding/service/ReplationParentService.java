@@ -126,9 +126,10 @@ public class ReplationParentService {
     public List<ProgressAndTestScoreDTO> getChildParentLectureInfo(int parentId, int childId,int page, int size, int sort) {
         ReplationParent member = relationParentRepository.findByParentIdChildId(parentId, childId)
                 .orElseThrow(() -> new IllegalArgumentException("해당하는 자녀가 없습니다."));
-        List<ProgressAndTestScoreDTO> childLectureProgressInfo  = myLectureListService.getProgressAndTestScore(childId,page,size,sort);
+        List<ProgressAndTestScoreDTO> childLectureProgressInfo  = myLectureListService.getProgressAndTestScore(member.getChild().getId(),page,size,sort);
         return childLectureProgressInfo;
     }
+
 
 
     //자녀 커리큘럼 수정권한 메서드
