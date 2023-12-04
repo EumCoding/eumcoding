@@ -21,9 +21,6 @@ public class ProgressAndTestScoreDTO {
     private String teacherName;
     private String lectureName;
     private String thumb;
-    private int correct;
-    private int fail;
-    private int totalScore;
     private int perfectScore;
     private List<MainTestDTO.MainTestScoreDTO> mainTestScoreDTOs;
 

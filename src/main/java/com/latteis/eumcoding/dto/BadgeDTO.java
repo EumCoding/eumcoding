@@ -1,18 +1,30 @@
 package com.latteis.eumcoding.dto;
 
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BadgeDTO {
-    private int lectureId;
+    private List<BadgeListDTO> badgeListDTOList;
 
-    private int memberId;
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @ApiModel(value = "뱃지모음 ")
+    public static class BadgeListDTO {
+        private int memberId;
+        private int lectureId;
+        private String lectureName;
+        private String badgeImg;
+    }
 
-    private String img;
+
 }

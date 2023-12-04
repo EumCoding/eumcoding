@@ -119,10 +119,6 @@ public class MyLectureListService {
             Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
             if (averageRating == null) averageRating = 0;
 
-           /* List<Object[]> testScores = mainTestLogRepository.getProgressAndTestScore(memberId, lecture.getId());
-            int totalScore = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[0]);
-            int correct = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[1]);
-            int fail = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[2]);*/
 
 
             ProgressAndTestScoreDTO progressAndTestScoreDTO = ProgressAndTestScoreDTO.builder()
@@ -134,9 +130,6 @@ public class MyLectureListService {
                     .teacherName(lecture.getMember().getName())
                     .lectureName(lecture.getName())
                     .thumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb())
-//                    .correct(correct)
-//                    .fail(fail)
-//                    .totalScore(totalScore)
                     .build();
 
             List<MainTest> mainTests = mainTestRepository.findBySectionLecture(lecture);
