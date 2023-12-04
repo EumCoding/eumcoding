@@ -40,6 +40,8 @@ public class ReplationParentService {
 
     private final CurriculumRepository curriculumRepository;
 
+    private final MyLectureListService myLectureListService;
+
     /*
     1.인증번호를 보내면 emailNumber테이블에 값이 저장
     2.인증이 성공적으로 되면 replationParents테이블에 값저장
@@ -119,6 +121,13 @@ public class ReplationParentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당하는 자녀가 없습니다."));
         List<MyPlanInfoDTO> curriculumList = curriculumService.getMyPlanInfo(member.getChild().getId(),lectureId,startDate,endDate);
         return curriculumList;
+    }
+
+    public List<ProgressAndTestScoreDTO> getChildParentLectureInfo(int parentId, int childId,int page, int size, int sort) {
+        ReplationParent member = relationParentRepository.findByParentIdChildId(parentId, childId)
+                .orElseThrow(() -> new IllegalArgumentException("해당하는 자녀가 없습니다."));
+        List<ProgressAndTestScoreDTO> childLectureProgressInfo  = myLectureListService.getProgressAndTestScore(childId,page,size,sort);
+        return childLectureProgressInfo;
     }
 
 

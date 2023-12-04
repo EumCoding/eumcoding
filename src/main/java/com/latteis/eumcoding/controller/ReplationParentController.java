@@ -2,10 +2,7 @@
 package com.latteis.eumcoding.controller;
 
 
-import com.latteis.eumcoding.dto.MyPlanInfoDTO;
-import com.latteis.eumcoding.dto.MyPlanListDTO;
-import com.latteis.eumcoding.dto.ReplationChildDTO;
-import com.latteis.eumcoding.dto.ResponseDTO;
+import com.latteis.eumcoding.dto.*;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.security.TokenProvider;
 import com.latteis.eumcoding.service.CurriculumService;
@@ -92,6 +89,8 @@ public class ReplationParentController {
         }
     }
 
+
+
     @PostMapping("/children/curriculum/editPermission")
     public ResponseEntity<?> getChildrenCurriculum(@ApiIgnore Authentication authentication,
                                                    @RequestParam(required = false) Integer childId,
@@ -120,6 +119,31 @@ public class ReplationParentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+    //인증이 성공적으로 되면 자녀 커리큘럼 확인가능
+    @GetMapping("/children/lecture/info")
+    public ResponseEntity<?> getChildernLectureInfo(@ApiIgnore Authentication authentication,
+                                                   @RequestParam(required = false) Integer childId,
+                                                   @RequestParam int page) {
+        try {
+            int parentId = Integer.parseInt(authentication.getPrincipal().toString());
+            if (childId == null) {
+                return ResponseEntity.badRequest().body("자녀 ID를 제공해야 합니다.");
+            }
+            List<ProgressAndTestScoreDTO> childinfo = replationParentService.getChildParentLectureInfo(parentId,childId,page,10,0);
+
+            return ResponseEntity.ok().body(childinfo);
+
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+
+
+
 
 }
 

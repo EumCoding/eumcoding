@@ -3,6 +3,7 @@ package com.latteis.eumcoding.service;
 
 
 import com.latteis.eumcoding.dto.MyLectureListDTO;
+import com.latteis.eumcoding.dto.ProgressAndTestScoreDTO;
 import com.latteis.eumcoding.dto.SearchMylectureDTO;
 
 import com.latteis.eumcoding.model.*;
@@ -45,6 +46,8 @@ public class MyLectureListService {
 
     private final MemberRepository memberRepository;
 
+    private final MainTestLogRepository mainTestLogRepository;
+
 
     @Value("${file.path.lecture.image}")
     private String lecturePath;
@@ -61,6 +64,81 @@ public class MyLectureListService {
 
         return file;
     }
+
+
+    /**
+     *내가 듣는 강좌에 대한 진도율(section별 진도율이랑 다름 getMyPlanInfo랑 다름)
+     */
+    public List<ProgressAndTestScoreDTO> getProgressAndTestScore(int memberId, int page, int size, int sort) {
+        Member member = memberRepository.findByMemberId(memberId);
+        log.info(member + "member");
+
+        Sort sortObj;
+        switch (sort) {
+            case 0:
+                sortObj = Sort.by(Sort.Direction.DESC, "payDay");
+                break;
+            default:
+                sortObj = Sort.unsorted();
+        }
+
+        int offset = (page - 1) * size;
+        int currentLectureCount = 0;
+
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, sortObj);
+        Page<Payment> paymentsPage = paymentRepository.findAllByMemberIdAndState(member.getId(), pageable);
+
+        List<Lecture> lectures = new ArrayList<>();
+        for (Payment payment : paymentsPage) {
+            List<PayLecture> payLectures = payLectureRepository.findByPaymentId(payment.getId());
+            if (payment.getState() == 1) {
+                for (PayLecture payLecture : payLectures) {
+                    if (currentLectureCount >= offset + size) break;
+                    if (currentLectureCount >= offset) {
+                        lectures.add(payLecture.getLecture());
+                    }
+                    currentLectureCount++;
+                }
+            }
+            if (currentLectureCount >= offset + size) break;
+        }
+
+        List<ProgressAndTestScoreDTO> progressAndTestScoreDTOS = new ArrayList<>();
+        for (Lecture lecture : lectures) {
+            int[] videoCounts = countTotalAndCompletedVideos(memberId, lecture);
+            int totalVideos = videoCounts[0];
+            int completedVideos = videoCounts[1];
+            int progress = totalVideos == 0 ? 0 : (int) Math.round((double) completedVideos * 100 / totalVideos);
+
+            Integer averageRating = lectureRepository.findAverageRatingByLectureId(lecture.getId());
+            if (averageRating == null) averageRating = 0;
+
+            List<Object[]> testScores = mainTestLogRepository.getProgressAndTestScore(memberId, lecture.getId());
+            int totalScore = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[0]);
+            int correct = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[1]);
+            int fail = testScores.isEmpty() ? 0 : toInt(testScores.get(0)[2]);
+
+
+            ProgressAndTestScoreDTO progressAndTestScoreDTO = ProgressAndTestScoreDTO.builder()
+                    .memberId(memberId)
+                    .lectureId(lecture.getId())
+                    .teacherId(lecture.getMember().getId())
+                    .rating(averageRating)
+                    .progress(progress)
+                    .teacherName(lecture.getMember().getName())
+                    .lectureName(lecture.getName())
+                    .thumb(domain + port + "/eumCodingImgs/lecture/thumb/" + lecture.getThumb())
+                    .correct(correct)
+                    .fail(fail)
+                    .totalScore(totalScore)
+                    .build();
+
+
+            progressAndTestScoreDTOS.add(progressAndTestScoreDTO);
+        }
+        return progressAndTestScoreDTOS;
+    }
+
 
 
     /**
