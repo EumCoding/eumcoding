@@ -4,6 +4,7 @@ import com.latteis.eumcoding.dto.MainTestDTO;
 import com.latteis.eumcoding.dto.MainTestLogDTO;
 import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
+import com.latteis.eumcoding.model.MainTest;
 import com.latteis.eumcoding.service.MainTestLogService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +43,18 @@ public class MainTestLogController {
         } catch (Exception e) {
             throw new ResponseMessageException(ErrorCode.INVALID_PARAMETER);
         }
+
+    }
+
+    /*
+     * 채점 결과 가져오기
+     */
+    @PostMapping(value = "/score")
+    @ApiOperation(value = "채점 결과 가져오기")
+    public ResponseEntity<MainTestLogDTO.ScoringResponseDTO> getScore(@ApiIgnore Authentication authentication, @Valid @RequestBody MainTestDTO.IdDTO idDTO) {
+
+        MainTestLogDTO.ScoringResponseDTO scoringResponseDTO = mainTestLogService.getScore(authentication, idDTO);
+        return ResponseEntity.ok().body(scoringResponseDTO);
 
     }
 
