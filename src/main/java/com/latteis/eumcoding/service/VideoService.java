@@ -224,6 +224,7 @@ public class VideoService {
 
         // 비디오 정보로 Lecture 가져오기
         Lecture lecture = video.getSection().getLecture();
+        Section section = video.getSection();
 
         // 비디오 경로 추가
         VideoDTO.ViewResponseDTO viewResponseDTO = new VideoDTO.ViewResponseDTO(video);
@@ -234,6 +235,39 @@ public class VideoService {
         if(lecture.getMember().getId() != memberId){
             Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
         }
+
+        // 비디오 시청 기록이 없다면
+        if (!videoProgressRepository.existsByVideoAndLectureProgressPayLecturePaymentMember(video, member)) {
+            // 비디오 순서가 처음이 아니라면
+            if (video.getSequence() != 0) {
+                // 이전 순서 비디오 가져오기
+                Video previousVideo = videoRepository.findBySectionAndSequence(section, video.getSequence() - 1);
+                // 이전 순서 비디오 시청 기록 가져오기
+                VideoProgress previousVideoProgress = videoProgressRepository.findByVideoAndLectureProgressPayLecturePaymentMember(previousVideo, member);
+                // 기록이 없거나 완료하지 않았다면 거부
+                if (previousVideoProgress == null || previousVideoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING) {
+                    throw new ResponseMessageException(ErrorCode.VIDEO_PRECONDITION_FAILED);
+                }
+            }
+            // 비디오 순서가 처음이라면
+            else {
+                // 해당 비디오의 섹션의 순서가 처음이 아니라면
+                if (section.getSequence() != 0) {
+                    // 이전 순서 섹션 가져오기
+                    Section previousSection = sectionRepository.findByLectureAndSequence(lecture, section.getSequence() - 1);
+                    // 이전 순서 섹션의 마지막 순서인 비디오 가져오기
+                    Video lastSequenceVideo = videoRepository.findTopBySectionIdOrderBySequenceDesc(previousSection.getId());
+                    // 마지막 순서 비디오의 기록이 없거나 완료하지 않았다면
+                    VideoProgress videoProgress = videoProgressRepository.findByVideoAndLectureProgressPayLecturePaymentMember(lastSequenceVideo, member);
+                    if (videoProgress == null || videoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING) {
+                        throw new ResponseMessageException(ErrorCode.VIDEO_PRECONDITION_FAILED);
+                    }
+                }
+            }
+        } // 모두 통과하면 자격 충족
+
+
+
 
         // 비디오 시청 기록 가져와서 추가
         List<VideoProgress> videoProgressList = videoProgressRepository.findByMemberAndVideo(member, video);

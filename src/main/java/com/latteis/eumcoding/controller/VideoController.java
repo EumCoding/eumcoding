@@ -121,13 +121,8 @@ public class VideoController {
     @ApiOperation(value = "동영상 정보 불러오기")
     public ResponseEntity<VideoDTO.ViewResponseDTO> getVideoInfo(@ApiIgnore Authentication authentication, @Valid VideoDTO.IdRequestDTO idRequestDTO) {
 
-        try {
             VideoDTO.ViewResponseDTO viewResponseDTO = videoService.getVideoInfo(Integer.parseInt(authentication.getPrincipal().toString()), idRequestDTO);
             return ResponseEntity.ok().body(viewResponseDTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
 
     }
 
