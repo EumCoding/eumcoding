@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,6 +24,7 @@ public class ProgressAndTestScoreDTO {
     private int correct;
     private int fail;
     private int totalScore;
-
+    private int perfectScore;
+    private List<MainTestDTO.MainTestScoreDTO> mainTestScoreDTOs;
 
 }

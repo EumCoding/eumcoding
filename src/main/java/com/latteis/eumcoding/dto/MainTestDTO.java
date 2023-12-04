@@ -17,6 +17,7 @@ import java.util.List;
 public class MainTestDTO {
 
     @Getter
+    @AllArgsConstructor
     @NoArgsConstructor
     @ApiModel(value = "메인 평가 ID 요청 DTO")
     public static class IdDTO {
@@ -204,6 +205,18 @@ public class MainTestDTO {
             this.mainTestId = mainTestQuestion.getMainTest().getId();
             this.type = mainTestQuestion.getType();
         }
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @ApiModel(value = "메인 테스트 채점 결과")
+    public static class MainTestScoreDTO{
+
+        private int mainTestType;
+
+        private MainTestLogDTO.ScoringResponseDTO scoringResponseDTO;
+
     }
 
 }
