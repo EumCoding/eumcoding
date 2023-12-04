@@ -1,10 +1,12 @@
 package com.latteis.eumcoding.service;
 
+import com.google.common.base.Preconditions;
 import com.latteis.eumcoding.dto.*;
 
 import com.latteis.eumcoding.dto.payment.PaymentLectureBadgeDTO;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
+import com.latteis.eumcoding.util.MultipartUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,8 +56,6 @@ public class MemberService {
 
     private final PaymentRepository paymentRepository;
 
-    private final KakaoInfoRepository kakaoInfoRepository;
-
     @Value("${file.path}")
     private String filePath;
 
@@ -95,10 +95,6 @@ public class MemberService {
         try {
             //Optional<Member> member = memberRepository.findById(memberDTO.getId());
             Member member = memberRepository.findByMemberId(memberDTO.getId());
-            Optional<KakaoInfo> kakaoInfo = kakaoInfoRepository.findByMemberId(member.getId());
-
-            String kakaoConnectStatus = kakaoInfo.isPresent() ? "카카오 계정이랑 연동" : "연동안됨";
-
 
             MemberDTO responseMemberDTO = MemberDTO.builder()
                     .email(member.getEmail())
@@ -111,7 +107,6 @@ public class MemberService {
                     .gender(member.getGender())
                     .address(member.getAddress())
                     .role(member.getRole())
-                    .kakaoConnect(kakaoConnectStatus)
                     .build();
 
             //이미지가 있으면
@@ -276,81 +271,63 @@ public class MemberService {
     // 프로필 이미지 변경
     public MemberDTO updateProfileImg(int memberId, MemberDTO.UpdateProfile memberDTO) {
         try {
-            // 이미지가 있는 경우
-            if (memberDTO.checkProfileImgRequestNull()) {
 
-                Member member = memberRepository.findByMemberId(memberId);
 
-                // 기존 이미지 삭제
-                if (member.getProfile() != null) {
-                    String tempPath = "C:" + File.separator + "eum" + File.separator + "member" + File.separator + member.getId();
-                    File delFile = new File(tempPath);
-                    // 해당 파일이 존재하는지 한번 더 체크 후 삭제
-                    if (delFile.isFile()) {
-                        delFile.delete();
-                    }
-                }
+            Optional<Member> memberOptional = memberRepository.findById(memberId);
+            Member member = memberOptional.get();
 
+            // 강의 설명 이미지가 있을 경우
+            if (memberDTO.checkProfileImgRequestNull()){
+                // 이미지 한개만 저장
                 MultipartFile multipartFile = memberDTO.getProfileImgRequest().get(0);
-                String current_date = null;
 
-                if (!multipartFile.isEmpty()) {
-                    LocalDateTime now = LocalDateTime.now();
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    current_date = now.format(dateTimeFormatter);
+                // 이미지 저장
+                File newFile = saveLectureImage(member.getProfile() ,member.getId(), getMemberProfileDirectoryPath(), multipartFile);
 
-                    //            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
-                    String absolutePath = "C:" + File.separator + "eum" + File.separator + "member";
+                // 이미지 파일명 DB에 저장
+                member.setProfile(newFile.getName());
 
-                    //            String path = "images" + File.separator + current_date;
-                    String path = absolutePath;
-                    File file = new File(path);
-
-                    if (!file.exists()) {
-                        boolean wasSuccessful = file.mkdirs();
-
-                        if (!wasSuccessful) {
-                            log.warn("file : was not successful");
-                        }
-                    }
-                    while (true) {
-                        String originalFileExtension;
-                        String contentType = multipartFile.getContentType();
-
-                        if (ObjectUtils.isEmpty(contentType)) {
-                            break;
-                        } else {
-                            if (contentType.contains("image/jpeg")) {
-                                originalFileExtension = ".jpg";
-                            } else if (contentType.contains("images/png")) {
-                                originalFileExtension = ".png";
-                            } else {
-                                break;
-                            }
-                        }
-
-                        String new_file_name = String.valueOf(memberId);
-
-                        member.setProfile(new_file_name + originalFileExtension);
-
-                        file = new File(absolutePath + File.separator + new_file_name + originalFileExtension);
-                        multipartFile.transferTo(file);
-
-                        file.setWritable(true);
-                        file.setReadable(true);
-                        break;
-                    }
-                }
                 memberRepository.save(member);
-                return MemberDTO.builder().profile(member.getProfile()).build();
+
             } else {
-                log.warn("MemberService.updateProfileImg() : 사진이 없습니다.");
-                throw new RuntimeException("MemberService.updateProfileImg() : 사진이 없습니다.");
+                Preconditions.checkNotNull(memberDTO.getProfile(), "받아온 이미지가 없습니다.");
             }
+            return MemberDTO.builder().profile(member.getProfile()).build();
 
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("MemberService.updateContact() : 에러 발생.");
+        }
+
+    }
+
+    // 강의 설명 이미지 저장
+    private File saveLectureImage(String fileName, int lectureId, File directoryPath/* Lecture lecture*/, MultipartFile multipartFile){
+        try{
+            // 기존 이미지가 있다면 삭제
+            if (fileName != null) {
+                deleteLectureImage(fileName, directoryPath);
+            }
+
+            // 이미지 저장 (파일명 : "강의 ID.확장자")
+            File newFile = MultipartUtils.saveImage(multipartFile, directoryPath, String.valueOf(lectureId));
+
+            return newFile;
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    // 강의 설명 이미지 삭제
+    private void deleteLectureImage(String fileName, File directoryPath) {
+
+        // 이미지 삭제
+        String imagePath = fileName;
+        if(imagePath != null) {
+            File oldImageFile = new File(directoryPath, imagePath);
+            oldImageFile.delete();
         }
 
     }
@@ -492,10 +469,10 @@ public class MemberService {
             List<MyLectureListDTO> lectureList  = myLectureListService.getMyLectureList(memberId,1,100,0);;
 
             for (MyLectureListDTO myLecture : lectureList) {
-                    if (myLecture.getLectureId() == lectureId) {
-                        studentProgressList.add(myLecture.getProgress());
-                    }
+                if (myLecture.getLectureId() == lectureId) {
+                    studentProgressList.add(myLecture.getProgress());
                 }
+            }
         }
         int totalProgress = 0;
         for (int progress : studentProgressList) {

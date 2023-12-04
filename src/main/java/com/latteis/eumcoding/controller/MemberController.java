@@ -143,14 +143,17 @@ public class MemberController {
 
 
     // 프로필 이미지 변경
-   @PostMapping("/updateProfileImg")
+    @PostMapping("/updateProfileImg")
     @ApiOperation(value = "", notes = "")
     public ResponseEntity<?> updateProfileImg(@ApiIgnore Authentication authentication,
                                               @ApiParam(value = "updateProfile", required = true)
                                               @RequestPart(value = "updateProfile", required = false) MemberDTO.UpdateProfile updateProfile,
                                               @RequestPart(value = "profileImgRequest", required = false) MultipartFile[] files) {
         try {
-            if (files != null) {
+            if(updateProfile == null){
+                updateProfile = new MemberDTO.UpdateProfile();
+            }
+            if (updateProfile != null && files != null) {
                 List<MultipartFile> fileList = Arrays.asList(files);
                 updateProfile.setProfileImgRequest(fileList);
             }
@@ -159,10 +162,12 @@ public class MemberController {
                     updateProfile);
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
 
 
     // 프로필 이미지 변경
