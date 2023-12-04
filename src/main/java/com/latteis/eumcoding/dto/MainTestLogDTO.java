@@ -46,6 +46,19 @@ public class MainTestLogDTO {
 
     }
 
+    @Data
+    @AllArgsConstructor
+    @ApiModel(value = "채점 응답 DTO")
+    public static class ScoringResponseDTO {
+
+        @ApiModelProperty(value = "학생 점수", example = "50")
+        private int score;
+
+        @ApiModelProperty(value = "만점", example = "50")
+        private int perfectScore;
+
+    }
+
     private int mainTestLogId; // 사용자에게 고유하게 부여되는 값
 
     private int memberId;
