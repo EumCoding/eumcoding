@@ -67,7 +67,7 @@ public class MainTestDTO {
         // main test type
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "시험 유형", example = "0")
-        private int MainTestType; //0이면 중간평가, 1이면 최종평가
+        private int mainTestType; //0이면 중간평가, 1이면 최종평가
 
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "문제 유형", example = "0")

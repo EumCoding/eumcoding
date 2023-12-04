@@ -182,7 +182,7 @@ public class KakaoPayService {
             curriculum.setTimeTaken(10);
             curriculum.setScore(0);
             curriculum.setCreateDate(LocalDate.now());
-            curriculum.setEdit(0);
+            curriculum.setEdit(1);
             curriculum.setStartDay(LocalDateTime.now());
             curriculumRepository.save(curriculum);
         }
