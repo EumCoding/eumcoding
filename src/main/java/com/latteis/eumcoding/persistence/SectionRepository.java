@@ -93,4 +93,7 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     @Query("SELECT s FROM Section s WHERE s.lecture.id = :lectureId AND s.id > :currentSectionId ORDER BY s.id ASC")
     List<Section> findNextSectionInLecture(@Param("lectureId") int lectureId, @Param("currentSectionId") int currentSectionId);
 
+    @Query("SELECT MAX(s.id) FROM Section s WHERE s.lecture.id = :lectureId AND s.id < :currentSectionId")
+    Integer findPreviousSectionId(@Param("lectureId") int lectureId, @Param("currentSectionId") int currentSectionId);
+
 }

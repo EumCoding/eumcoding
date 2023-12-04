@@ -300,6 +300,22 @@ public class MemberController {
         }
     }
 
+    @PostMapping("/test")
+    @ApiOperation(value = "테스트")
+    public ResponseEntity<?> test(@ApiIgnore Authentication authentication,
+                                          @RequestParam(required = false) Integer lectureId) {
+        try{
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            Curriculum c = curriculumService.findNextCurriculum(memberId, lectureId);
+            return ResponseEntity.ok().body("이전 섹션이 완료되었는가: " + c);
+
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 
 
 

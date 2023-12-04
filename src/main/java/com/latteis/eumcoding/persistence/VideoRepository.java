@@ -17,7 +17,8 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
 
 
-
+    @Query("SELECT MAX(v.id) FROM Video v WHERE v.section.id = :sectionId")
+    int findMaxVideoIdBySectionId(@Param("sectionId") int sectionId);
     @Query(value = "SELECT count(v.id) FROM video v JOIN section s ON v.section_id = s.id WHERE s.id = :sectionId",nativeQuery = true)
     Long countBySectionId(@Param("sectionId")int sectionId);
 
