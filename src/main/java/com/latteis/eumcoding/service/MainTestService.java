@@ -129,12 +129,13 @@ public class MainTestService {
         for(Section tempSection : sectionList){
             // section 정보를 이용해 MainTest List 가져오기
             List<MainTest> mainTestList = mainTestRepository.findAllBySection(tempSection);
+            log.info("mainTestList.size() = " + mainTestList.size());
             if(mainTestList.size() > 0){
-                // MainTestDTO.MainTestInfoRequestDTO로 변환
-                MainTestDTO.MainTestInfoRequestDTO tempResponseDTO = new MainTestDTO.MainTestInfoRequestDTO(mainTestList.get(0));
-                responseDTO.add(tempResponseDTO);
-                // 리턴
-                return responseDTO;
+                for(MainTest tempMainTest : mainTestList){
+                    // MainTestDTO.MainTestInfoRequestDTO로 변환
+                    MainTestDTO.MainTestInfoRequestDTO tempResponseDTO = new MainTestDTO.MainTestInfoRequestDTO(tempMainTest);
+                    responseDTO.add(tempResponseDTO);
+                }
             }
         }
         // 리턴
@@ -165,6 +166,8 @@ public class MainTestService {
 //            // 해당 섹션에 평가가 이미 등록되어 있는지 검사
 //            Preconditions.checkArgument(!mainTestRepository.existsBySection(section), "해당 섹션에 평가가 이미 등록되어 있습니다. (섹션 ID : %s)", section.getId());
 
+            log.info("MainTestType" + addRequestDTO.getMainTestType());
+
             // 해당 강의에 mainTest가 있는지 체크(없으면 생성해서 해당하는 mainTest의 sectionId를 가져옵니다.)
             List<MainTest> mainTestList = mainTestRepository.findAllBySectionIdAndType(addRequestDTO.getSectionId(), addRequestDTO.getMainTestType());
             int sectionId = 0;
@@ -183,8 +186,11 @@ public class MainTestService {
             }
             // mainTest 객체를 저장할 곳
             MainTest mainTest = null;
+            log.info("mainTestList.size() = " + mainTestList.size());
+            log.info("sectionId = " + sectionId);
 
             if (mainTestList.size() == 0 && sectionId == 0) { // 들어온 Section도 없고 찾은 Section도 없을때 mainTest 만들기
+                log.info("들어온 Section도 없고 찾은 Section도 없을때 mainTest 만들기");
                 // 들어온 section이 0이 아니면 section을 가져옴
                 Section section = null;
                 if (addRequestDTO.getSectionId() != 0) { // 들어온 section이 있을때
@@ -214,6 +220,7 @@ public class MainTestService {
                 mainTestRepository.save(tempMainTest).getId();
                 mainTest = tempMainTest;
             }else if(mainTestList.size() == 0 && sectionId != 0){ // manTestList는 없는데 sectionId는 찾았을 때 해당 SectionId로 조회해서 mainTest 가져옵니다.
+                log.info("manTestList는 없는데 sectionId는 찾았을 때 해당 SectionId로 조회해서 mainTest 가져옵니다.");
                 mainTestList = mainTestRepository.findAllBySectionIdAndType(sectionId, addRequestDTO.getMainTestType());
                 if(mainTestList.size() == 0){
                     // 예외처리
@@ -222,14 +229,16 @@ public class MainTestService {
                     mainTest = mainTestList.get(0);
                 }
             }else{
+                log.info("mainTestList가 있을 때");
                 // mainTest가 있으면 해당 객체를 가져옴
                 mainTest = mainTestList.get(0);
             }
 
+            log.info("해당 main test에 해당하는 mainTestQuestion이 몇개 있는지 조회");
             // 해당 main test에 해당하는 mainTestQuestion이 몇개 있는지 조회
             long cnt = mainTestQuestionRepository.countByMainTest(mainTest);
 
-
+            log.info("mainTestQuestion을 먼저 DB에 저장");
             // mainTestQuestion을 먼저 DB에 저장
             MainTestQuestion mainTestQuestion = MainTestQuestion.builder()
                     .mainTest(mainTest)
@@ -242,6 +251,7 @@ public class MainTestService {
             // DB에 저장
             mainTestQuestionRepository.save(mainTestQuestion);
 
+            log.info("답변리스트를 DB에 저장");
             // 답변리스트를 DB에 저장
             for (String answer : addRequestDTO.getAnswer()) {
                 MainTestAnswer mainTestAnswer = MainTestAnswer.builder()

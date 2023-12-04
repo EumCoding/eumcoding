@@ -18,6 +18,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -333,18 +334,21 @@ public class CurriculumService {
 
     //내 커리큘럼 timetaken 수정하는 메서드
     public Curriculum updateTimeTaken(int memberId, int curriculumId, int newTimeTaken) {
+        try{
+            //커리큘럼 id로 커리큘럼 찾기
+            Curriculum curriculum = curriculumRepository.findByCurriculumId(memberId, curriculumId)
+                    .orElseThrow(() -> new RuntimeException("회원님의 커리큘럼이 없거나, 타 계정 커리큘럼에 접근해 권한이없습니다.."));
 
-        //커리큘럼 id로 커리큘럼 찾기
-        Curriculum curriculum = curriculumRepository.findByCurriculumId(memberId, curriculumId)
-                .orElseThrow(() -> new RuntimeException("회원님의 커리큘럼이 없거나, 타 계정 커리큘럼에 접근해 권한이없습니다.."));
+            Optional<Curriculum> optCurriculum = curriculumRepository.findById(curriculumId);
 
-        if (curriculum.getEdit() == 1) {
-            //timetaken업데이트
+            curriculum = optCurriculum.get();
+
             curriculum.setTimeTaken(newTimeTaken);
             //변경사항 저장하고 업데이트된 커리큘럼 반환
             return curriculumRepository.save(curriculum);
-        } else {
-            throw new RuntimeException("커리큘럼을 수정할 수 없습니다.");
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
         }
     }
 
