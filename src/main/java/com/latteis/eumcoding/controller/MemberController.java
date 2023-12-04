@@ -6,10 +6,7 @@ import com.latteis.eumcoding.model.Curriculum;
 import com.latteis.eumcoding.model.Member;
 import com.latteis.eumcoding.persistence.MemberRepository;
 import com.latteis.eumcoding.security.TokenProvider;
-import com.latteis.eumcoding.service.CurriculumService;
-import com.latteis.eumcoding.service.MemberService;
-import com.latteis.eumcoding.service.MyLectureListService;
-import com.latteis.eumcoding.service.ReplationParentService;
+import com.latteis.eumcoding.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +42,8 @@ public class MemberController {
     private final MyLectureListService myLectureListService;
 
     private final ReplationParentService replationParentService;
+
+/*    private final BadgeService badgeService;*/
 
 
 
@@ -273,7 +272,7 @@ public class MemberController {
     }
 
     @GetMapping("/payment/lecture/badge")
-    @ApiOperation(value = "결제한 강좌 배너 목록")
+    @ApiOperation(value = "결제한 강좌 뱃지 목록")
     public ResponseEntity<PaymentLectureBadgeDTO> getBadgeList(@ApiIgnore Authentication authentication) {
         int memberId = Integer.parseInt(authentication.getPrincipal().toString());
         PaymentLectureBadgeDTO paymentLectureBadgeDTO = memberService.paymentLectureBadge(memberId);
@@ -317,6 +316,20 @@ public class MemberController {
         }
     }
 
+
+
+/*    @PostMapping("/mylecture/badge/list")
+    @ApiOperation(value = "내가 결제한 강좌 뱃지 모음", notes = "내가 결제한 강좌 뱃지 모음")
+    public ResponseEntity<?> getMyBadgeList(@ApiIgnore Authentication authentication, @RequestParam int lectureId) {
+        try {
+            int memberId = Integer.parseInt(authentication.getPrincipal().toString());
+            BadgeDTO badgeDTO = badgeService.getBadgeList(memberId, lectureId);
+            return ResponseEntity.ok().body(badgeDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }*/
 
 
 

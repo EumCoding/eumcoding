@@ -26,7 +26,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
 
     //lecture entity에 private Member member로 받아서 쿼리문 저렇게 작성
-    @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId")
+    @Query("SELECT l FROM Lecture l WHERE l.member.id = :memberId ORDER BY l.createdDay DESC ")
     List<Lecture> findByMemberId(@Param("memberId") int memberId);
 
 
@@ -47,7 +47,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     List<Lecture> findTop5ByOrderByCreatedDayDesc();
 
     //강좌 이름 검색
-    @Query("SELECT l FROM Lecture l WHERE l.name like %:name% AND l.state = 1")
+    @Query("SELECT l FROM Lecture l WHERE l.name like %:name% AND l.state = 1 ORDER BY l.createdDay DESC")
     List<Lecture> findByNameContaining(@Param("name") String name, Pageable paging);
 
     //이름갯수세기
@@ -67,7 +67,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
 
     //학년으로 검색
-    @Query("SELECT l FROM Lecture l WHERE l.grade = :grade")
+    @Query("SELECT l FROM Lecture l WHERE l.grade = :grade ORDER BY l.createdDay DESC ")
     List<Lecture> findByGrade(@Param("grade") int grade, Pageable paging);
 
 
@@ -87,7 +87,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     @Query(value = "SELECT * FROM lecture l JOIN member m ON l.member_id = m.id WHERE l.state = 1 AND m.id =:memberId ",nativeQuery = true)
     Page<Lecture> findAllByMember(@Param("memberId") int memberId, Pageable pageable);
 
-    @Query(value = "SELECT * FROM lecture l JOIN member m ON l.member_id = m.id WHERE l.state = 1 AND m.id =:memberId ",nativeQuery = true)
+    @Query(value = "SELECT * FROM lecture l JOIN member m ON l.member_id = m.id WHERE l.state = 1 AND m.id =:memberId ORDER BY l.created_day DESC ",nativeQuery = true)
     List<Lecture> findAllByMember(@Param("memberId") int memberId);
 
 
@@ -126,5 +126,14 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
     */
     @Query("SELECT COUNT(l) FROM Lecture l WHERE l.member.id = :memberId")
     int countByMemberId(@Param("memberId") int memberId);
+
+
+    @Query(value = "SELECT m.id AS memberId, l.id AS lectureId, l.name, l.badge " +
+            "FROM member m " +
+            "JOIN payment p ON m.id = p.member_id " +
+            "JOIN pay_lecture pl ON pl.payment_id = p.id " +
+            "JOIN lecture l ON pl.lecture_id = l.id " +
+            "WHERE l.id =:lectureId", nativeQuery = true)
+    List<Object[]> findMemberBadges(@Param("lectureId")Integer lectureId);
 
 }
