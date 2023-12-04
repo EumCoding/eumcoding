@@ -32,6 +32,7 @@ public enum ErrorCode {
 
     // 412 PRECONDITION_FAILED 사전 조건 실패
     TWO_DATE_PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "날짜를 모두 선택해주세요."),
+    VIDEO_PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "이전 영상을 시청한 뒤 시도하세요."),
 
     // 500 INTERNAL_SERVER_ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러입니다.");

@@ -75,6 +75,9 @@ public interface VideoProgressRepository extends JpaRepository<VideoProgress, In
     @Query("SELECT vp FROM VideoProgress vp WHERE vp.video = :video AND vp.lectureProgress.payLecture.payment.member = :member")
     List<VideoProgress> findByMemberAndVideo(@Param("member") Member member, @Param("video") Video video);
 
+    VideoProgress findByVideoAndLectureProgressPayLecturePaymentMember(Video video, Member member);
+
+    boolean existsByVideoAndLectureProgressPayLecturePaymentMember(Video video, Member member);
     /*
      * Video, Member에 맞는 videoProgress 가져오기
      */
