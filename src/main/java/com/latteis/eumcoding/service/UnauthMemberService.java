@@ -37,6 +37,9 @@ public class UnauthMemberService {
     @Value("${file.path}")
     private String filePath;
 
+    @Value("${file.path.member.profile}")
+    private String memberPath;
+
 
     // 새 계정 생성 - 이메일 중복 검사
     //@RequestParam("profileImgRequest") MultipartFile profileImgRequest
@@ -88,7 +91,7 @@ public class UnauthMemberService {
 
 
                     //String absolutePath = filePath +File.separator + "member";
-                    String absolutePath = "C:" +File.separator + "eumcoding" + File.separator + "member";
+                    String absolutePath = memberPath;
                     String path = absolutePath;
                     File file = new File(path);
 
