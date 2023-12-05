@@ -29,4 +29,8 @@ public class MainTestLog {
     
     @Column(name = "sub_answer")
     private String subAnswer; // 제출한 답변 기록
+
+    @Column(name = "scoring")
+    private boolean scoring;
+
 }

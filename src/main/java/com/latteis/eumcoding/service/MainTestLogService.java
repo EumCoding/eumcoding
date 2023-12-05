@@ -104,6 +104,7 @@ public class MainTestLogService {
                             .mainTestQuestion(mainTestQuestion)
                             .member(member)
                             .subAnswer(log)
+                            .scoring(scoring)
                             .build();
                     mainTestLogRepository.save(mainTestLog);
                 }
@@ -146,6 +147,7 @@ public class MainTestLogService {
                         .mainTestQuestion(mainTestQuestion)
                         .member(member)
                         .subAnswer(formattedTestAnswer)
+                        .scoring(scoring)
                         .build();
                 mainTestLogRepository.save(mainTestLog);
 
@@ -160,6 +162,46 @@ public class MainTestLogService {
 
         // 점수 반환
         return score;
+
+    }
+
+    /**
+     * 채점 결과 가져오기
+     * @param authentication 로그인 정보
+     * @param idDTO 메인 테스트 ID
+     * @return 채점 결과 DTO
+     */
+    public MainTestLogDTO.ScoringResponseDTO getScore(int memberId, MainTestDTO.IdDTO idDTO) {
+
+        Member member = memberRepository.findByMemberId(memberId);
+        MainTest mainTest = mainTestRepository.findById(idDTO.getMainTestId());
+
+        // 등록된 회원인지 검사
+        if (member == null) {
+            throw new ResponseMessageException(ErrorCode.USER_UNREGISTERED);
+        }
+        // 등록된 MainTest인지 검사
+        if (mainTest == null) {
+            throw new ResponseMessageException(ErrorCode.MAIN_TEST_NOT_FOUND);
+        }
+
+        List<MainTestLog> mainTestLogs = mainTestLogRepository.findAllByMemberAndMainTestQuestionMainTest(member, mainTest);
+
+        // 점수 저장할 변수
+        int score = 0;
+        // 만점 저장
+        int perfectScore = 0;
+        // 로그 반복하면서 정답이면 점수 추가
+        for (MainTestLog mainTestLog : mainTestLogs) {
+            // 정답인 답변이라면 점수 추가
+            if (mainTestLog.isScoring()) {
+                score += mainTestLog.getMainTestQuestion().getScore();
+            }
+            //만점 점수 저장
+            perfectScore += mainTestLog.getMainTestQuestion().getScore();
+        }
+
+        return new MainTestLogDTO.ScoringResponseDTO(score, perfectScore);
 
     }
 }

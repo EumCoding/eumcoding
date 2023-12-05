@@ -17,6 +17,7 @@ import java.util.List;
 public class MainTestDTO {
 
     @Getter
+    @AllArgsConstructor
     @NoArgsConstructor
     @ApiModel(value = "메인 평가 ID 요청 DTO")
     public static class IdDTO {
@@ -66,7 +67,7 @@ public class MainTestDTO {
         // main test type
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "시험 유형", example = "0")
-        private int MainTestType; //0이면 중간평가, 1이면 최종평가
+        private int mainTestType; //0이면 중간평가, 1이면 최종평가
 
         @PositiveOrZero(message = "0 또는 양수만 가능합니다.")
         @ApiModelProperty(value = "문제 유형", example = "0")
@@ -204,6 +205,18 @@ public class MainTestDTO {
             this.mainTestId = mainTestQuestion.getMainTest().getId();
             this.type = mainTestQuestion.getType();
         }
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @ApiModel(value = "메인 테스트 채점 결과")
+    public static class MainTestScoreDTO{
+
+        private int mainTestType;
+
+        private MainTestLogDTO.ScoringResponseDTO scoringResponseDTO;
+
     }
 
 }

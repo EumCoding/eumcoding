@@ -125,7 +125,7 @@ public class PaymentService {
                 curriculum.setTimeTaken(section.getTimeTaken());
                 curriculum.setScore(0);
                 curriculum.setCreateDate(LocalDate.now());
-                curriculum.setEdit(0);
+                curriculum.setEdit(1);
                 curriculum.setStartDay(currentStartDay);
                 curriculumRepository.save(curriculum);
 
