@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -14,6 +15,8 @@ public class BlockCodeToJavaConverter {
     public String convertToJavaCode(List<Block> blocks) {
         int printCnt = 0; // print는 단 한번만 올 수 있음.
 
+        List<String> varList = new ArrayList<>();
+
         StringBuilder javaCode = new StringBuilder();
         javaCode.append("public class Main {\n");
         javaCode.append("    public static void main(String[] args) {\n");
@@ -22,13 +25,14 @@ public class BlockCodeToJavaConverter {
             Block block = blocks.get(i);
             switch (block.getBlock()) {
                 case "[numberVal]":
-                    // javaCode의 맨 뒤가 세미콜론이거나 i가 0인 경우 int를 append
-                    if (i == 0 || javaCode.charAt(javaCode.length() - 1) == ';') {
+                    // varList에 getValue가 없는 경우 경우 int를 append
+                    if (i == 0 || !varList.contains(block.getValue())) {
+                        varList.add(block.getValue());
                         javaCode.append("int ").append(block.getValue()); // 변수선언
                         // 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -41,7 +45,7 @@ public class BlockCodeToJavaConverter {
                         // 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -54,7 +58,7 @@ public class BlockCodeToJavaConverter {
                         // 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -80,10 +84,10 @@ public class BlockCodeToJavaConverter {
                     //	1. 앞블럭이 연산블럭인 경우 그냥 이어붙이기
                     if ("[+]".equals(blocks.get(i - 1).getBlock()) || "[-]".equals(blocks.get(i - 1).getBlock()) || "[*]".equals(blocks.get(i - 1).getBlock()) || "[/]".equals(blocks.get(i - 1).getBlock()) || "[==]".equals(blocks.get(i - 1).getBlock())) {
                         javaCode.append(" " + block.getValue() + " ");
-                        //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
+                        //	4. 뒷블럭이 if, for, print, StringVal, NumberVal, 중괄호 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock()) ) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -96,7 +100,7 @@ public class BlockCodeToJavaConverter {
                         //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -190,10 +194,10 @@ public class BlockCodeToJavaConverter {
                 case "[==]":
                     javaCode.append(" == "); // 다음 블록의 값이 추가될 것으로 예상
                     break;
-                case "{":
+                case "[{]":
                     javaCode.append("{\n");
                     break;
-                case "}":
+                case "[}]":
                     javaCode.append("}\n");
                     break;
                 case "[number]":
@@ -203,7 +207,7 @@ public class BlockCodeToJavaConverter {
                         //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())|| "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -216,7 +220,7 @@ public class BlockCodeToJavaConverter {
                         //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -226,7 +230,7 @@ public class BlockCodeToJavaConverter {
                     // 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                     if (i + 1 < blocks.size()) {
                         Block nextBlock = blocks.get(i + 1);
-                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                        if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                             javaCode.append(block.getValue() + ";\n");
                             break;
                         }
@@ -241,7 +245,7 @@ public class BlockCodeToJavaConverter {
                         //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
@@ -254,7 +258,7 @@ public class BlockCodeToJavaConverter {
                         //	4. 뒷블럭이 if, for, print, StringVal, NumberVal 이면 세미콜론
                         if (i + 1 < blocks.size()) {
                             Block nextBlock = blocks.get(i + 1);
-                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock())) {
+                            if ("[if]".equals(nextBlock.getBlock()) || "[for]".equals(nextBlock.getBlock()) || "[print]".equals(nextBlock.getBlock()) || "[StringVal]".equals(nextBlock.getBlock()) || "[numberVal]".equals(nextBlock.getBlock()) || "[{]".equals(nextBlock.getBlock()) || "[}]".equals(nextBlock.getBlock())) {
                                 javaCode.append(";\n");
                                 break;
                             }
