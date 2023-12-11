@@ -47,19 +47,19 @@ public class UnauthMemberService {
     public MemberDTO add(MemberDTO.Sign memberDTO){
         if(memberDTO == null || memberDTO.getEmail() == null){
             log.warn("UnauthMemberService.add() : memberEntity에 email이 없습니다.");
-            throw new RuntimeException("MemberService.add() : member에 email이 없습니다.");
+            throw new RuntimeException("member에 email이 없습니다.");
         }
 
         final String email = memberDTO.getEmail();
         if(memberRepository.existsByEmail(email)){
             log.warn("UnauthMemberService.add() : 해당 email이 이미 존재합니다.");
-            throw new RuntimeException("MemberService.add() : 해당 email이 이미 존재합니다.");
+            throw new RuntimeException("해당 email이 이미 존재합니다.");
         }
         // 닉네임 중복 체크
         boolean check = checkNickname(memberDTO.getNickname());
         if(!check){
             log.warn("UnauthMemberService.add() : 중복되는 닉네임입니다.");
-            throw new RuntimeException("UnauthMemberService.add() : 중복되는 닉네임입니다.");
+            throw new RuntimeException("중복되는 닉네임입니다.");
         }
 
         try {
