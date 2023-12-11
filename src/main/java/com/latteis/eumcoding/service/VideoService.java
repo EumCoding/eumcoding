@@ -236,8 +236,8 @@ public class VideoService {
             Preconditions.checkArgument(payLecture != null || video.getPreview() == VideoDTO.VideoPreview.POSSIBLE, "비디오를 시청할 권한이 없습니다");
         }
 
-        // 비디오 시청 기록이 없다면
-        if (!videoProgressRepository.existsByVideoAndLectureProgressPayLecturePaymentMember(video, member) && member.getRole() == 0) {
+        // 비디오 시청 기록이 없다면 + 강의 제작자가 아니라면
+        if (!videoProgressRepository.existsByVideoAndLectureProgressPayLecturePaymentMember(video, member) && lecture.getMember().getId() != memberId) {
             // 비디오 순서가 처음이 아니라면
             if (video.getSequence() != 0) {
                 // 이전 순서 비디오 가져오기
