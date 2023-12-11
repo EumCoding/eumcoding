@@ -14,8 +14,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     // 유지시간
     private final long MAX_AGE_SECS = 3600;
 
-    @Value("${server.port}")
-    private int port;
+    private int port = 3000;
     @Value("${server.domain}")
     private String domain;
 
