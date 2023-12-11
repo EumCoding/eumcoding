@@ -237,7 +237,7 @@ public class VideoService {
         }
 
         // 비디오 시청 기록이 없다면
-        if (!videoProgressRepository.existsByVideoAndLectureProgressPayLecturePaymentMember(video, member)) {
+        if (!videoProgressRepository.existsByVideoAndLectureProgressPayLecturePaymentMember(video, member) && member.getRole() == 0) {
             // 비디오 순서가 처음이 아니라면
             if (video.getSequence() != 0) {
                 // 이전 순서 비디오 가져오기
@@ -245,7 +245,7 @@ public class VideoService {
                 // 이전 순서 비디오 시청 기록 가져오기
                 VideoProgress previousVideoProgress = videoProgressRepository.findByVideoAndLectureProgressPayLecturePaymentMember(previousVideo, member);
                 // 기록이 없거나 완료하지 않았다면 거부
-                if ((previousVideoProgress == null || previousVideoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING) && member.getRole() == 0) {
+                if ((previousVideoProgress == null || previousVideoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING)) {
                     throw new ResponseMessageException(ErrorCode.VIDEO_PRECONDITION_FAILED);
                 }
             }
