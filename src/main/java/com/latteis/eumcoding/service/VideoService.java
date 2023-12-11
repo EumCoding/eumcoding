@@ -245,7 +245,7 @@ public class VideoService {
                 // 이전 순서 비디오 시청 기록 가져오기
                 VideoProgress previousVideoProgress = videoProgressRepository.findByVideoAndLectureProgressPayLecturePaymentMember(previousVideo, member);
                 // 기록이 없거나 완료하지 않았다면 거부
-                if (previousVideoProgress == null || previousVideoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING) {
+                if ((previousVideoProgress == null || previousVideoProgress.getState() == VideoProgressDTO.VideoProgressState.STUDYING) && member.getRole() == 0) {
                     throw new ResponseMessageException(ErrorCode.VIDEO_PRECONDITION_FAILED);
                 }
             }
