@@ -1,6 +1,7 @@
 
 package com.latteis.eumcoding.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     // 유지시간
     private final long MAX_AGE_SECS = 3600;
 
+    @Value("${server.port}")
+    private int port;
+    @Value("${server.domain}")
+    private String domain;
+
     // Cors 방지
     // 응애
     @Override
@@ -20,7 +26,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         //모든 경로에 대해
         registry.addMapping("/**")
                 // Origin이 http:localhost:3000(front)에 대해
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins(domain+port)
                 // GET, POST, PUT, PATCH, DELETE, OPTIONS 메서드 허용
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*") // 모든 헤더 허용
