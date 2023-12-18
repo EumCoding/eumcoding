@@ -7,7 +7,6 @@ import com.latteis.eumcoding.exception.ErrorCode;
 import com.latteis.eumcoding.exception.ResponseMessageException;
 import com.latteis.eumcoding.model.*;
 import com.latteis.eumcoding.persistence.*;
-import javafx.scene.canvas.GraphicsContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
