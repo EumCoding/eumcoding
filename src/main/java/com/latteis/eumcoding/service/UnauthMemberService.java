@@ -70,7 +70,7 @@ public class UnauthMemberService {
                     .tel(memberDTO.getTel())
                     .nickname(memberDTO.getNickname())
                     .birthDay(memberDTO.getBirthDay())
-                    .joinDay(LocalDateTime.now()) // 현재 시간
+                    .joinDay(memberDTO.getJoinDay()) // 현재 시간
                     .gender(memberDTO.getGender())
                     .address(memberDTO.getAddress())
                     .role(memberDTO.getRole())
